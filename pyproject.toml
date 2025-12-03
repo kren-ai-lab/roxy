@@ -1,0 +1,15 @@
+
+[project]
+name = "roxy"
+version = "0.0.1"
+description = "Roxy: exploratory analysis and descriptors for molecular ML (skeleton)"
+requires-python = ">=3.9"
+dependencies = [
+    "pandas",
+    "numpy",
+    "scikit-learn",
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
