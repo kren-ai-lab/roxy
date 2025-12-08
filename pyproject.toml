@@ -9,6 +9,7 @@ dependencies = [
     "numpy",
     "requests",
     "scikit-learn",
+    "plotly",
 ]
 
 [build-system]
