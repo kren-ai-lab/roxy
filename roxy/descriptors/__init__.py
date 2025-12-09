@@ -21,6 +21,7 @@ from .sequences import ProteinDescriptorError
 from .structures import BasicStructureDescriptors
 from .compounds import BasicMoleculeDescriptors
 from .registry import DESCRIPTOR_REGISTRY
+from .helpers import compute_descriptors
 
 __all__ = [
     # Engines
@@ -30,4 +31,6 @@ __all__ = [
     "ProteinDescriptorError",
     # Registry
     "DESCRIPTOR_REGISTRY",
+    # Helpers
+    "compute_descriptors",
 ]

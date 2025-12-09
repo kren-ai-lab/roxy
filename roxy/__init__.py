@@ -22,8 +22,9 @@ from .descriptors import (
     GlobalSequenceDescriptors,
     BasicStructureDescriptors,
     BasicMoleculeDescriptors,
-    ProteinDescriptorError,
+    ProteinDescriptorError
 )
+
 from .eda.summary import build_report
 from .projection import project
 from .viz import (
@@ -34,6 +35,8 @@ from .report import (
     dataset_report_to_markdown,
     dataset_report_to_html,
 )
+
+from .helpers import RoxyHelpers
 
 __all__ = [
     # Core container
@@ -53,4 +56,6 @@ __all__ = [
     # Reporting
     "dataset_report_to_markdown",
     "dataset_report_to_html",
+    # Helpers
+    "RoxyHelpers",
 ]
