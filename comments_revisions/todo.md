@@ -1,16 +1,3 @@
-## 0. Radiografía rápida de lo que *ya* tiene Roxy
-
-Mirando el zip:
-
-* Estructura de paquete clara: `core/`, `descriptors/`, `features/`, `eda/`, `projection/`, `viz/`, `report/`, `cli/`.
-* `RoxyDataset`, motores de descriptores (seq/struct/mol), AAIndex, EDA (summary/target_relations/missing/basic), scaling/selection, reducers (PCA/t-SNE/UMAP), visualización (matplotlib + plotly), reportes (Markdown/HTML).
-* `pyproject.toml` mínimo funcional, licencia y README stub.
-* Notebooks de demo que ya generamos (en `simple_demos/` supongo que los vas a mover).
-
-O sea: la “motor central” está. Lo que falta es la capa de *ecosistema completo* que Sylphy sí tiene (o al menos la estamos empujando hacia eso).
-
----
-
 ## 1. API pública y “cara” del paquete
 
 ### Qué veo ahora
