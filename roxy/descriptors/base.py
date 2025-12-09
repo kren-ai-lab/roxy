@@ -1,19 +1,28 @@
 from __future__ import annotations
 
+"""Base interface for descriptor engines in Roxy.
+
+All descriptor engines operate on a samples table (pandas DataFrame) and
+return a feature table with one row per sample. Engines should be
+stateless or only store configuration (e.g. pH, list of AAIndex codes).
+"""
+
 from abc import ABC, abstractmethod
 
 import pandas as pd
 
+
 class BaseDescriptorEngine(ABC):
     """
-    Base class for descriptor calculators operating on a samples table.
+    Abstract base class for descriptor calculators.
 
-    All descriptor engines must implement the `compute` method, which
-    receives a samples DataFrame and returns a feature table (DataFrame)
-    with one row per sample.
+    Subclasses must implement :meth:`compute`, which receives a samples
+    DataFrame and returns a feature table (DataFrame) indexed like
+    ``samples``.
     """
 
-    name: str
+    #: Optional engine name used for registration, logging or display.
+    name: str = "base_descriptor_engine"
 
     @abstractmethod
     def compute(self, samples: pd.DataFrame) -> pd.DataFrame:
@@ -24,11 +33,15 @@ class BaseDescriptorEngine(ABC):
         ----------
         samples :
             DataFrame with at least the columns required by the engine
-            (e.g. 'sequence', 'pdb_path' or 'smiles').
+            (e.g. ``'sequence'``, ``'pdb_path'`` or ``'smiles'``).
 
         Returns
         -------
-        descriptors :
-            Feature table indexed like `samples`.
+        pandas.DataFrame
+            Feature table indexed like ``samples``.
         """
         raise NotImplementedError
+
+    def __repr__(self) -> str:  # pragma: no cover - trivial
+        name = getattr(self, "name", self.__class__.__name__)
+        return f"{self.__class__.__name__}(name={name!r})"

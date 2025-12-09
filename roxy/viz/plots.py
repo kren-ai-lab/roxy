@@ -24,6 +24,9 @@ import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
+from roxy.core.logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 ArrayLike = Union[np.ndarray, pd.DataFrame, pd.Series]
 
@@ -108,12 +111,17 @@ def plot_feature_distribution(
         The axes with the plot.
     """
     if feature not in X.columns:
-        raise KeyError(f"Feature {feature!r} not found in X columns.")
+        msg = f"Feature {feature!r} not found in X columns."
+        logger.error("plot_feature_distribution: %s", msg)
+        raise KeyError(msg)
 
     fig, ax = _get_fig_ax(ax)
     values = X[feature].dropna()
 
     if y is None:
+        logger.debug(
+            "plot_feature_distribution: plotting feature %r without labels.", feature
+        )
         ax.hist(values, bins=bins, density=density, alpha=0.8)
         ax.set_ylabel("Density" if density else "Count")
         if title is None:
@@ -121,7 +129,9 @@ def plot_feature_distribution(
     else:
         y_arr = _ensure_1d(y)
         if len(y_arr) != len(X):
-            raise ValueError("Length of y must match number of rows in X.")
+            msg = "Length of y must match number of rows in X."
+            logger.error("plot_feature_distribution: %s", msg)
+            raise ValueError(msg)
 
         # Align y with non-missing values of the feature
         mask = X[feature].notna().to_numpy()
@@ -130,8 +140,18 @@ def plot_feature_distribution(
 
         unique_labels = np.unique(y_masked)
         if len(unique_labels) > max_classes:
+            logger.info(
+                "plot_feature_distribution: truncating labels from %d to %d.",
+                len(unique_labels),
+                max_classes,
+            )
             unique_labels = unique_labels[:max_classes]
 
+        logger.debug(
+            "plot_feature_distribution: plotting feature %r for %d classes.",
+            feature,
+            len(unique_labels),
+        )
         for lab in unique_labels:
             lab_mask = y_masked == lab
             ax.hist(
@@ -192,17 +212,27 @@ def plot_feature_boxplot(
         The axes with the plot.
     """
     if feature not in X.columns:
-        raise KeyError(f"Feature {feature!r} not found in X columns.")
+        msg = f"Feature {feature!r} not found in X columns."
+        logger.error("plot_feature_boxplot: %s", msg)
+        raise KeyError(msg)
 
     y_arr = _ensure_1d(y)
     if len(y_arr) != len(X):
-        raise ValueError("Length of y must match number of rows in X.")
+        msg = "Length of y must match number of rows in X."
+        logger.error("plot_feature_boxplot: %s", msg)
+        raise ValueError(msg)
 
     fig, ax = _get_fig_ax(ax)
 
     data = pd.DataFrame({"feature": X[feature], "label": y_arr}).dropna()
     groups = [grp["feature"].values for _, grp in data.groupby("label")]
     labels = [str(lbl) for lbl in data["label"].unique()]
+
+    logger.debug(
+        "plot_feature_boxplot: plotting feature %r for %d groups.",
+        feature,
+        len(labels),
+    )
 
     ax.boxplot(groups, labels=labels)
     ax.set_xlabel("Label")
@@ -253,7 +283,9 @@ def plot_scatter_features(
     """
     for feat in (x_feature, y_feature):
         if feat not in X.columns:
-            raise KeyError(f"Feature {feat!r} not found in X columns.")
+            msg = f"Feature {feat!r} not found in X columns."
+            logger.error("plot_scatter_features: %s", msg)
+            raise KeyError(msg)
 
     fig, ax = _get_fig_ax(ax)
 
@@ -261,13 +293,26 @@ def plot_scatter_features(
     y_vals = X[y_feature].to_numpy()
 
     if y is None:
+        logger.debug(
+            "plot_scatter_features: plotting %r vs %r without labels.",
+            x_feature,
+            y_feature,
+        )
         ax.scatter(x_vals, y_vals, alpha=0.8)
     else:
         y_arr = _ensure_1d(y)
         if len(y_arr) != len(X):
-            raise ValueError("Length of y must match number of rows in X.")
+            msg = "Length of y must match number of rows in X."
+            logger.error("plot_scatter_features: %s", msg)
+            raise ValueError(msg)
 
         unique_labels = np.unique(y_arr)
+        logger.debug(
+            "plot_scatter_features: plotting %r vs %r for %d classes.",
+            x_feature,
+            y_feature,
+            len(unique_labels),
+        )
         for lab in unique_labels:
             mask = y_arr == lab
             ax.scatter(
@@ -320,9 +365,9 @@ def plot_embedding(
     """
     emb = _ensure_2d(embedding)
     if emb.shape[1] != 2:
-        raise ValueError(
-            f"Expected embedding with 2 columns, got shape {emb.shape!r}."
-        )
+        msg = f"Expected embedding with 2 columns, got shape {emb.shape!r}."
+        logger.error("plot_embedding: %s", msg)
+        raise ValueError(msg)
 
     fig, ax = _get_fig_ax(ax)
 
@@ -330,13 +375,20 @@ def plot_embedding(
         labels = ["dim1", "dim2"]
 
     if y is None:
+        logger.debug("plot_embedding: plotting embedding without labels.")
         ax.scatter(emb[:, 0], emb[:, 1], alpha=0.8)
     else:
         y_arr = _ensure_1d(y)
         if len(y_arr) != emb.shape[0]:
-            raise ValueError("Length of y must match number of rows in embedding.")
+            msg = "Length of y must match number of rows in embedding."
+            logger.error("plot_embedding: %s", msg)
+            raise ValueError(msg)
 
         unique_labels = np.unique(y_arr)
+        logger.debug(
+            "plot_embedding: plotting embedding for %d classes.",
+            len(unique_labels),
+        )
         for lab in unique_labels:
             mask = y_arr == lab
             ax.scatter(
@@ -394,8 +446,15 @@ def plot_correlation_heatmap(
     """
     numeric = X.select_dtypes(include=[np.number])
     if numeric.empty:
-        raise ValueError("No numeric columns found in X for correlation heatmap.")
+        msg = "No numeric columns found in X for correlation heatmap."
+        logger.error("plot_correlation_heatmap: %s", msg)
+        raise ValueError(msg)
 
+    logger.debug(
+        "plot_correlation_heatmap: computing %s correlations for %d numeric columns.",
+        method,
+        numeric.shape[1],
+    )
     corr = numeric.corr(method=method)
 
     fig, ax = _get_fig_ax(ax)

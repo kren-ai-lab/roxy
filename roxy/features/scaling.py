@@ -6,14 +6,14 @@ preserving column names and indices.
 
 Supported strategies include:
 
-- ``"standard"`` : :class:`sklearn.preprocessing.StandardScaler`
-- ``"minmax"``   : :class:`sklearn.preprocessing.MinMaxScaler`
-- ``"robust"``   : :class:`sklearn.preprocessing.RobustScaler`
-- ``"maxabs"``   : :class:`sklearn.preprocessing.MaxAbsScaler`
-- ``"power"``    : :class:`sklearn.preprocessing.PowerTransformer`
-- ``"quantile"`` : :class:`sklearn.preprocessing.QuantileTransformer`
+- ``"standard"``   : :class:`sklearn.preprocessing.StandardScaler`
+- ``"minmax"``     : :class:`sklearn.preprocessing.MinMaxScaler`
+- ``"robust"``     : :class:`sklearn.preprocessing.RobustScaler`
+- ``"maxabs"``     : :class:`sklearn.preprocessing.MaxAbsScaler`
+- ``"power"``      : :class:`sklearn.preprocessing.PowerTransformer`
+- ``"quantile"``   : :class:`sklearn.preprocessing.QuantileTransformer`
 - ``"normalizer"`` : :class:`sklearn.preprocessing.Normalizer`
-- ``"none"``     : identity / no scaling
+- ``"none"``       : identity / no scaling
 """
 
 from __future__ import annotations
@@ -34,6 +34,9 @@ from sklearn.preprocessing import (
     StandardScaler,
 )
 
+from roxy.core.logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 ScalerLike = Union[str, BaseEstimator]
 
@@ -74,13 +77,19 @@ def create_scaler(name: str, **kwargs: Any) -> Optional[BaseEstimator]:
     """
     name = name.lower()
     if name not in _SCALER_REGISTRY:
-        raise KeyError(
+        msg = (
             f"Unknown scaler strategy {name!r}. "
             f"Available: {', '.join(sorted(_SCALER_REGISTRY))}"
         )
+        logger.error("create_scaler: %s", msg)
+        raise KeyError(msg)
+
     cls = _SCALER_REGISTRY[name]
     if cls is None:
+        logger.debug("create_scaler: using identity scaler for strategy 'none'.")
         return None
+
+    logger.debug("create_scaler: instantiating scaler %s with kwargs=%r.", name, kwargs)
     return cls(**kwargs)
 
 
@@ -127,11 +136,18 @@ class ColumnScaler(BaseEstimator, TransformerMixin):
 
         if not cols:
             # Nothing to scale
+            logger.info("ColumnScaler.fit: no numeric/selected columns to scale.")
             self._columns_ = []
             self._scaler = None
             return self
 
         self._columns_ = cols
+        logger.info(
+            "ColumnScaler.fit: strategy=%r on %d columns: %s",
+            self.strategy,
+            len(self._columns_),
+            self._columns_,
+        )
 
         if isinstance(self.strategy, str):
             self._scaler = create_scaler(self.strategy, **self.scaler_kwargs)
@@ -150,18 +166,29 @@ class ColumnScaler(BaseEstimator, TransformerMixin):
 
         if not self._columns_ or self._scaler is None:
             # Identity transform if no columns or no scaler
+            logger.debug(
+                "ColumnScaler.transform: no columns or scaler, returning copy."
+            )
             return X.copy()
 
         X_out = X.copy()
         arr = self._scaler.transform(X_out[self._columns_].to_numpy())
         X_out[self._columns_] = arr
+        logger.debug(
+            "ColumnScaler.transform: transformed %d columns on %d samples.",
+            len(self._columns_),
+            X_out.shape[0],
+        )
         return X_out
 
     def fit_transform(self, X: pd.DataFrame, y: Any = None) -> pd.DataFrame:
         """Fit to data, then transform it."""
         return self.fit(X, y).transform(X)
 
-    def get_feature_names_out(self, input_features: Optional[List[str]] = None) -> List[str]:
+    def get_feature_names_out(
+        self,
+        input_features: Optional[List[str]] = None,
+    ) -> List[str]:
         """Return output feature names (identical to input column names)."""
         if input_features is None:
             return list(self._columns_)

@@ -16,6 +16,10 @@ from typing import Dict, Iterable, Optional, Sequence, Union
 import numpy as np
 import pandas as pd
 
+from roxy.core.logging_utils import get_logger
+
+logger = get_logger(__name__)
+
 try:  # Optional dependency
     import plotly.express as px
     import plotly.graph_objects as go
@@ -30,10 +34,12 @@ ArrayLike = Union[np.ndarray, pd.DataFrame]
 def _require_plotly() -> None:
     """Raise an informative error if Plotly is not available."""
     if px is None or go is None:
-        raise ImportError(
+        msg = (
             "Plotly is required for interactive dashboard helpers. "
-            "Install it with `pip install plotly`."
+            "Install it with `pip install plotly` or `pip install roxy[viz]`."
         )
+        logger.error("_require_plotly: %s", msg)
+        raise ImportError(msg)
 
 
 # ---------------------------------------------------------------------------
@@ -76,16 +82,26 @@ def interactive_feature_distribution(
     _require_plotly()
 
     if feature not in df.columns:
-        raise KeyError(f"Feature {feature!r} not found in df columns.")
+        msg = f"Feature {feature!r} not found in df columns."
+        logger.error("interactive_feature_distribution: %s", msg)
+        raise KeyError(msg)
 
     data = df[[feature]].copy()
     if y is not None:
         if len(y) != len(df):
-            raise ValueError("Length of y must match number of rows in df.")
+            msg = "Length of y must match number of rows in df."
+            logger.error("interactive_feature_distribution: %s", msg)
+            raise ValueError(msg)
+
         data["label"] = y.values
 
         labels = data["label"].unique()
         if len(labels) > max_classes:
+            logger.info(
+                "interactive_feature_distribution: truncating labels from %d to %d.",
+                len(labels),
+                max_classes,
+            )
             labels = labels[:max_classes]
 
         fig = px.histogram(
@@ -153,7 +169,9 @@ def interactive_embedding(
 
     arr = embedding.to_numpy() if isinstance(embedding, pd.DataFrame) else np.asarray(embedding)
     if arr.ndim != 2 or arr.shape[1] != 2:
-        raise ValueError(f"Expected embedding with shape (n_samples, 2), got {arr.shape!r}.")
+        msg = f"Expected embedding with shape (n_samples, 2), got {arr.shape!r}."
+        logger.error("interactive_embedding: %s", msg)
+        raise ValueError(msg)
 
     n = arr.shape[0]
     df = pd.DataFrame({"dim1": arr[:, 0], "dim2": arr[:, 1]})
@@ -165,14 +183,25 @@ def interactive_embedding(
 
     if y is not None:
         if len(y) != n:
-            raise ValueError("Length of y must match number of rows in embedding.")
+            msg = "Length of y must match number of rows in embedding."
+            logger.error("interactive_embedding: %s", msg)
+            raise ValueError(msg)
         df["label"] = y.values
 
     if hover_data is not None:
         if len(hover_data) != n:
-            raise ValueError("hover_data must have the same number of rows as embedding.")
+            msg = "hover_data must have the same number of rows as embedding."
+            logger.error("interactive_embedding: %s", msg)
+            raise ValueError(msg)
         for col in hover_data.columns:
             df[col] = hover_data[col].values
+
+    logger.debug(
+        "interactive_embedding: plotting %d points (labels=%s, hover_cols=%d).",
+        n,
+        "yes" if "label" in df.columns else "no",
+        len(df.columns) - 2,
+    )
 
     fig = px.scatter(
         df,
@@ -220,6 +249,7 @@ class RoxyDashboard:
 
     def add_embedding(self, name: str, embedding: ArrayLike) -> None:
         """Register an embedding under a given name."""
+        logger.debug("RoxyDashboard.add_embedding: registering %r.", name)
         self.embeddings[name] = embedding
 
     # ---- Figure factories -------------------------------------------------
@@ -233,6 +263,11 @@ class RoxyDashboard:
         title: Optional[str] = None,
     ) -> "go.Figure":
         """Interactive histogram for a feature, with optional stratification."""
+        logger.info(
+            "RoxyDashboard.figure_distribution: feature=%r, nbins=%d.",
+            feature,
+            nbins,
+        )
         return interactive_feature_distribution(
             self.X,
             feature=feature,
@@ -269,18 +304,29 @@ class RoxyDashboard:
             Optional figure title.
         """
         if name not in self.embeddings:
-            raise KeyError(
+            msg = (
                 f"Embedding {name!r} not found. "
                 f"Available embeddings: {', '.join(self.embeddings)}"
             )
+            logger.error("RoxyDashboard.figure_embedding: %s", msg)
+            raise KeyError(msg)
 
         emb = self.embeddings[name]
         method = method_label or name
 
         hover_df: Optional[pd.DataFrame] = None
         if hover_columns is not None:
-            hover_df = self.X[list(hover_columns)].copy()
+            cols = list(hover_columns)
+            logger.debug(
+                "RoxyDashboard.figure_embedding: using hover columns %s.", cols
+            )
+            hover_df = self.X[cols].copy()
 
+        logger.info(
+            "RoxyDashboard.figure_embedding: embedding=%r, method_label=%r.",
+            name,
+            method,
+        )
         return interactive_embedding(
             emb,
             y=self.y,

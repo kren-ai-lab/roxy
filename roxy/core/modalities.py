@@ -1,5 +1,6 @@
-
 from __future__ import annotations
+
+"""Enumerations for supported data modalities in Roxy."""
 
 from enum import Enum
 

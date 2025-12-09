@@ -91,7 +91,11 @@ def infer_feature_kinds(
         is_const = n_unique <= 1
 
         if is_bool_dtype(s):
-            kind = FeatureKind.CATEGORICAL if treat_bool_as_categorical else FeatureKind.BOOLEAN
+            kind = (
+                FeatureKind.CATEGORICAL
+                if treat_bool_as_categorical
+                else FeatureKind.BOOLEAN
+            )
         elif is_numeric_dtype(s):
             kind = FeatureKind.NUMERIC
         elif is_datetime64_any_dtype(s):

@@ -26,6 +26,7 @@ from typing import Any, Dict, Iterable, List, Optional
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.feature_selection import (
     RFE,
     SelectFromModel,
@@ -37,9 +38,11 @@ from sklearn.feature_selection import (
     mutual_info_classif,
     mutual_info_regression,
 )
-from sklearn.linear_model import Lasso, LogisticRegression, LinearRegression
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.linear_model import Lasso, LinearRegression, LogisticRegression
 
+from roxy.core.logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 TaskType = str  # "classification" or "regression"
 
@@ -50,8 +53,14 @@ def _get_score_func(name: str, task_type: TaskType):
     if name == "f":
         return f_classif if task_type == "classification" else f_regression
     if name == "mutual_info":
-        return mutual_info_classif if task_type == "classification" else mutual_info_regression
-    raise ValueError(f"Unknown score function {name!r}.")
+        return (
+            mutual_info_classif
+            if task_type == "classification"
+            else mutual_info_regression
+        )
+    msg = f"Unknown score function {name!r}."
+    logger.error("_get_score_func: %s", msg)
+    raise ValueError(msg)
 
 
 def _build_selector(
@@ -61,6 +70,12 @@ def _build_selector(
 ) -> BaseEstimator:
     """Instantiate a scikit-learn feature selector based on a strategy name."""
     strategy = strategy.lower()
+    logger.debug(
+        "_build_selector: strategy=%r, task_type=%r, kwargs=%r",
+        strategy,
+        task_type,
+        selector_kwargs,
+    )
 
     if strategy == "variance":
         return VarianceThreshold(**selector_kwargs)
@@ -91,7 +106,7 @@ def _build_selector(
                 alpha=selector_kwargs.pop("alpha", 0.001),
                 max_iter=5000,
             )
-        # NOTE: in recent scikit-learn versions, the keyword is `estimator`
+        # keyword is `estimator` in recent scikit-learn
         return SelectFromModel(estimator=base_estimator, **selector_kwargs)
 
     if strategy == "model_tree":
@@ -116,11 +131,14 @@ def _build_selector(
             base_estimator = LinearRegression()
         return RFE(estimator=base_estimator, **selector_kwargs)
 
-    raise ValueError(
+    msg = (
         f"Unknown feature selection strategy {strategy!r}. "
         "Supported: variance, kbest, percentile, mutual_info, "
         "model_l1, model_tree, rfe."
     )
+    logger.error("_build_selector: %s", msg)
+    raise ValueError(msg)
+
 
 @dataclass
 class FeatureSelector(BaseEstimator, TransformerMixin):
@@ -165,10 +183,14 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> "FeatureSelector":
         """Fit the feature selector on the provided data."""
         if not isinstance(X, pd.DataFrame):
-            raise TypeError("FeatureSelector expects a pandas DataFrame as input.")
+            raise TypeError(
+                "FeatureSelector expects a pandas DataFrame as input."
+            )
 
         if self.task_type not in {"classification", "regression"}:
-            raise ValueError("`task_type` must be 'classification' or 'regression'.")
+            raise ValueError(
+                "`task_type` must be 'classification' or 'regression'."
+            )
 
         if self.columns is None:
             cols = X.select_dtypes(include=[np.number]).columns.tolist()
@@ -177,6 +199,9 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
 
         if not cols:
             # Nothing to select from
+            logger.info(
+                "FeatureSelector.fit: no numeric/selected columns to select from."
+            )
             self._columns_ = []
             self._selector = None
             self.support_mask_ = None
@@ -185,12 +210,23 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
 
         self._columns_ = cols
 
+        logger.info(
+            "FeatureSelector.fit: strategy=%r, task_type=%r on %d columns: %s",
+            self.strategy,
+            self.task_type,
+            len(self._columns_),
+            self._columns_,
+        )
+
         selector = _build_selector(
             strategy=self.strategy,
             task_type=self.task_type,
             selector_kwargs=dict(self.selector_kwargs),
         )
-        selector.fit(X[self._columns_].to_numpy(), None if y is None else y.to_numpy())
+        selector.fit(
+            X[self._columns_].to_numpy(),
+            None if y is None else y.to_numpy(),
+        )
 
         self._selector = selector
 
@@ -206,21 +242,38 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
             self.support_mask_ = np.ones(len(self._columns_), dtype=bool)
             self.selected_columns_ = list(self._columns_)
 
+        logger.info(
+            "FeatureSelector.fit: selected %d / %d columns.",
+            len(self.selected_columns_),
+            len(self._columns_),
+        )
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Reduce the feature matrix to the selected columns."""
         if not isinstance(X, pd.DataFrame):
-            raise TypeError("FeatureSelector expects a pandas DataFrame as input.")
+            raise TypeError(
+                "FeatureSelector expects a pandas DataFrame as input."
+            )
 
         if not self._columns_ or self._selector is None:
             # No-op if selector was not fitted or no columns were available
+            logger.debug(
+                "FeatureSelector.transform: no selection applied, returning copy."
+            )
             return X.copy()
 
         if not self.selected_columns_:
             # All dropped; return empty DataFrame with same index
+            logger.debug(
+                "FeatureSelector.transform: all columns dropped, returning empty DataFrame."
+            )
             return pd.DataFrame(index=X.index)
 
+        logger.debug(
+            "FeatureSelector.transform: projecting to %d selected columns.",
+            len(self.selected_columns_),
+        )
         return X[self.selected_columns_].copy()
 
     def fit_transform(

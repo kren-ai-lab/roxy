@@ -11,7 +11,13 @@ The focus is on integrating scikit-learn transformers with pandas
 DataFrames while preserving column names and indices.
 """
 
-from .typing import FeatureKind, FeatureTypeInfo, infer_feature_kinds, get_columns_of_kind, summarise_feature_kinds
+from .typing import (
+    FeatureKind,
+    FeatureTypeInfo,
+    infer_feature_kinds,
+    get_columns_of_kind,
+    summarise_feature_kinds,
+)
 from .scaling import ColumnScaler, create_scaler
 from .selection import FeatureSelector
 

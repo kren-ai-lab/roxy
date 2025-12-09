@@ -1,11 +1,22 @@
 from __future__ import annotations
 
+"""Markdown rendering utilities for dataset-level reports.
+
+This module provides :class:`MarkdownReportBuilder`, which converts a
+:class:`roxy.core.report.DatasetReport` into a human-readable Markdown
+document, and a convenience wrapper
+:func:`dataset_report_to_markdown`.
+"""
+
 from dataclasses import asdict
-from typing import Iterable, List, Optional
+from typing import List, Optional
 
 import pandas as pd
 
 from roxy.core.report import DatasetReport, FeatureSummary
+from roxy.core.logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 
 class MarkdownReportBuilder:
@@ -26,7 +37,7 @@ class MarkdownReportBuilder:
         Whether to include a textual representation of the correlation
         matrix, if available in the report.
     float_fmt :
-        Format string for floating-point values (e.g. ``\".3f\"``).
+        Format string for floating-point values (e.g. ``".3f"``).
     """
 
     def __init__(
@@ -47,7 +58,25 @@ class MarkdownReportBuilder:
     # ------------------------------------------------------------------
 
     def build(self, report: DatasetReport) -> str:
-        """Build a Markdown document from a :class:`DatasetReport`."""
+        """Build a Markdown document from a :class:`DatasetReport`.
+
+        Parameters
+        ----------
+        report :
+            Dataset-level report produced by the EDA utilities.
+
+        Returns
+        -------
+        str
+            Markdown representation of the report.
+        """
+        logger.info(
+            "Building Markdown report for dataset=%r (n_samples=%d, n_features=%d).",
+            report.dataset_name,
+            report.n_samples,
+            report.n_features,
+        )
+
         lines: List[str] = []
 
         title = report.dataset_name or "Dataset report"
@@ -79,7 +108,13 @@ class MarkdownReportBuilder:
                 lines.append(f"- {note}")
             lines.append("")
 
-        return "\n".join(lines)
+        md = "\n".join(lines)
+        logger.debug(
+            "Markdown report built with %d lines for dataset %r.",
+            len(lines),
+            report.dataset_name,
+        )
+        return md
 
     # ------------------------------------------------------------------
     # Section builders
@@ -112,6 +147,7 @@ class MarkdownReportBuilder:
             feature_dicts.append(d)
 
         if not feature_dicts:
+            logger.debug("MarkdownReportBuilder: no feature summaries available.")
             return ["_No feature summaries available._", ""]
 
         df = pd.DataFrame(feature_dicts)
@@ -134,12 +170,25 @@ class MarkdownReportBuilder:
 
         # Apply max_features limit if requested
         if self.max_features is not None and self.max_features < len(df):
+            logger.debug(
+                "MarkdownReportBuilder: truncating feature table from %d to %d rows.",
+                len(df),
+                self.max_features,
+            )
             df = df.head(self.max_features)
 
         # Format floats
         float_cols = [
             c
-            for c in ["missing_ratio", "mean", "std", "min", "max", "skewness", "kurtosis"]
+            for c in [
+                "missing_ratio",
+                "mean",
+                "std",
+                "min",
+                "max",
+                "skewness",
+                "kurtosis",
+            ]
             if c in df.columns
         ]
         df[float_cols] = df[float_cols].applymap(
@@ -160,11 +209,17 @@ class MarkdownReportBuilder:
     def _build_correlation_section(self, report: DatasetReport) -> List[str]:
         corr = report.correlation_matrix
         if corr is None or corr.empty:
+            logger.debug("MarkdownReportBuilder: no correlation matrix available.")
             return ["_No correlations available._", ""]
 
         # Limit size in case of very wide matrices
         max_dim = 25
         if corr.shape[0] > max_dim:
+            logger.debug(
+                "MarkdownReportBuilder: truncating correlation matrix from %d to %d.",
+                corr.shape[0],
+                max_dim,
+            )
             corr = corr.iloc[:max_dim, :max_dim]
 
         # Round for readability
@@ -194,15 +249,15 @@ def dataset_report_to_markdown(
 
     Parameters
     ----------
-    report:
+    report :
         Dataset-level report produced by the EDA utilities.
-    include_feature_table:
+    include_feature_table :
         Whether to include the feature summary table.
-    max_features:
+    max_features :
         Maximum number of features to display in the feature table.
-    include_correlation:
+    include_correlation :
         Whether to include the correlation matrix (if present).
-    float_fmt:
+    float_fmt :
         Format string for floating-point values.
 
     Returns
@@ -210,6 +265,11 @@ def dataset_report_to_markdown(
     str
         A complete Markdown document as a single string.
     """
+    logger.info(
+        "dataset_report_to_markdown: rendering dataset=%r with %d features.",
+        report.dataset_name,
+        report.n_features,
+    )
     builder = MarkdownReportBuilder(
         include_feature_table=include_feature_table,
         max_features=max_features,

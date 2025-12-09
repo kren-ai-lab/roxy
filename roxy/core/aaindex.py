@@ -31,11 +31,15 @@ import pandas as pd
 import requests
 
 from .constants import AA20, AAINDEX_URL, AAINDEX_FILENAME, ROXY_CACHE_SUBDIR
+from .exceptions import AAIndexError
+from .logging_utils import get_logger
 
+logger = get_logger(__name__)
 
 # ---------------------------------------------------------------------------
 # Cache directory utilities
 # ---------------------------------------------------------------------------
+
 
 def get_cache_dir() -> Path:
     """Return the Roxy cache directory.
@@ -67,6 +71,7 @@ def get_aaindex_path() -> Path:
 # Download and update
 # ---------------------------------------------------------------------------
 
+
 def download_aaindex(url: Optional[str] = None, *, force: bool = False) -> Path:
     """Download or update the AAIndex CSV file in the cache directory.
 
@@ -83,16 +88,32 @@ def download_aaindex(url: Optional[str] = None, *, force: bool = False) -> Path:
     -------
     pathlib.Path
         Path to the downloaded CSV file.
+
+    Raises
+    ------
+    AAIndexError
+        If the download fails or the remote server returns an error.
     """
     target = get_aaindex_path()
     if target.exists() and not force:
+        logger.debug(
+            "AAIndex CSV already present at %s; skipping download.", target
+        )
         return target
 
     use_url = url or AAINDEX_URL
-    resp = requests.get(use_url, timeout=60)
-    resp.raise_for_status()
+    logger.info("Downloading AAIndex CSV from %s to %s", use_url, target)
+
+    try:
+        resp = requests.get(use_url, timeout=60)
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        msg = f"Failed to download AAIndex CSV from {use_url}: {exc}"
+        logger.error(msg)
+        raise AAIndexError(msg) from exc
 
     target.write_bytes(resp.content)
+    logger.info("AAIndex CSV saved to %s", target)
     return target
 
 
@@ -119,42 +140,53 @@ def load_aaindex(*, auto_download: bool = True) -> pd.DataFrame:
     -------
     pandas.DataFrame
         AAIndex table in wide format (one row per residue, columns for
-        each AAIndex code).
+        each index code).
 
     Raises
     ------
-    FileNotFoundError
-        If the file does not exist and ``auto_download`` is ``False``.
-    ValueError
-        If the CSV does not have the expected columns.
+    AAIndexError
+        If the CSV is missing and cannot be downloaded, cannot be read,
+        or is structurally invalid.
     """
     global _AAINDEX_TABLE
 
     if _AAINDEX_TABLE is not None:
         return _AAINDEX_TABLE
 
-    path = get_aaindex_path()
-    if not path.exists():
+    csv_path = get_aaindex_path()
+    if not csv_path.exists():
         if not auto_download:
-            raise FileNotFoundError(
-                f"AAIndex CSV not found at {path!s}. "
-                "Call `download_aaindex()` or set `auto_download=True`."
+            msg = (
+                f"AAIndex CSV not found at {csv_path}. Set auto_download=True "
+                "or call `download_aaindex` explicitly."
             )
-        warnings.warn(
-            "AAIndex CSV not found in cache; attempting download from AAINDEX_URL.",
-            RuntimeWarning,
-        )
-        path = download_aaindex()
+            logger.error(msg)
+            raise AAIndexError(msg)
 
-    df = pd.read_csv(path)
-    # Normalise column names:
+        logger.info(
+            "AAIndex CSV not found at %s; attempting to download.", csv_path
+        )
+        download_aaindex()
+
+    # At this point we expect the file to exist
+    try:
+        df = pd.read_csv(csv_path)
+    except Exception as exc:  # pragma: no cover - I/O error path
+        msg = f"Could not read AAIndex CSV at {csv_path}: {exc}"
+        logger.error(msg)
+        raise AAIndexError(msg) from exc
+
+    # Normalise column names
     df.columns = [c.strip() for c in df.columns]
 
     # Require a residue identifier column
     if "residue" not in df.columns:
-        raise ValueError(
-            "AAIndex CSV must contain a 'residue' column with the amino-acid codes."
+        msg = (
+            "AAIndex CSV must contain a 'residue' column with the "
+            "amino-acid codes."
         )
+        logger.error(msg)
+        raise AAIndexError(msg)
 
     # Normalise residue column
     df["residue"] = df["residue"].astype(str).str.strip().str.upper()
@@ -163,15 +195,22 @@ def load_aaindex(*, auto_download: bool = True) -> pd.DataFrame:
     # Ensure that we have entries for all 20 amino acids
     missing_residues = [aa for aa in AA20 if aa not in df.index]
     if missing_residues:
-        raise ValueError(
+        msg = (
             "AAIndex CSV is missing rows for residues: "
             f"{', '.join(sorted(missing_residues))}."
         )
+        logger.error(msg)
+        raise AAIndexError(msg)
 
-    # Optionally, you might want to restrict to AA20 rows only:
+    # Optionally, restrict to AA20 rows only
     df = df.loc[sorted(AA20)]
 
     _AAINDEX_TABLE = df
+    logger.debug(
+        "AAIndex table loaded with shape %s and %d indices.",
+        df.shape,
+        df.shape[1],
+    )
     return df
 
 

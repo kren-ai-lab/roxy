@@ -1,6 +1,17 @@
 
 from __future__ import annotations
 
+"""Lightweight report structures used across Roxy.
+
+These dataclasses provide a structured representation of dataset-level
+summaries produced by the EDA routines. They are intentionally kept
+simple and serialisable so they can be:
+
+- converted to dicts,
+- dumped to JSON/YAML,
+- rendered into markdown or HTML reports.
+"""
+
 from dataclasses import dataclass, asdict
 from typing import Any, Dict, Optional, List
 
@@ -9,7 +20,16 @@ import pandas as pd
 
 @dataclass
 class FeatureSummary:
-    """Statistical summary for a single feature."""
+    """Statistical summary for a single feature.
+
+    This structure captures basic univariate statistics, including
+    missingness and simple distribution properties. More advanced
+    associations (e.g. with the target variable) can be stored in
+    :attr:`target_association`.
+
+    All numeric fields are optional so that the same container can
+    be used for categorical and numeric features.
+    """
 
     name: str
     dtype: str
@@ -25,6 +45,7 @@ class FeatureSummary:
     target_association: Optional[float] = None
 
     def to_dict(self) -> Dict[str, Any]:
+        """Return the summary as a plain dictionary."""
         return asdict(self)
 
 
@@ -42,6 +63,7 @@ class DatasetReport:
     notes: Optional[List[str]] = None
 
     def to_dict(self) -> Dict[str, Any]:
+        """Serialise the report to a nested dictionary."""
         return {
             "dataset_name": self.dataset_name,
             "n_samples": self.n_samples,

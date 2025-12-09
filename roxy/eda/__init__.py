@@ -31,6 +31,8 @@ from .missing import (
     missingness_by_label,
 )
 
+from roxy.core.exceptions import EDAError
+
 __all__ = [
     "BasicEDA",
     "BasicEDAReport",
@@ -39,4 +41,5 @@ __all__ = [
     "compute_feature_target_associations",
     "missingness_summary",
     "missingness_by_label",
+    "EDAError",
 ]

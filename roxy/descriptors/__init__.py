@@ -1,36 +1,30 @@
-"""
-Descriptor engines for Roxy.
+"""Descriptor engines for Roxy (sequence-focused).
 
-This subpackage groups descriptor engines for different object types:
+This subpackage currently groups **sequence-based** descriptor engines:
 
-- sequences  → :class:`GlobalSequenceDescriptors`
-- structures → :class:`BasicStructureDescriptors`
-- molecules  → :class:`BasicMoleculeDescriptors`
+- :class:`GlobalSequenceDescriptors` – global protein sequence descriptors.
+- :class:`ProteinSequenceDescriptors` – low-level helpers usable on their own.
 
 It also exposes:
 
-- :data:`DESCRIPTOR_REGISTRY`  → the shared registry of engines
-- :func:`compute_descriptors`  → a convenience helper for applying
-  engines to a :class:`~roxy.core.dataset.RoxyDataset`.
+- :data:`DESCRIPTOR_REGISTRY` – the shared registry of engines.
+- :func:`compute_descriptors` – convenience helper for applying engines
+  to a :class:`~roxy.core.dataset.RoxyDataset`.
 """
 
 from __future__ import annotations
 
-from .sequences import GlobalSequenceDescriptors
-from .sequences import ProteinDescriptorError
-from .structures import BasicStructureDescriptors
-from .compounds import BasicMoleculeDescriptors
+from .sequences import GlobalSequenceDescriptors, ProteinSequenceDescriptors, ProteinDescriptorError
 from .registry import DESCRIPTOR_REGISTRY
 from .helpers import compute_descriptors
 
 __all__ = [
-    # Engines
+    # Engines / helpers
     "GlobalSequenceDescriptors",
-    "BasicStructureDescriptors",
-    "BasicMoleculeDescriptors",
+    "ProteinSequenceDescriptors",
+    # Backwards-compatibility alias
     "ProteinDescriptorError",
-    # Registry
+    # Registry + helper
     "DESCRIPTOR_REGISTRY",
-    # Helpers
     "compute_descriptors",
 ]

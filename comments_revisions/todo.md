@@ -1,32 +1,5 @@
 ## 2. CLI y pipelines reproducibles
 
-### Estado actual
-
-* `roxy/cli/main.py` = placeholder con un `print("Roxy CLI placeholder")`.
-* `core/config.py` solo tiene un `DEFAULT_DESCRIPTOR_ENGINES` muy mínimo.
-
-### Qué haría para estar al nivel de Sylphy
-
-1. **CLI con Typer o Click (igual que Sylphy)**:
-
-   * Comandos tipo:
-
-     * `roxy describe-sequences`:
-
-       * lee CSV/Parquet,
-       * aplica `seq_global`, `seq_aaindex`,
-       * guarda features (`.parquet`) + reporte `.md` y `.html`.
-     * `roxy eda`:
-
-       * toma un feature file + labels,
-       * corre `build_report`,
-       * genera reportes + algunas figuras preconfiguradas.
-     * `roxy project`:
-
-       * aplica PCA/UMAP/t-SNE a un feature matrix,
-       * guarda embeddings.
-   * Opciones estándar: `--config`, `--output-dir`, `--random-state`, etc.
-
 2. **Modelo de configuración**:
 
    * Un `config` dataclass o Pydantic model (similar a Sylphy):
@@ -108,19 +81,6 @@
 * `README.md` casi vacío.
 
 ### Qué haría
-
-1. **Extras para dependencias pesadas**:
-
-   * Algo así:
-
-     ```toml
-     [project.optional-dependencies]
-     viz = ["plotly"]
-     umap = ["umap-learn"]
-     dev = ["pytest", "mypy", "black", "ruff", "ipykernel"]
-     ```
-
-   * Y que el código de `viz.dashboard` y `projection.UMAPReducer` dé `ImportError` elegante (ya lo hace, pero documentar que se activa con `[viz]`, `[umap]`).
 
 2. **Metadata de proyecto más completa**:
 

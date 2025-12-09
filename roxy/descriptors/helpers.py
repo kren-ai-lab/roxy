@@ -2,17 +2,22 @@
 
 This module currently provides:
 
-- ``compute_descriptors``: apply one or more registered descriptor
+- :func:`compute_descriptors` – apply one or more registered descriptor
   engines to a :class:`roxy.core.dataset.RoxyDataset` and attach the
   resulting feature blocks.
 """
 
 from __future__ import annotations
 
-from typing import Iterable
+from typing import Iterable, List
 
 from roxy.core.dataset import RoxyDataset
+from roxy.core.exceptions import DescriptorError
+from roxy.core.logging_utils import get_logger
+
 from .registry import DESCRIPTOR_REGISTRY
+
+logger = get_logger(__name__)
 
 
 def compute_descriptors(
@@ -33,7 +38,7 @@ def compute_descriptors(
         Iterable of descriptor names registered in
         :data:`DESCRIPTOR_REGISTRY`, e.g.::
 
-            ["seq_global", "struct_basic", "mol_basic"]
+            ["seq_global"]
 
     feature_key_prefix :
         Optional prefix added to the feature-key when inserting the
@@ -47,28 +52,36 @@ def compute_descriptors(
 
     Raises
     ------
-    KeyError
+    DescriptorError
         If any requested engine name is not present in
         :data:`DESCRIPTOR_REGISTRY`.
-
-    Examples
-    --------
-    >>> ds = RoxyDataset(samples=df, name="toy")
-    >>> compute_descriptors(ds, ["seq_global"])
-    >>> ds.feature_blocks
-    ['seq_global']
     """
-    for name in engines:
+    engine_names: List[str] = list(engines)
+    logger.info(
+        "compute_descriptors: running engines [%s] on dataset %r.",
+        ", ".join(engine_names),
+        dataset.name,
+    )
+
+    for name in engine_names:
         if name not in DESCRIPTOR_REGISTRY:
-            raise KeyError(
+            msg = (
                 f"Descriptor engine '{name}' not found. "
                 f"Available engines: {', '.join(DESCRIPTOR_REGISTRY.keys())}"
             )
+            logger.error("compute_descriptors: %s", msg)
+            raise DescriptorError(msg)
 
         engine = DESCRIPTOR_REGISTRY[name]
+        logger.debug("compute_descriptors: computing engine '%s'.", name)
         X_desc = engine.compute(dataset.samples)
 
         feature_key = f"{feature_key_prefix}{name}"
         dataset.add_features(feature_key, X_desc)
+        logger.info(
+            "compute_descriptors: attached feature block '%s' with shape %s.",
+            feature_key,
+            X_desc.shape,
+        )
 
     return dataset

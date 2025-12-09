@@ -1,11 +1,21 @@
 from __future__ import annotations
 
+"""HTML rendering utilities for dataset-level reports.
+
+This module provides :class:`HTMLReportBuilder`, which converts a
+:class:`roxy.core.report.DatasetReport` into a standalone HTML document,
+and a convenience wrapper :func:`dataset_report_to_html`.
+"""
+
 from dataclasses import asdict
 from typing import List, Optional
 
 import pandas as pd
 
 from roxy.core.report import DatasetReport, FeatureSummary
+from roxy.core.logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 
 class HTMLReportBuilder:
@@ -43,8 +53,25 @@ class HTMLReportBuilder:
     # ------------------------------------------------------------------
 
     def build(self, report: DatasetReport) -> str:
-        """Build a full HTML document from a :class:`DatasetReport`."""
+        """Build a full HTML document from a :class:`DatasetReport`.
+
+        Parameters
+        ----------
+        report :
+            Dataset-level report produced by the EDA utilities.
+
+        Returns
+        -------
+        str
+            A complete HTML document as a single string.
+        """
         title = report.dataset_name or "Roxy dataset report"
+        logger.info(
+            "Building HTML report for dataset=%r (n_samples=%d, n_features=%d).",
+            report.dataset_name,
+            report.n_samples,
+            report.n_features,
+        )
 
         parts: List[str] = []
         parts.append("<!DOCTYPE html>")
@@ -81,7 +108,13 @@ class HTMLReportBuilder:
         parts.append("</body>")
         parts.append("</html>")
 
-        return "\n".join(parts)
+        html = "\n".join(parts)
+        logger.debug(
+            "HTML report built with %d lines for dataset %r.",
+            len(parts),
+            report.dataset_name,
+        )
+        return html
 
     # ------------------------------------------------------------------
     # Section builders
@@ -95,7 +128,10 @@ class HTMLReportBuilder:
         items.append(f"<li><strong>Samples:</strong> {report.n_samples}</li>")
         items.append(f"<li><strong>Features:</strong> {report.n_features}</li>")
         if report.task_type is not None:
-            items.append(f"<li><strong>Task type:</strong> {self._escape(report.task_type)}</li>")
+            items.append(
+                f"<li><strong>Task type:</strong> "
+                f"{self._escape(report.task_type)}</li>"
+            )
         if report.class_distribution:
             items.append("<li><strong>Class distribution:</strong>")
             items.append("<ul>")
@@ -117,6 +153,7 @@ class HTMLReportBuilder:
             feature_dicts.append(d)
 
         if not feature_dicts:
+            logger.debug("HTMLReportBuilder: no feature summaries available.")
             return "<p><em>No feature summaries available.</em></p>"
 
         df = pd.DataFrame(feature_dicts)
@@ -137,12 +174,25 @@ class HTMLReportBuilder:
         df = df[[c for c in column_order if c in df.columns]]
 
         if self.max_features is not None and self.max_features < len(df):
+            logger.debug(
+                "HTMLReportBuilder: truncating feature table from %d to %d rows.",
+                len(df),
+                self.max_features,
+            )
             df = df.head(self.max_features)
 
         # Nice formatting for floats
         float_cols = [
             c
-            for c in ["missing_ratio", "mean", "std", "min", "max", "skewness", "kurtosis"]
+            for c in [
+                "missing_ratio",
+                "mean",
+                "std",
+                "min",
+                "max",
+                "skewness",
+                "kurtosis",
+            ]
             if c in df.columns
         ]
         df[float_cols] = df[float_cols].round(3)
@@ -158,10 +208,16 @@ class HTMLReportBuilder:
     def _build_correlation_section(self, report: DatasetReport) -> str:
         corr = report.correlation_matrix
         if corr is None or corr.empty:
+            logger.debug("HTMLReportBuilder: no correlation matrix available.")
             return "<p><em>No correlations available.</em></p>"
 
         max_dim = 25
         if corr.shape[0] > max_dim:
+            logger.debug(
+                "HTMLReportBuilder: truncating correlation matrix from %d to %d.",
+                corr.shape[0],
+                max_dim,
+            )
             corr = corr.iloc[:max_dim, :max_dim]
 
         corr = corr.round(3)
@@ -247,13 +303,13 @@ def dataset_report_to_html(
 
     Parameters
     ----------
-    report:
+    report :
         Dataset-level report produced by the EDA utilities.
-    include_feature_table:
+    include_feature_table :
         Whether to include the feature summary table.
-    max_features:
+    max_features :
         Maximum number of features to display in the feature table.
-    include_correlation:
+    include_correlation :
         Whether to include the correlation matrix (if present).
 
     Returns
@@ -261,9 +317,15 @@ def dataset_report_to_html(
     str
         A complete HTML document as a single string.
     """
+    logger.info(
+        "dataset_report_to_html: rendering dataset=%r with %d features.",
+        report.dataset_name,
+        report.n_features,
+    )
     builder = HTMLReportBuilder(
         include_feature_table=include_feature_table,
         max_features=max_features,
         include_correlation=include_correlation,
     )
     return builder.build(report)
+

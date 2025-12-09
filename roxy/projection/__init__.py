@@ -13,6 +13,8 @@ Currently supported methods are:
 A convenience function :func:`project` is provided for quick use.
 """
 
+from __future__ import annotations
+
 from .reducers import (
     BaseReducer,
     PCAReducer,

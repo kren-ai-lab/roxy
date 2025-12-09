@@ -9,6 +9,9 @@ import pandas as pd
 from roxy.core.report import DatasetReport, FeatureSummary
 from roxy.eda.target_relations import compute_feature_target_associations
 
+from roxy.core.logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 def build_report(
     X: pd.DataFrame,
@@ -37,6 +40,12 @@ def build_report(
         ``"classification"``.
     """
     n_samples, n_features = X.shape
+    logger.info(
+        "Building dataset report for %s (%d samples, %d features).",
+        dataset_name or "<unnamed>",
+        n_samples,
+        n_features,
+    )
 
     # Class distribution for classification tasks
     class_distribution: Optional[Dict[str, int]] = None
@@ -89,6 +98,12 @@ def build_report(
 
     corr = X.corr(numeric_only=True)
 
+    logger.debug(
+        "Dataset report for %s built with %d feature summaries.",
+        dataset_name or "<unnamed>",
+        len(feature_summaries),
+    )
+    
     return DatasetReport(
         dataset_name=dataset_name,
         n_samples=n_samples,
