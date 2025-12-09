@@ -1,17 +1,98 @@
-
 [project]
 name = "roxy"
-version = "0.0.1"
-description = "Roxy: exploratory analysis and descriptors for molecular ML (skeleton)"
+version = "0.1.0"
+description = "Roxy: exploratory analysis and descriptors for molecular machine learning"
+readme = "README.md"
 requires-python = ">=3.9"
-dependencies = [
-    "pandas",
-    "numpy",
-    "requests",
-    "scikit-learn",
-    "plotly",
+license = "GPL-3.0-only"
+
+authors = [
+  { name = "Kren AI Lab", email = "krenai@umag.cl" },
 ]
 
+keywords = [
+  "machine-learning",
+  "bioinformatics",
+  "proteins",
+  "chemoinformatics",
+  "EDA",
+  "feature-engineering",
+]
+
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+  "numpy>=1.23",
+  "pandas>=1.5",
+  "scikit-learn>=1.2",
+  "matplotlib>=3.6",
+  "requests>=2.28",
+  "typer>=0.9",
+  "joblib>=1.2",
+]
+
+[project.optional-dependencies]
+# For interactive plots and dashboard helpers
+viz = [
+  "plotly>=5.0",
+]
+
+# For UMAP-based projection
+umap = [
+  "umap-learn>=0.5",
+]
+
+# Developer tools: tests, linting, formatting, notebooks
+dev = [
+  "pytest>=7.0",
+  "pytest-cov>=4.0",
+  "mypy>=1.0",
+  "ruff>=0.4",
+  "black>=24.0",
+  "ipykernel",
+  "nbformat",
+  "nbclient",
+]
+
+# Convenience extra to install "everything"
+all = [
+  "plotly>=5.0",
+  "umap-learn>=0.5",
+  "pytest>=7.0",
+  "pytest-cov>=4.0",
+  "mypy>=1.0",
+  "ruff>=0.4",
+  "black>=24.0",
+  "ipykernel",
+  "nbformat",
+  "nbclient",
+]
+
+[project.scripts]
+roxy = "roxy.cli:app"
+
+[project.urls]
+homepage = "https://github.com/ProteinEngineering-PESB2/roxy_library"
+repository = "https://github.com/ProteinEngineering-PESB2/roxy_library"
+issues = "https://github.com/ProteinEngineering-PESB2/roxy_library/issues"
+
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = { "" = "." }
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["roxy*"]
+
