@@ -20,8 +20,6 @@ from __future__ import annotations
 from .core.dataset import RoxyDataset
 from .descriptors import (
     GlobalSequenceDescriptors,
-    BasicStructureDescriptors,
-    BasicMoleculeDescriptors,
     ProteinDescriptorError
 )
 
