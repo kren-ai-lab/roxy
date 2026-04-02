@@ -21,6 +21,26 @@ class DescriptorError(RoxyError):
     """Errors raised by descriptor engines or descriptor utilities."""
 
 
+class SequenceError(DescriptorError):
+    """Base class for sequence preprocessing and validation errors."""
+
+
+class SequenceInputError(SequenceError):
+    """Errors caused by unsupported or malformed sequence inputs."""
+
+
+class SequenceCollectionError(SequenceInputError):
+    """Errors caused by invalid sequence collection inputs or shape issues."""
+
+
+class InvalidSequenceError(SequenceError):
+    """Errors caused by invalid sequence content under strict rules."""
+
+
+class EmptySequenceError(InvalidSequenceError):
+    """Errors raised when a sequence is empty after normalization or cleaning."""
+
+
 class AAIndexError(DescriptorError):
     """Errors specific to AAIndex handling and descriptor computation."""
 

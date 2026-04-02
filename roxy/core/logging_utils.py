@@ -44,7 +44,7 @@ def get_logger(name: Optional[str] = None) -> logging.Logger:
     name:
         Optional fully-qualified logger name. If ``None``, the top-level
         ``"roxy"`` logger is returned. When a dotted name is provided,
-        it is attached as a child of ``"roxy"``, e.g. ``roxy.core.dataset``.
+        it is attached as a child of ``"roxy"``, e.g. ``roxy.sequence.api``.
     """
     if name is None:
         return logging.getLogger("roxy")

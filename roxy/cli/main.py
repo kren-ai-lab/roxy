@@ -1,28 +1,42 @@
+"""Sequence-focused command-line interface for Roxy.
+
+This module intentionally exposes only sequence-descriptor-oriented
+commands.
+"""
+
 from __future__ import annotations
 
-import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import Iterable, List, Optional
 
 import pandas as pd
 import typer
 
-from roxy.helpers import RoxyHelpers
-from roxy.features import ColumnScaler
-from roxy.features.selection import FeatureSelector
-from roxy.descriptors import DESCRIPTOR_REGISTRY
-from roxy.projection import project
+from roxy.sequence.api import (
+    describe_fasta as describe_fasta_api,
+    describe_sequences as describe_sequences_api,
+    list_available_descriptors as list_available_descriptors_api,
+    validate_sequences as validate_sequences_api,
+)
 
-app = typer.Typer(help="Roxy command-line interface for feature engineering and EDA.")
+app = typer.Typer(
+    help=(
+        "Roxy command-line interface for protein sequence descriptor "
+        "extraction."
+    ),
+    no_args_is_help=True,
+)
 
 
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
+# TODO:
+# - Add descriptor-family selection flags once the public API parameter
+#   surface is finalized.
+# - Add richer FASTA/table validation output only when the CLI contract
+#   is stable.
 
 
 def _load_table(path: Path) -> pd.DataFrame:
-    """Load a tabular file (CSV or Parquet) into a DataFrame."""
+    """Load a CSV or Parquet table into a DataFrame."""
     if not path.exists():
         raise FileNotFoundError(f"Input file not found: {path}")
 
@@ -34,51 +48,48 @@ def _load_table(path: Path) -> pd.DataFrame:
 
     raise ValueError(
         f"Unsupported file extension {suffix!r} for {path}. "
-        "Supported: .csv, .parquet"
+        "Supported: .csv, .parquet."
     )
 
 
 def _save_table(df: pd.DataFrame, path: Path) -> None:
-    """Save a DataFrame to CSV or Parquet, chosen by extension."""
+    """Save a DataFrame to CSV or Parquet based on the file extension."""
     path.parent.mkdir(parents=True, exist_ok=True)
     suffix = path.suffix.lower()
     if suffix == ".csv":
         df.to_csv(path, index=True)
-    elif suffix in {".parquet", ".pq"}:
+        return
+    if suffix in {".parquet", ".pq"}:
         df.to_parquet(path)
-    else:
-        raise ValueError(
-            f"Unsupported output extension {suffix!r} for {path}. "
-            "Use .csv or .parquet."
-        )
+        return
+
+    raise ValueError(
+        f"Unsupported output extension {suffix!r} for {path}. "
+        "Use .csv or .parquet."
+    )
 
 
-def _ensure_joblib():
-    try:
-        import joblib  # noqa: F401
-    except ImportError as e:
-        raise RuntimeError(
-            "joblib is required for this command. Install it with:\n"
-            "    pip install joblib"
-        ) from e
-
-
-# ---------------------------------------------------------------------------
-# Command: describe-sequences
-# ---------------------------------------------------------------------------
+def _normalize_aaindex_codes(
+    aaindex_codes: Optional[Iterable[str]],
+) -> Optional[List[str]]:
+    """Normalize AAIndex codes provided through the CLI."""
+    if aaindex_codes is None:
+        return None
+    codes = [code.strip() for code in aaindex_codes if code and code.strip()]
+    return codes or None
 
 
 @app.command("describe-sequences")
 def describe_sequences(
     input_path: Path = typer.Argument(
         ...,
-        help="Input table with at least a sequence column (CSV or Parquet).",
+        help="Input table with at least one protein sequence column.",
     ),
-    output_dir: Path = typer.Option(
-        Path("roxy_outputs"),
-        "--output-dir",
+    output_path: Path = typer.Option(
+        Path("roxy_sequence_descriptors.parquet"),
+        "--output-path",
         "-o",
-        help="Directory where features, reports and embeddings will be saved.",
+        help="Path where the descriptor table will be written.",
     ),
     sequence_column: str = typer.Option(
         "sequence",
@@ -86,463 +97,145 @@ def describe_sequences(
         "-s",
         help="Name of the column containing amino-acid sequences.",
     ),
-    label_column: Optional[str] = typer.Option(
+    aaindex_codes: Optional[List[str]] = typer.Option(
         None,
-        "--label-column",
-        "-y",
-        help="Optional name of the column containing labels (classification/regression).",
-    ),
-    use_aaindex: bool = typer.Option(
-        True,
-        "--aaindex/--no-aaindex",
-        help="Whether to include AAIndex-based descriptors if available.",
-    ),
-    project_method: Optional[str] = typer.Option(
-        "pca",
-        "--project-method",
-        "-p",
-        help="Projection method to use (e.g. 'pca', 'umap', 'tsne'). "
-             "Use 'none' to skip projection.",
-    ),
-    n_components: int = typer.Option(
-        2,
-        "--n-components",
-        help="Number of components for the projection method.",
-    ),
-    random_state: int = typer.Option(
-        42,
-        "--random-state",
-        help="Random seed for projection methods that support it.",
-    ),
-    output_format: str = typer.Option(
-        "parquet",
-        "--format",
-        "-f",
-        help="Output format for features and embeddings (csv or parquet).",
-    ),
-) -> None:
-    """
-    Describe protein sequences and generate features + EDA reports.
-
-    This command:
-
-    - loads a table with sequences,
-    - runs sequence descriptor engines (global + AAIndex if available),
-    - builds a combined feature matrix,
-    - generates EDA reports (Markdown and HTML),
-    - optionally computes a low-dimensional embedding,
-    - saves everything to the specified output directory.
-    """
-    df = _load_table(input_path)
-
-    # Normalise project_method
-    if project_method == "none":
-        project_method = None
-
-    result = RoxyHelpers.describe_sequences(
-        df,
-        seq_col=sequence_column,
-        y=label_column,
-        dataset_name=input_path.stem,
-        use_aaindex=use_aaindex,
-        feature_key_prefix="",
-        task_type=None,
-        project_method=project_method,
-        n_components=n_components,
-        random_state=random_state,
-    )
-
-    output_dir.mkdir(parents=True, exist_ok=True)
-    fmt = output_format.lower()
-
-    # Save combined features
-    features_path = output_dir / f"features.{ 'parquet' if fmt == 'parquet' else 'csv' }"
-    _save_table(result.X, features_path)
-    typer.echo(f"Saved features to: {features_path}")
-
-    # Save embedding, if available
-    if result.embedding is not None:
-        emb_df = pd.DataFrame(
-            result.embedding,
-            index=result.X.index,
-            columns=[f"comp_{i+1}" for i in range(result.embedding.shape[1])],
-        )
-        emb_path = output_dir / f"embedding.{ 'parquet' if fmt == 'parquet' else 'csv' }"
-        _save_table(emb_df, emb_path)
-        typer.echo(f"Saved embedding to: {emb_path}")
-
-    # Save reports
-    md_path = output_dir / "report.md"
-    html_path = output_dir / "report.html"
-    md_path.write_text(result.markdown, encoding="utf-8")
-    html_path.write_text(result.html, encoding="utf-8")
-    typer.echo(f"Saved Markdown report to: {md_path}")
-    typer.echo(f"Saved HTML report to: {html_path}")
-
-
-# ---------------------------------------------------------------------------
-# Command: scale-data
-# ---------------------------------------------------------------------------
-
-
-@app.command("scale-data")
-def scale_data(
-    input_path: Path = typer.Argument(
-        ...,
-        help="Input feature table (CSV or Parquet).",
-    ),
-    output_data: Path = typer.Option(
-        Path("scaled_features.parquet"),
-        "--output-data",
-        "-o",
-        help="Path where the scaled feature table will be written.",
-    ),
-    output_scaler: Path = typer.Option(
-        Path("scaler.joblib"),
-        "--output-scaler",
-        "-m",
-        help="Path where the fitted scaler object will be saved (joblib).",
-    ),
-    strategy: str = typer.Option(
-        "standard",
-        "--strategy",
-        "-s",
-        help="Scaling strategy: standard, minmax, maxabs, robust.",
-    ),
-    columns: Optional[List[str]] = typer.Option(
-        None,
-        "--column",
-        "-c",
-        help="Optional list of columns to scale. "
-             "If omitted, all numeric columns are scaled.",
-    ),
-) -> None:
-    """
-    Scale a feature table and save both the scaled data and the scaler.
-
-    Uses Roxy's ColumnScaler under the hood.
-    """
-    _ensure_joblib()
-    import joblib  # type: ignore
-
-    df = _load_table(input_path)
-
-    scaler = ColumnScaler(strategy=strategy, columns=columns)
-    df_scaled = scaler.fit_transform(df)
-
-    _save_table(df_scaled, output_data)
-    typer.echo(f"Saved scaled features to: {output_data}")
-
-    output_scaler.parent.mkdir(parents=True, exist_ok=True)
-    joblib.dump(scaler, output_scaler)
-    typer.echo(f"Saved scaler to: {output_scaler}")
-
-
-# ---------------------------------------------------------------------------
-# Command: select-features
-# ---------------------------------------------------------------------------
-
-
-@app.command("select-features")
-def select_features(
-    input_path: Path = typer.Argument(
-        ...,
-        help="Input feature table (CSV or Parquet).",
-    ),
-    label_column: Optional[str] = typer.Option(
-        None,
-        "--label-column",
-        "-y",
-        help="Name of the label column in the same table. "
-             "If provided, it will be removed from X and used as y.",
-    ),
-    output_data: Path = typer.Option(
-        Path("selected_features.parquet"),
-        "--output-data",
-        "-o",
-        help="Path where the reduced feature table will be written.",
-    ),
-    output_selector: Path = typer.Option(
-        Path("selector.joblib"),
-        "--output-selector",
-        "-m",
-        help="Path where the fitted selector object will be saved (joblib).",
-    ),
-    strategy: str = typer.Option(
-        "variance",
-        "--strategy",
-        "-s",
+        "--aaindex-code",
         help=(
-            "Feature selection strategy. Examples: "
-            "variance, kbest, mutual_info, lasso, model_tree, model_linear, rfe."
+            "Optional AAIndex code to include. Repeat the option to pass "
+            "multiple codes."
         ),
     ),
-    task_type: str = typer.Option(
-        "classification",
-        "--task-type",
-        "-t",
-        help="Task type: classification or regression.",
+    pH: float = typer.Option(
+        7.0,
+        "--ph",
+        help="pH value used for charge-related descriptors.",
     ),
-    columns: Optional[List[str]] = typer.Option(
-        None,
-        "--column",
-        "-c",
-        help="Optional subset of feature columns to consider for selection.",
-    ),
-    k: Optional[int] = typer.Option(
-        None,
-        "--k",
-        help="Optional 'k' parameter for K-best style selectors.",
-    ),
-    threshold: Optional[float] = typer.Option(
-        None,
-        "--threshold",
-        help="Optional threshold parameter for model-based selectors.",
+    include_histidine_in_charge: bool = typer.Option(
+        False,
+        "--include-histidine-in-charge",
+        help="Whether to include histidine in the net-charge estimate.",
     ),
 ) -> None:
-    """
-    Run feature selection and save the reduced feature table + selector.
-
-    This command wraps Roxy's FeatureSelector.
-    """
-    _ensure_joblib()
-    import joblib  # type: ignore
-
+    """Compute sequence descriptors from a tabular input file."""
     df = _load_table(input_path)
+    if sequence_column not in df.columns:
+        raise typer.BadParameter(
+            f"Sequence column {sequence_column!r} was not found in {input_path}."
+        )
 
-    y = None
-    if label_column is not None:
-        if label_column not in df.columns:
-            raise KeyError(
-                f"Label column {label_column!r} not found in input table."
-            )
-        y = df[label_column]
-        X = df.drop(columns=[label_column])
-    else:
-        X = df
-
-    selector_kwargs = {}
-    if k is not None:
-        selector_kwargs["k"] = k
-    if threshold is not None:
-        selector_kwargs["threshold"] = threshold
-
-    selector = FeatureSelector(
-        strategy=strategy,
-        task_type=task_type,
-        columns=columns,
-        selector_kwargs=selector_kwargs,
+    codes = _normalize_aaindex_codes(aaindex_codes)
+    descriptors = describe_sequences_api(
+        df,
+        sequence_column=sequence_column,
+        aaindex_codes=codes,
+        pH=pH,
+        include_histidine_in_charge=include_histidine_in_charge,
     )
-    X_selected = selector.fit_transform(X, y)
 
-    _save_table(X_selected, output_data)
-    typer.echo(f"Saved selected features to: {output_data}")
-
-    output_selector.parent.mkdir(parents=True, exist_ok=True)
-    joblib.dump(selector, output_selector)
-    typer.echo(f"Saved selector to: {output_selector}")
+    _save_table(descriptors, output_path)
+    typer.echo(f"Saved sequence descriptors to: {output_path}")
 
 
-# ---------------------------------------------------------------------------
-# Command: full-pipeline
-# ---------------------------------------------------------------------------
+@app.command("describe-fasta")
+def describe_fasta(
+    fasta_path: Path = typer.Argument(
+        ...,
+        help="Input FASTA file with protein sequences.",
+    ),
+    output_path: Path = typer.Option(
+        Path("roxy_fasta_descriptors.parquet"),
+        "--output-path",
+        "-o",
+        help="Path where the descriptor table will be written.",
+    ),
+    aaindex_codes: Optional[List[str]] = typer.Option(
+        None,
+        "--aaindex-code",
+        help=(
+            "Optional AAIndex code to include. Repeat the option to pass "
+            "multiple codes."
+        ),
+    ),
+    pH: float = typer.Option(
+        7.0,
+        "--ph",
+        help="pH value used for charge-related descriptors.",
+    ),
+    include_histidine_in_charge: bool = typer.Option(
+        False,
+        "--include-histidine-in-charge",
+        help="Whether to include histidine in the net-charge estimate.",
+    ),
+) -> None:
+    """Compute sequence descriptors directly from a FASTA file."""
+    if not fasta_path.exists():
+        raise typer.BadParameter(f"FASTA file not found: {fasta_path}")
+
+    codes = _normalize_aaindex_codes(aaindex_codes)
+    descriptors = describe_fasta_api(
+        str(fasta_path),
+        pH=pH,
+        include_histidine_in_charge=include_histidine_in_charge,
+        aaindex_codes=codes,
+    )
+    _save_table(descriptors, output_path)
+    typer.echo(f"Saved FASTA sequence descriptors to: {output_path}")
 
 
-@app.command("full-pipeline")
-def full_pipeline(
+@app.command("list-descriptors")
+def list_descriptors() -> None:
+    """List active descriptor entrypoints exposed by the CLI."""
+    typer.echo("Active sequence descriptor entrypoints:")
+    for name in list_available_descriptors_api():
+        typer.echo(f"  - {name}")
+
+
+@app.command("validate-sequences")
+def validate_sequences(
     input_path: Path = typer.Argument(
         ...,
-        help="Input table with sequences and optional labels.",
-    ),
-    output_dir: Path = typer.Option(
-        Path("roxy_pipeline_outputs"),
-        "--output-dir",
-        "-o",
-        help="Directory where all pipeline artefacts will be stored.",
+        help="Input table with at least one protein sequence column.",
     ),
     sequence_column: str = typer.Option(
         "sequence",
         "--sequence-column",
         "-s",
-        help="Column with amino-acid sequences.",
+        help="Name of the column containing amino-acid sequences.",
     ),
-    label_column: Optional[str] = typer.Option(
-        None,
-        "--label-column",
-        "-y",
-        help="Optional label column.",
-    ),
-    use_aaindex: bool = typer.Option(
-        True,
-        "--aaindex/--no-aaindex",
-        help="Include AAIndex descriptors if available.",
-    ),
-    scaling_strategy: str = typer.Option(
-        "standard",
-        "--scaling-strategy",
-        help="Scaling strategy for numeric features (standard, minmax, maxabs, robust).",
-    ),
-    selection_strategy: Optional[str] = typer.Option(
-        None,
-        "--selection-strategy",
-        help=(
-            "Optional feature selection strategy (variance, kbest, mutual_info, "
-            "lasso, model_tree, model_linear, rfe). If None, no selection is applied."
-        ),
-    ),
-    project_method: Optional[str] = typer.Option(
-        "pca",
-        "--project-method",
-        help="Projection method: pca, umap, tsne. Use 'none' to skip projection.",
-    ),
-    n_components: int = typer.Option(
-        2,
-        "--n-components",
-        help="Number of components for projection.",
-    ),
-    random_state: int = typer.Option(
-        42,
-        "--random-state",
-        help="Random seed for projection.",
+    max_examples: int = typer.Option(
+        10,
+        "--max-examples",
+        help="Maximum number of invalid-sequence examples to print.",
     ),
 ) -> None:
-    """
-    Run a full in-memory pipeline: descriptors → scaling → (selection) → (projection) → report.
-
-    Artefacts written:
-
-    - raw feature matrix (descriptors only),
-    - scaled feature matrix,
-    - optionally selected feature matrix,
-    - embedding (if projection is enabled),
-    - Markdown + HTML reports.
-    """
+    """Validate whether table rows contain canonical protein sequences."""
     df = _load_table(input_path)
+    if sequence_column not in df.columns:
+        raise typer.BadParameter(
+            f"Sequence column {sequence_column!r} was not found in {input_path}."
+        )
 
-    # 1) Describe sequences and build base features + report
-    if project_method == "none":
-        project_method = None
-
-    result = RoxyHelpers.describe_sequences(
+    report = validate_sequences_api(
         df,
-        seq_col=sequence_column,
-        y=label_column,
-        dataset_name=input_path.stem,
-        use_aaindex=use_aaindex,
-        feature_key_prefix="",
-        task_type=None,
-        project_method=None,  # we reproject after scaling/selection
+        sequence_column=sequence_column,
     )
+    invalid_report = report.loc[~report["is_valid"]]
 
-    X = result.X
-    y = result.y
+    if invalid_report.empty:
+        typer.echo("All sequences passed canonical protein-sequence validation.")
+        return
 
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    # Save raw features
-    raw_path = output_dir / "features_raw.parquet"
-    _save_table(X, raw_path)
-    typer.echo(f"Saved raw features to: {raw_path}")
-
-    # 2) Scaling
-    scaler = ColumnScaler(strategy=scaling_strategy, columns=None)
-    X_scaled = scaler.fit_transform(X)
-    scaled_path = output_dir / "features_scaled.parquet"
-    _save_table(X_scaled, scaled_path)
-    typer.echo(f"Saved scaled features to: {scaled_path}")
-
-    # 3) Optional selection
-    X_final = X_scaled
-    selector = None
-    if selection_strategy is not None:
-        selector = FeatureSelector(
-            strategy=selection_strategy,
-            task_type="classification" if y is not None else "regression",
-            columns=None,
-            selector_kwargs={},
-        )
-        X_final = selector.fit_transform(X_scaled, y)
-        selected_path = output_dir / "features_selected.parquet"
-        _save_table(X_final, selected_path)
-        typer.echo(f"Saved selected features to: {selected_path}")
-
-    # 4) Projection
-    embedding = None
-    if project_method is not None:
-        embedding = project(
-            X_final,
-            method=project_method,
-            n_components=n_components,
-            random_state=random_state,
-        )
-        emb_df = pd.DataFrame(
-            embedding,
-            index=X_final.index,
-            columns=[f"comp_{i+1}" for i in range(embedding.shape[1])],
-        )
-        emb_path = output_dir / "embedding.parquet"
-        _save_table(emb_df, emb_path)
-        typer.echo(f"Saved embedding to: {emb_path}")
-
-    # 5) Reports (reuse report from describe_sequences for now)
-    md_path = output_dir / "report.md"
-    html_path = output_dir / "report.html"
-    md_path.write_text(result.markdown, encoding="utf-8")
-    html_path.write_text(result.html, encoding="utf-8")
-    typer.echo(f"Saved Markdown report to: {md_path}")
-    typer.echo(f"Saved HTML report to: {html_path}")
-
-
-# ---------------------------------------------------------------------------
-# Command: info
-# ---------------------------------------------------------------------------
-
-
-@app.command("info")
-def info(
-    what: str = typer.Option(
-        "all",
-        "--what",
-        "-w",
-        help="Which information to show: descriptors, projection, scaling, selection, all.",
+    typer.echo(
+        f"Found {len(invalid_report)} sequence(s) that failed sequence validation."
     )
-) -> None:
-    """
-    Show information about available descriptor engines and methods.
-    """
-    what = what.lower()
+    for idx, row in invalid_report.head(max_examples).iterrows():
+        invalid = row["invalid_residues"]
+        typer.echo(
+            f"  - row={idx!r} invalid={','.join(invalid) or '<empty>'} "
+            f"sequence={row['cleaned']!r}"
+        )
 
-    if what in ("descriptors", "all"):
-        typer.echo("Available descriptor engines (DESCRIPTOR_REGISTRY):")
-        for name in sorted(DESCRIPTOR_REGISTRY.keys()):
-            typer.echo(f"  - {name}")
-        typer.echo("")
-
-    if what in ("projection", "all"):
-        typer.echo("Supported projection methods (CLI-level):")
-        typer.echo("  - pca")
-        typer.echo("  - umap")
-        typer.echo("  - tsne")
-        typer.echo("")
-
-    if what in ("scaling", "all"):
-        typer.echo("Supported scaling strategies:")
-        typer.echo("  - standard")
-        typer.echo("  - minmax")
-        typer.echo("  - maxabs")
-        typer.echo("  - robust")
-        typer.echo("")
-
-    if what in ("selection", "all"):
-        typer.echo("Some supported feature selection strategies:")
-        typer.echo("  - variance")
-        typer.echo("  - kbest")
-        typer.echo("  - mutual_info")
-        typer.echo("  - lasso")
-        typer.echo("  - model_tree")
-        typer.echo("  - model_linear")
-        typer.echo("  - rfe")
-        typer.echo("")
+    raise typer.Exit(code=1)
 
 
 def main() -> None:

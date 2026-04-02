@@ -11,9 +11,7 @@ from __future__ import annotations
 from typing import Dict, List
 
 
-#: Default descriptor engines to run per modality in simple pipelines.
+#: Default sequence descriptor families for simple sequence workflows.
 DEFAULT_DESCRIPTOR_ENGINES: Dict[str, List[str]] = {
-    "sequence": ["seq_global"],
-    "structure": ["struct_basic"],
-    "compound": ["mol_basic"],
+    "sequence": ["aac", "global_basic"],
 }

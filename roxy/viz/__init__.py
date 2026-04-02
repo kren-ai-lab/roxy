@@ -1,39 +1,51 @@
-"""Roxy viz package.
+"""Lightweight static visualization helpers for descriptor inspection."""
 
-This subpackage provides visualisation utilities for exploratory data
-analysis and inspection of feature matrices and low-dimensional
-embeddings.
+from __future__ import annotations
 
-It is organised into two layers:
+from typing import TYPE_CHECKING, Any
 
-- :mod:`roxy.viz.plots`  : Matplotlib-based, static plotting helpers.
-- :mod:`roxy.viz.dashboard` : Optional Plotly-based interactive figures
-  and a minimal :class:`RoxyDashboard` container that other frontends
-  (Dash, Streamlit, etc.) can embed.
-"""
+if TYPE_CHECKING:  # pragma: no cover - import-time typing only
+    from .plots import (
+        plot_correlation_heatmap,
+        plot_embedding,
+        plot_feature_boxplot,
+        plot_feature_distribution,
+        plot_scatter_features,
+    )
 
-from .plots import (
-    plot_feature_distribution,
-    plot_feature_boxplot,
-    plot_scatter_features,
-    plot_embedding,
-    plot_correlation_heatmap,
-)
-from .dashboard import (
-    RoxyDashboard,
-    interactive_feature_distribution,
-    interactive_embedding,
-)
+
+def __getattr__(name: str) -> Any:
+    """Resolve plotting helpers lazily."""
+    if name in {
+        "plot_feature_distribution",
+        "plot_feature_boxplot",
+        "plot_scatter_features",
+        "plot_embedding",
+        "plot_correlation_heatmap",
+    }:
+        from .plots import (
+            plot_correlation_heatmap,
+            plot_embedding,
+            plot_feature_boxplot,
+            plot_feature_distribution,
+            plot_scatter_features,
+        )
+
+        return {
+            "plot_feature_distribution": plot_feature_distribution,
+            "plot_feature_boxplot": plot_feature_boxplot,
+            "plot_scatter_features": plot_scatter_features,
+            "plot_embedding": plot_embedding,
+            "plot_correlation_heatmap": plot_correlation_heatmap,
+        }[name]
+
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = [
-    # static plots
     "plot_feature_distribution",
     "plot_feature_boxplot",
     "plot_scatter_features",
     "plot_embedding",
     "plot_correlation_heatmap",
-    # interactive / dashboard
-    "RoxyDashboard",
-    "interactive_feature_distribution",
-    "interactive_embedding",
 ]

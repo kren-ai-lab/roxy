@@ -1,50 +1,57 @@
 """Roxy core package.
 
-This subpackage contains low-level building blocks that are shared across
-the rest of the library, including:
+This subpackage contains low-level building blocks shared across the
+sequence-focused Roxy package:
 
-- :mod:`roxy.core.dataset` – the :class:`RoxyDataset` container.
-- :mod:`roxy.core.aaindex` – AAIndex cache and lookup utilities.
-- :mod:`roxy.core.constants` – amino-acid scales and related constants.
-- :mod:`roxy.core.report` – lightweight report dataclasses.
-- :mod:`roxy.core.exceptions` – custom exception hierarchy.
-- :mod:`roxy.core.logging_utils` – logging helpers.
+- :mod:`roxy.core.aaindex` - AAIndex cache and lookup utilities.
+- :mod:`roxy.core.constants` - amino-acid scales and related constants.
+- :mod:`roxy.core.exceptions` - custom exception hierarchy.
+- :mod:`roxy.core.logging_utils` - logging helpers.
 """
 
 from __future__ import annotations
 
-from roxy.core.aaindex import ensure_aaindex_available
 from roxy.core.exceptions import (
     RoxyError,
-    DatasetError,
     DescriptorError,
     AAIndexError,
-    ProjectionError,
-    EDAError,
+    EmptySequenceError,
+    InvalidSequenceError,
+    SequenceCollectionError,
+    SequenceError,
+    SequenceInputError,
 )
 from roxy.core.logging_utils import get_logger, setup_logger
 
 logger = get_logger(__name__)
 
-# Try to warm up AAIndex, but do not fail hard at import time.
-# This may trigger a download on first import if the cache is empty.
-try:  # pragma: no cover (import-time side effect)
-    ensure_aaindex_available()
-except AAIndexError as exc:  # pragma: no cover
-    logger.warning(
-        "AAIndex could not be initialised at import time: %s. "
-        "AAIndex-based sequence descriptors may be unavailable until "
-        "the cache is populated.",
-        exc,
-    )
+
+def ensure_aaindex_available() -> None:
+    """Ensure that the AAIndex backend is available.
+
+    The import is performed lazily so importing `roxy.core` does not
+    force AAIndex backend dependencies unless AAIndex functionality is
+    explicitly requested.
+    """
+    from roxy.core.aaindex import ensure_aaindex_available as _ensure
+
+    _ensure()
+
+# NOTE:
+# - Avoid AAIndex cache initialization at import time to keep package
+#   imports side-effect free.
+# - Call `ensure_aaindex_available()` explicitly from sequence-facing APIs
+#   when AAIndex-backed descriptors are requested.
 
 __all__ = [
     "RoxyError",
-    "DatasetError",
     "DescriptorError",
     "AAIndexError",
-    "ProjectionError",
-    "EDAError",
+    "SequenceError",
+    "SequenceInputError",
+    "SequenceCollectionError",
+    "InvalidSequenceError",
+    "EmptySequenceError",
     "get_logger",
     "setup_logger",
     "ensure_aaindex_available",

@@ -8,8 +8,10 @@ stateless or only store configuration (e.g. pH, list of AAIndex codes).
 """
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
-import pandas as pd
+if TYPE_CHECKING:  # pragma: no cover - import-time typing only
+    import pandas as pd
 
 
 class BaseDescriptorEngine(ABC):
@@ -25,7 +27,7 @@ class BaseDescriptorEngine(ABC):
     name: str = "base_descriptor_engine"
 
     @abstractmethod
-    def compute(self, samples: pd.DataFrame) -> pd.DataFrame:
+    def compute(self, samples: "pd.DataFrame") -> "pd.DataFrame":
         """
         Compute descriptors for the given samples table.
 
