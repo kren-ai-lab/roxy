@@ -1,7 +1,7 @@
 [project]
 name = "roxy"
 version = "0.1.0"
-description = "Roxy: exploratory analysis and descriptors for molecular machine learning"
+description = "Roxy: modular extraction of protein sequence descriptors"
 readme = "README.md"
 requires-python = ">=3.9"
 license = "GPL-3.0-only"
@@ -11,12 +11,12 @@ authors = [
 ]
 
 keywords = [
-  "machine-learning",
   "bioinformatics",
-  "proteins",
-  "chemoinformatics",
-  "EDA",
-  "feature-engineering",
+  "protein-sequences",
+  "protein-descriptors",
+  "sequence-analysis",
+  "descriptor-extraction",
+  "aaindex",
 ]
 
 classifiers = [
@@ -27,26 +27,28 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Topic :: Scientific/Engineering :: Bio-Informatics",
-  "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
 dependencies = [
-  "numpy>=1.23",
+  # Definitely needed by the active sequence-focused core and CLI.
   "pandas>=1.5",
-  "scikit-learn>=1.2",
-  "matplotlib>=3.6",
   "requests>=2.28",
   "typer>=0.9",
+
+  # Retained conservatively for near-term review.
+  "numpy>=1.23",
+  "scikit-learn>=1.2",
+  "matplotlib>=3.6",
   "joblib>=1.2",
 ]
 
 [project.optional-dependencies]
-# For interactive plots and dashboard helpers
+# Optional visualization extras.
 viz = [
   "plotly>=5.0",
 ]
 
-# For UMAP-based projection
+# Optional dimensionality-reduction extras.
 umap = [
   "umap-learn>=0.5",
 ]

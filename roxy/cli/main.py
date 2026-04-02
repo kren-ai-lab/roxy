@@ -7,9 +7,8 @@ commands.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterable, List, Optional
+from typing import TYPE_CHECKING, Iterable, List, Optional
 
-import pandas as pd
 import typer
 
 from roxy.sequence.api import (
@@ -19,24 +18,40 @@ from roxy.sequence.api import (
     validate_sequences as validate_sequences_api,
 )
 
+if TYPE_CHECKING:  # pragma: no cover - import-time typing only
+    import pandas as pd
+
 app = typer.Typer(
     help=(
-        "Roxy command-line interface for protein sequence descriptor "
-        "extraction."
+        "Roxy command-line interface for modular protein sequence "
+        "descriptor extraction."
     ),
     no_args_is_help=True,
 )
 
 
 # TODO:
-# - Add descriptor-family selection flags once the public API parameter
-#   surface is finalized.
-# - Add richer FASTA/table validation output only when the CLI contract
-#   is stable.
+# - Add descriptor-family selection flags once the active API contract is
+#   stable.
+# - Add richer preprocessing/validation reporting only when the sequence
+#   CLI surface is stable.
 
 
-def _load_table(path: Path) -> pd.DataFrame:
+def _require_pandas() -> "type[pd]":
+    """Import pandas lazily for table-oriented CLI commands."""
+    try:
+        import pandas as pd
+    except ImportError as exc:  # pragma: no cover - dependency guard
+        raise RuntimeError(
+            "pandas is required for CLI commands that read or write tables."
+        ) from exc
+    return pd
+
+
+def _load_table(path: Path) -> "pd.DataFrame":
     """Load a CSV or Parquet table into a DataFrame."""
+    pd = _require_pandas()
+
     if not path.exists():
         raise FileNotFoundError(f"Input file not found: {path}")
 
@@ -52,7 +67,7 @@ def _load_table(path: Path) -> pd.DataFrame:
     )
 
 
-def _save_table(df: pd.DataFrame, path: Path) -> None:
+def _save_table(df: "pd.DataFrame", path: Path) -> None:
     """Save a DataFrame to CSV or Parquet based on the file extension."""
     path.parent.mkdir(parents=True, exist_ok=True)
     suffix = path.suffix.lower()
@@ -184,8 +199,8 @@ def describe_fasta(
 
 @app.command("list-descriptors")
 def list_descriptors() -> None:
-    """List active descriptor entrypoints exposed by the CLI."""
-    typer.echo("Active sequence descriptor entrypoints:")
+    """List active descriptor blocks exposed by the sequence API."""
+    typer.echo("Active sequence descriptor blocks:")
     for name in list_available_descriptors_api():
         typer.echo(f"  - {name}")
 

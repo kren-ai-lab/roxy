@@ -78,6 +78,13 @@ target/
 # Jupyter Notebook
 .ipynb_checkpoints
 
+# Temporary local notebooks and scratch files
+test/
+tests/
+test.ipynb
+*.tmp.ipynb
+*.local.ipynb
+
 # IPython
 profile_default/
 ipython_config.py
@@ -200,6 +207,17 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# Temporary repository cleanup targets
+# These paths are intentionally ignored while the sequence-focused
+# implementation is being consolidated. They can return later once they
+# are production-ready again.
+comments_revisions/
+examples/
+notebooks_descriptors_implementations/
+research/
+simple_demos/
+roxy.zip
 
 # Marimo
 marimo/_static/
