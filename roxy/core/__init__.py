@@ -9,39 +9,18 @@ sequence-focused Roxy package:
 - :mod:`roxy.core.logging_utils` - logging helpers.
 """
 
-from __future__ import annotations
-
-from roxy.core.exceptions import (
-    RoxyError,
-    DescriptorError,
+from .exceptions import (
     AAIndexError,
+    DescriptorError,
     EmptySequenceError,
     InvalidSequenceError,
+    RoxyError,
     SequenceCollectionError,
     SequenceError,
     SequenceInputError,
 )
-from roxy.core.logging_utils import get_logger, setup_logger
-
-logger = get_logger(__name__)
-
-
-def ensure_aaindex_available() -> None:
-    """Ensure that the AAIndex backend is available.
-
-    The import is performed lazily so importing `roxy.core` does not
-    force AAIndex backend dependencies unless AAIndex functionality is
-    explicitly requested.
-    """
-    from roxy.core.aaindex import ensure_aaindex_available as _ensure
-
-    _ensure()
-
-# NOTE:
-# - Avoid AAIndex cache initialization at import time to keep package
-#   imports side-effect free.
-# - Call `ensure_aaindex_available()` explicitly from sequence-facing APIs
-#   when AAIndex-backed descriptors are requested.
+from .logging_utils import get_logger, setup_logger
+from .runtime import ensure_aaindex_available
 
 __all__ = [
     "RoxyError",
