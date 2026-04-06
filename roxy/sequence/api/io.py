@@ -5,22 +5,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from roxy.core.exceptions import SequenceCollectionError
+from roxy.core.optional_deps import require_pandas
 
 from .types import FastaRecord, SequenceInput
 
 if TYPE_CHECKING:  # pragma: no cover - import-time typing only
     import pandas as pd
-
-
-def require_pandas() -> "type[pd]":
-    """Import pandas lazily for DataFrame-based API operations."""
-    try:
-        import pandas as pd
-    except ImportError as exc:  # pragma: no cover - dependency guard
-        raise ImportError(
-            "pandas is required for the sequence API DataFrame outputs."
-        ) from exc
-    return pd
 
 
 def coerce_sequence_series(
@@ -29,7 +19,7 @@ def coerce_sequence_series(
     sequence_column: str = "sequence",
 ) -> Tuple["pd.Series", Optional["pd.Index"]]:
     """Normalize API input into a sequence Series plus an optional index."""
-    pd = require_pandas()
+    pd = require_pandas(purpose="sequence API DataFrame outputs")
 
     if isinstance(data, str):
         raise SequenceCollectionError(

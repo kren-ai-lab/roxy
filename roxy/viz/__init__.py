@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from roxy.core.optional_deps import is_missing_optional_dependency
+
 _PLOT_EXPORTS = {
     "plot_feature_distribution",
     "plot_feature_boxplot",
@@ -52,8 +54,11 @@ def __getattr__(name: str) -> Any:
     if name in _PLOT_EXPORTS:
         try:
             value = _load_plot_export(name)
-        except ModuleNotFoundError as exc:
-            if exc.name not in _OPTIONAL_PLOTTING_DEPENDENCIES:
+        except ImportError as exc:
+            if not is_missing_optional_dependency(
+                exc,
+                _OPTIONAL_PLOTTING_DEPENDENCIES,
+            ):
                 raise
             value = _make_lazy_plot_proxy(name)
 

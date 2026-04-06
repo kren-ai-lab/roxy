@@ -22,17 +22,20 @@ If your CSV uses a different schema, adapt the loader accordingly.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional
+from typing import TYPE_CHECKING, Dict, Iterable, List, Optional
 
 import os
 import warnings
 
-import pandas as pd
 import requests
 
 from .constants import AA20, AAINDEX_URL, AAINDEX_FILENAME, ROXY_CACHE_SUBDIR
 from .exceptions import AAIndexError
 from .logging_utils import get_logger
+from .optional_deps import require_pandas
+
+if TYPE_CHECKING:  # pragma: no cover - import-time typing only
+    import pandas as pd
 
 logger = get_logger(__name__)
 
@@ -149,6 +152,7 @@ def load_aaindex(*, auto_download: bool = True) -> pd.DataFrame:
         or is structurally invalid.
     """
     global _AAINDEX_TABLE
+    pd = require_pandas(purpose="AAIndex table loading and lookup")
 
     if _AAINDEX_TABLE is not None:
         return _AAINDEX_TABLE

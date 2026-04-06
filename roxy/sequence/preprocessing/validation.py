@@ -18,6 +18,7 @@ from roxy.core.exceptions import (
     SequenceCollectionError,
     SequenceInputError,
 )
+from roxy.core.optional_deps import require_pandas as _require_pandas
 
 from .cleaning import (
     InvalidResiduePolicy,
@@ -53,17 +54,6 @@ class SequenceValidationResult:
 
 class SequenceValidationError(InvalidSequenceError):
     """Raised when strict validation assertions fail."""
-
-
-def _require_pandas() -> "type[pd]":
-    """Import pandas lazily for table-oriented validation helpers."""
-    try:
-        import pandas as pd
-    except ImportError as exc:  # pragma: no cover - dependency guard
-        raise ImportError(
-            "pandas is required for DataFrame-based sequence validation."
-        ) from exc
-    return pd
 
 
 def _normalize_for_validation(
@@ -314,7 +304,7 @@ def _coerce_sequence_series(
     sequence_column: str = "sequence",
 ) -> tuple["pd.Series", Optional["pd.Index"]]:
     """Normalize collection input into a pandas Series plus optional index."""
-    pd = _require_pandas()
+    pd = _require_pandas(purpose="DataFrame-based sequence validation")
 
     if isinstance(data, str):
         raise SequenceCollectionError(
@@ -352,7 +342,7 @@ def validate_sequences(
     require_unique: bool = False,
 ) -> "pd.DataFrame":
     """Validate a collection of sequences and return a tabular report."""
-    pd = _require_pandas()
+    pd = _require_pandas(purpose="DataFrame-based sequence validation")
     series, original_index = _coerce_sequence_series(
         data,
         sequence_column=sequence_column,

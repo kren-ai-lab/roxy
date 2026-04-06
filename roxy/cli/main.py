@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Iterable, List, Optional
 
 import typer
 
+from roxy.core.optional_deps import require_pandas as _require_pandas
 from roxy.sequence.api import (
     describe_fasta as describe_fasta_api,
     describe_sequences as describe_sequences_api,
@@ -37,20 +38,9 @@ app = typer.Typer(
 #   CLI surface is stable.
 
 
-def _require_pandas() -> "type[pd]":
-    """Import pandas lazily for table-oriented CLI commands."""
-    try:
-        import pandas as pd
-    except ImportError as exc:  # pragma: no cover - dependency guard
-        raise RuntimeError(
-            "pandas is required for CLI commands that read or write tables."
-        ) from exc
-    return pd
-
-
 def _load_table(path: Path) -> "pd.DataFrame":
     """Load a CSV or Parquet table into a DataFrame."""
-    pd = _require_pandas()
+    pd = _require_pandas(purpose="CLI commands that read or write tables")
 
     if not path.exists():
         raise FileNotFoundError(f"Input file not found: {path}")

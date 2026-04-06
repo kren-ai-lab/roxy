@@ -98,7 +98,7 @@ def describe_sequences(
     pandas.DataFrame
         Sequence descriptor table indexed like the input when possible.
     """
-    pd = require_pandas()
+    pd = require_pandas(purpose="sequence API DataFrame outputs")
     sequence_series, original_index = coerce_sequence_series(
         data,
         sequence_column=sequence_column,
@@ -205,7 +205,7 @@ def describe_fasta(
     remove_terminal_stop: bool = True,
 ) -> "pd.DataFrame":
     """Describe sequences from a FASTA file via the sequence API."""
-    pd = require_pandas()
+    pd = require_pandas(purpose="sequence API DataFrame outputs")
     records = read_fasta_records(fasta_path)
     sequence_values = [sequence for _, sequence in records]
     cleaning_config = build_cleaning_config(

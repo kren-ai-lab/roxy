@@ -18,13 +18,16 @@ from __future__ import annotations
 
 from typing import Iterable, Optional, Sequence, Union
 
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-
 from roxy.core.logging_utils import get_logger
+from roxy.core.optional_deps import (
+    require_matplotlib,
+    require_numpy,
+    require_pandas,
+)
+
+np = require_numpy(purpose="Roxy visualization helpers")
+pd = require_pandas(purpose="Roxy visualization helpers")
+plt, Axes, Figure = require_matplotlib(purpose="Roxy visualization helpers")
 
 logger = get_logger(__name__)
 
