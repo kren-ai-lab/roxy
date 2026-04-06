@@ -72,8 +72,20 @@ META_ORDER: List[str] = ["id", "id.pasteur", "aid", "subset", "ighv_status"]
 # Amino acid set and scales
 # ---------------------------------------------------------------------------
 
+#: Canonical ordered tuple of the 20 standard amino acids.
+STANDARD_AMINO_ACID_ORDER: tuple[str, ...] = tuple("ACDEFGHIKLMNPQRSTVWY")
+
+#: Stable canonical amino-acid order shared by descriptor families.
+CANONICAL_AMINO_ACID_ORDER: tuple[str, ...] = STANDARD_AMINO_ACID_ORDER
+
 #: Canonical set of 20 standard amino acids (one-letter codes).
-AA20: Set[str] = set("ACDEFGHIKLMNPQRSTVWY")
+AA20: Set[str] = set(STANDARD_AMINO_ACID_ORDER)
+
+#: Common ambiguous or non-canonical amino-acid symbols seen in protein data.
+AMBIGUOUS_AMINO_ACIDS: Set[str] = set("BJOUXZ")
+
+#: Conventional stop marker used in protein sequence strings.
+SEQUENCE_STOP_MARKER: str = "*"
 
 #: Kyte–Doolittle hydrophobicity scale.
 KD: Dict[str, float] = {
@@ -121,6 +133,54 @@ EISENBERG: Dict[str, float] = {
     "W": 0.81,
     "Y": 0.26,
     "V": 1.08,
+}
+
+#: Grantham polarity scale.
+POLARITY: Dict[str, float] = {
+    "A": 8.1,
+    "R": 10.5,
+    "N": 11.6,
+    "D": 13.0,
+    "C": 5.5,
+    "Q": 10.5,
+    "E": 12.3,
+    "G": 9.0,
+    "H": 10.4,
+    "I": 5.2,
+    "L": 4.9,
+    "K": 11.3,
+    "M": 5.7,
+    "F": 5.2,
+    "P": 8.0,
+    "S": 9.2,
+    "T": 8.6,
+    "W": 5.4,
+    "Y": 6.2,
+    "V": 5.9,
+}
+
+#: Approximate residue masses in Daltons for peptide residues.
+RESIDUE_MASS: Dict[str, float] = {
+    "A": 71.0788,
+    "R": 156.1875,
+    "N": 114.1038,
+    "D": 115.0886,
+    "C": 103.1388,
+    "Q": 128.1307,
+    "E": 129.1155,
+    "G": 57.0519,
+    "H": 137.1411,
+    "I": 113.1594,
+    "L": 113.1594,
+    "K": 128.1741,
+    "M": 131.1926,
+    "F": 147.1766,
+    "P": 97.1167,
+    "S": 87.0782,
+    "T": 101.1051,
+    "W": 186.2132,
+    "Y": 163.1760,
+    "V": 99.1326,
 }
 
 #: Boman index contributions per residue (binding potential).
@@ -244,6 +304,9 @@ PKA_SIDE: Dict[str, float] = {
 #: Aromatic residues.
 AROMATIC: Set[str] = set("FYW")
 
+#: Aliphatic residues.
+ALIPHATIC: Set[str] = set("AILV")
+
 #: Positively charged residues at physiological pH.
 POSITIVE: Set[str] = set("KRH")
 
@@ -261,6 +324,60 @@ POLAR: Set[str] = POLAR_UNCHARGED | POSITIVE | NEGATIVE
 
 #: Nonpolar residues (alias for hydrophobic set, kept for backwards compatibility).
 NONPOLAR: Set[str] = set(HYDROPHOBIC)
+
+#: Charged residues at physiological pH.
+CHARGED: Set[str] = set(POSITIVE | NEGATIVE)
+
+#: Very small side-chain residues.
+TINY: Set[str] = set("ACGST")
+
+#: Small residues with compact side chains.
+SMALL: Set[str] = set("ACDGNPSTV")
+
+#: Branched aliphatic residues.
+BRANCHED: Set[str] = set("ILV")
+
+#: Sulfur-containing residues.
+SULFUR: Set[str] = set("CM")
+
+#: Hydroxyl-bearing residues.
+HYDROXYL: Set[str] = set("STY")
+
+#: Amide side-chain residues.
+AMIDE: Set[str] = set("NQ")
+
+#: Broad hydrophilic residue set distinct from the wider polar group.
+HYDROPHILIC: Set[str] = set("RNDQEHKST")
+
+#: Disorder-promoting residues based on positive TOP-IDP values.
+DISORDER_PROMOTING: Set[str] = set("ADEGKPQRST")
+
+#: Order-promoting residues based on negative TOP-IDP values.
+ORDER_PROMOTING: Set[str] = set("CFHILMVWY")
+
+#: Default grouped-composition families in stable output order.
+DEFAULT_GROUPED_RESIDUE_SETS: Dict[str, frozenset[str]] = {
+    "positive": frozenset(POSITIVE),
+    "negative": frozenset(NEGATIVE),
+    "charged": frozenset(CHARGED),
+    "polar": frozenset(POLAR),
+    "nonpolar": frozenset(NONPOLAR),
+    "aromatic": frozenset(AROMATIC),
+    "aliphatic": frozenset(ALIPHATIC),
+    "tiny": frozenset(TINY),
+    "small": frozenset(SMALL),
+    "branched": frozenset(BRANCHED),
+    "sulfur": frozenset(SULFUR),
+    "hydroxyl": frozenset(HYDROXYL),
+    "amide": frozenset(AMIDE),
+    "hydrophobic": frozenset(HYDROPHOBIC),
+    "hydrophilic": frozenset(HYDROPHILIC),
+    "disorder_promoting": frozenset(DISORDER_PROMOTING),
+    "order_promoting": frozenset(ORDER_PROMOTING),
+}
+
+#: Stable default order for grouped-composition residue families.
+DEFAULT_GROUPED_RESIDUE_ORDER: tuple[str, ...] = tuple(DEFAULT_GROUPED_RESIDUE_SETS)
 
 
 # ---------------------------------------------------------------------------

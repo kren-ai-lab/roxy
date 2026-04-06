@@ -85,6 +85,14 @@ test.ipynb
 *.tmp.ipynb
 *.local.ipynb
 
+# Common temporary files
+*.tmp
+*.bak
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
 # IPython
 profile_default/
 ipython_config.py
