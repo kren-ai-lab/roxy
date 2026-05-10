@@ -37,6 +37,7 @@ classifiers = [
 dependencies = [
     "numpy>=2.4,<3.0",
     "polars>=1.40.1",
+    "pyyaml>=6.0.3",
     "rich>=15.0,<16.0",
     "scikit-learn>=1.8,<2.0",
     "scipy>=1.17,<2.0",
@@ -89,6 +90,13 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+"roxy/cli/*" = [
+    "B008",    # typer.Option() in function defaults is the intended pattern
+    "FBT001",  # bool flags are standard in CLI functions
+    "FBT002",
+    "FBT003",
+    "TC003",   # Path used at runtime by typer for type coercion
+]
 "tests/*" = [
     "ANN",
     "D",
