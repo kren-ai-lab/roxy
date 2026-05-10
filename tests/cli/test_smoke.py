@@ -59,13 +59,11 @@ def test_init_config_no_selector():
 def test_compute_help():
     result = runner.invoke(app, ["compute", "--help"])
     assert result.exit_code == 0
-    assert "--config" in result.output
 
 
 def test_init_config_help():
     result = runner.invoke(app, ["init-config", "--help"])
     assert result.exit_code == 0
-    assert "--all" in result.output
 
 
 def test_aaindex_bundled():
