@@ -2,8 +2,7 @@
 
 Classical protein sequence descriptors for machine learning.
 
-Roxy sits between **PRISM** (data curation) and **Sylphy** (sequence encoders and embeddings). It focuses exclusively on
-computing classical numerical descriptors from amino-acid sequences.
+Focuses on computing classical numerical descriptors from amino-acid sequences.
 
 ## Install
 

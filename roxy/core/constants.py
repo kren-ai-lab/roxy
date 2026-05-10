@@ -238,26 +238,44 @@ PKA_SIDE: dict[str, float] = {
     "Y": 10.07,
 }
 
-#: Aromatic residues.
-AROMATIC: set[str] = set("FYW")
+#: Canonical amino-acid group assignments (17 groups) used by composition descriptors.
+AA_GROUPS: dict[str, set[str]] = {
+    "positive":           set("KRH"),
+    "negative":           set("DE"),
+    "charged":            set("KRHDE"),
+    "polar":              set("STNQCYWHKRDE"),
+    "nonpolar":           set("AVLIMFGP"),
+    "aromatic":           set("FWYH"),
+    "aliphatic":          set("AVLIM"),
+    "tiny":               set("AGCS"),
+    "small":              set("AGCSTVPDN"),
+    "branched":           set("VILT"),
+    "sulfur":             set("CM"),
+    "hydroxyl":           set("STY"),
+    "amide":              set("NQ"),
+    "hydrophobic":        set("AVLIMFWCY"),
+    "hydrophilic":        set("RNDQEHKST"),
+    "disorder_promoting": set("ARGQSEPK"),
+    "order_promoting":    set("CWYFILNV"),
+}
 
-#: Positively charged residues at physiological pH.
-POSITIVE: set[str] = set("KRH")
 
-#: Negatively charged residues at physiological pH.
-NEGATIVE: set[str] = set("DE")
-
-#: Polar uncharged residues (typical classification).
-POLAR_UNCHARGED: set[str] = set("STNQYC")
-
-#: Hydrophobic residues (broad, commonly used set).
-HYDROPHOBIC: set[str] = set("AVLIMFWYPGC")
-
-#: Polar residues in a broad sense (uncharged + charged).
-POLAR: set[str] = POLAR_UNCHARGED | POSITIVE | NEGATIVE
-
-#: Nonpolar residues (alias for hydrophobic set, kept for backwards compatibility).
-NONPOLAR: set[str] = set(HYDROPHOBIC)
+#: Reduced-alphabet mapping schemes for k-mer descriptors.
+#: H=hydrophobic, P=polar, C=positive-charged, N=negative-charged, S=special.
+REDUCED_ALPHABETS: dict[str, dict[str, str]] = {
+    "rd5": {
+        **dict.fromkeys("AVLIMFWY", "H"),
+        **dict.fromkeys("STNQ", "P"),
+        **dict.fromkeys("KRH", "C"),
+        **dict.fromkeys("DE", "N"),
+        **dict.fromkeys("CGP", "S"),
+    },
+    "rd3": {
+        **dict.fromkeys("AVLIMFWY", "H"),
+        **dict.fromkeys("STNQKRHDE", "P"),
+        **dict.fromkeys("CGP", "S"),
+    },
+}
 
 
 # ---------------------------------------------------------------------------
