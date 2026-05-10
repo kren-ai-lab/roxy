@@ -289,4 +289,3 @@ ACCEPTORS: dict[str, int] = {
     "T": 1,
     "Y": 1,
 }
-

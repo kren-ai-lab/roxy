@@ -239,4 +239,3 @@ Si lo queremos ver como backlog/prioridades:
 * [ ] Ampliar set de descriptores (sec/struct/mol) con extras opcionales.
 * [ ] Helpers explícitos de integración con Sylphy y PRISM.
 * [ ] Posible “mini-dashboard” Roxy (streamlit/gradio) que use `viz` + `report` sobre datasets PRISM.
-

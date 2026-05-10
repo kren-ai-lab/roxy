@@ -116,4 +116,3 @@ lint-fix = "ruff check --fix roxy/ tests/"
 test = "pytest -q"
 test-v = "pytest -v"
 test-cov = "pytest --cov=roxy --cov-report=html"
-
