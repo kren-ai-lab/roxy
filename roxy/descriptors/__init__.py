@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+from . import autocorrelation as autocorrelation
 from . import composition as composition
+from . import ctd as ctd
 from . import physicochemical as physicochemical
+from . import pseudo as pseudo
 from .base import BaseDescriptor
 from .registry import DESCRIPTOR_REGISTRY, register
 

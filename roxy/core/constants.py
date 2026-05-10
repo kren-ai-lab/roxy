@@ -120,6 +120,30 @@ EISENBERG: dict[str, float] = {
     "V": 1.08,
 }
 
+#: Hopp-Woods hydrophilicity scale.
+HYDROPHILICITY: dict[str, float] = {
+    "A": -0.50, "C": -1.00, "D": 3.00,  "E": 3.00,  "F": -2.50,
+    "G": 0.00,  "H": -0.50, "I": -1.80, "K": 3.00,  "L": -1.80,
+    "M": -1.30, "N": 0.20,  "P": 0.00,  "Q": 0.20,  "R": 3.00,
+    "S": 0.30,  "T": -0.40, "V": -1.50, "W": -3.40, "Y": -2.30,
+}
+
+#: Side-chain mass scale (Da).
+SIDECHAIN_MASS: dict[str, float] = {
+    "A": 15.0,  "C": 47.0,  "D": 59.0,  "E": 73.0,  "F": 91.0,
+    "G": 1.0,   "H": 82.0,  "I": 57.0,  "K": 72.0,  "L": 57.0,
+    "M": 75.0,  "N": 58.0,  "P": 41.0,  "Q": 72.0,  "R": 100.0,
+    "S": 31.0,  "T": 45.0,  "V": 43.0,  "W": 130.0, "Y": 107.0,
+}
+
+#: Van der Waals volume scale (Ų) from Pontius et al.
+VOLUME: dict[str, float] = {
+    "A": 88.6,  "C": 108.5, "D": 111.1, "E": 138.4, "F": 189.9,
+    "G": 60.1,  "H": 153.2, "I": 166.7, "K": 168.6, "L": 166.7,
+    "M": 162.9, "N": 114.1, "P": 112.7, "Q": 143.8, "R": 173.4,
+    "S": 89.0,  "T": 116.1, "V": 140.0, "W": 227.8, "Y": 193.6,
+}
+
 #: Residue monoisotopic molecular weights (Da), water subtracted per peptide bond.
 AA_MOLECULAR_WEIGHT: dict[str, float] = {
     "A": 89.09, "C": 121.15, "D": 133.10, "E": 147.13, "F": 165.19,
