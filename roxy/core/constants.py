@@ -290,19 +290,3 @@ ACCEPTORS: dict[str, int] = {
     "Y": 1,
 }
 
-# ---------------------------------------------------------------------------
-# AAIndex configuration
-# ---------------------------------------------------------------------------
-
-#: Default subdirectory name under the user cache directory for Roxy.
-ROXY_CACHE_SUBDIR: str = "roxy"
-
-#: Default filename for the cached AAIndex CSV.
-AAINDEX_FILENAME: str = "aaindex.csv"
-
-#: Default URL to download the AAIndex CSV file.
-#: This points directly to the CSV hosted on Google Drive.
-AAINDEX_URL: str = (
-    "https://drive.google.com/uc"
-    "?export=download&id=1On3-2vQh7BBy5VHk87nlB746rWiMrwqp"
-)

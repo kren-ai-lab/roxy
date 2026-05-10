@@ -10,11 +10,8 @@ from .core import (
     RoxyError,
     RoxyIOError,
     SequenceValidationError,
-    get_cache_root,
     read_fasta,
     read_sequences,
-    set_cache_root,
-    temporary_cache_root,
     write_table,
 )
 from .descriptors import DESCRIPTOR_REGISTRY, BaseDescriptor, register
@@ -28,11 +25,8 @@ __all__ = [
     "RoxyIOError",
     "SequenceValidationError",
     "__version__",
-    "get_cache_root",
     "read_fasta",
     "read_sequences",
     "register",
-    "set_cache_root",
-    "temporary_cache_root",
     "write_table",
 ]

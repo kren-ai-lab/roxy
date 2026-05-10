@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from .config import get_cache_root, set_cache_root, temporary_cache_root
 from .exceptions import (
     AAIndexError,
     DescriptorError,
@@ -18,10 +17,7 @@ __all__ = [
     "RoxyError",
     "RoxyIOError",
     "SequenceValidationError",
-    "get_cache_root",
     "read_fasta",
     "read_sequences",
-    "set_cache_root",
-    "temporary_cache_root",
     "write_table",
 ]

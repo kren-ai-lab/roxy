@@ -27,7 +27,9 @@ def test_list_empty_registry():
     assert result.exit_code == 0
 
 
-def test_cache_path():
-    result = runner.invoke(app, ["cache", "path"])
-    assert result.exit_code == 0
-    assert "roxy" in result.output.lower()
+def test_aaindex_bundled():
+    """AAIndex data ships with the package — no download needed."""
+    from roxy.core.aaindex import load_aaindex
+
+    df = load_aaindex()
+    assert df.shape == (566, 20)

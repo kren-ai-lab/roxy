@@ -6,7 +6,6 @@ import typer
 
 from roxy import __version__
 from roxy.cli._shared import HELP_CONTEXT_SETTINGS
-from roxy.cli.cache import app as cache_app
 from roxy.cli.list_descriptors import list_descriptors
 
 app = typer.Typer(
@@ -36,8 +35,6 @@ def main(
 ) -> None:
     """Roxy CLI main callback."""
 
-
-app.add_typer(cache_app, name="cache")
 
 app.command(
     name="list",
