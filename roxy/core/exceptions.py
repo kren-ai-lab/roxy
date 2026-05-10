@@ -1,33 +1,32 @@
+"""Custom exception hierarchy for Roxy."""
+
 from __future__ import annotations
-
-"""Custom exception hierarchy for Roxy.
-
-These exception classes provide a small but expressive hierarchy for
-errors raised within the Roxy library. Using dedicated exception types
-instead of bare ``ValueError`` or ``RuntimeError`` makes it easier for
-callers to catch and handle specific failure modes.
-"""
 
 
 class RoxyError(Exception):
     """Base class for all Roxy-specific errors."""
 
 
-class DatasetError(RoxyError):
-    """Errors related to dataset construction, validation or alignment."""
-
-
 class DescriptorError(RoxyError):
     """Errors raised by descriptor engines or descriptor utilities."""
 
 
+class SequenceValidationError(DescriptorError):
+    """Invalid or unrecognised amino-acid sequence."""
+
+
 class AAIndexError(DescriptorError):
-    """Errors specific to AAIndex handling and descriptor computation."""
+    """Errors specific to AAIndex loading and computation."""
 
 
-class ProjectionError(RoxyError):
-    """Errors raised during dimensionality reduction or projection."""
+class RoxyIOError(RoxyError):
+    """Errors related to reading/writing sequence or feature files."""
 
 
-class EDAError(RoxyError):
-    """Errors related to exploratory data analysis or statistical tests."""
+__all__ = [
+    "AAIndexError",
+    "DescriptorError",
+    "RoxyError",
+    "RoxyIOError",
+    "SequenceValidationError",
+]

@@ -9,9 +9,9 @@ The constants defined here include:
 
 - Column name lists used when working with antibody or chain-level datasets.
 - The canonical set of 20 amino acids (`AA20`).
-- Hydrophobicity scales (Kyte–Doolittle, Eisenberg).
+- Hydrophobicity scales (Kyte-Doolittle, Eisenberg).
 - Boman index contributions.
-- Chou–Fasman helix and sheet propensities.
+- Chou-Fasman helix and sheet propensities.
 - TOP-IDP intrinsic disorder scale.
 - pKa values for termini and side chains.
 - Residue class sets (aromatic, charged, polar, hydrophobic).
@@ -22,18 +22,15 @@ All amino acid codes follow the one-letter, uppercase convention.
 
 from __future__ import annotations
 
-from typing import Dict, List, Set
-
-
 # ---------------------------------------------------------------------------
 # Column name conventions for antibody / chain datasets
 # ---------------------------------------------------------------------------
 
 #: Metadata columns typically associated with antibody-level identifiers.
-META_COLS: List[str] = ["id", "id.pasteur", "aid", "subset", "ighv"]
+META_COLS: list[str] = ["id", "id.pasteur", "aid", "subset", "ighv"]
 
 #: Columns commonly found in chain-level (e.g. heavy/light chain) tables.
-CHAIN_COLS: List[str] = [
+CHAIN_COLS: list[str] = [
     "sequence",
     "junction",
     "junction_aa",
@@ -51,7 +48,7 @@ CHAIN_COLS: List[str] = [
 ]
 
 #: Columns that are often redundant or not needed for downstream analysis.
-COLS_TO_DROP: List[str] = [
+COLS_TO_DROP: list[str] = [
     "light_id",
     "heavy_id",
     "light_id.pasteur",
@@ -65,7 +62,7 @@ COLS_TO_DROP: List[str] = [
 ]
 
 #: Preferred ordering of high-level metadata fields when present.
-META_ORDER: List[str] = ["id", "id.pasteur", "aid", "subset", "ighv_status"]
+META_ORDER: list[str] = ["id", "id.pasteur", "aid", "subset", "ighv_status"]
 
 
 # ---------------------------------------------------------------------------
@@ -73,10 +70,10 @@ META_ORDER: List[str] = ["id", "id.pasteur", "aid", "subset", "ighv_status"]
 # ---------------------------------------------------------------------------
 
 #: Canonical set of 20 standard amino acids (one-letter codes).
-AA20: Set[str] = set("ACDEFGHIKLMNPQRSTVWY")
+AA20: set[str] = set("ACDEFGHIKLMNPQRSTVWY")
 
-#: Kyte–Doolittle hydrophobicity scale.
-KD: Dict[str, float] = {
+#: Kyte-Doolittle hydrophobicity scale.
+KD: dict[str, float] = {
     "I": 4.5,
     "V": 4.2,
     "L": 3.8,
@@ -100,7 +97,7 @@ KD: Dict[str, float] = {
 }
 
 #: Eisenberg hydrophobicity scale.
-EISENBERG: Dict[str, float] = {
+EISENBERG: dict[str, float] = {
     "A": 0.62,
     "R": -2.53,
     "N": -0.78,
@@ -124,7 +121,7 @@ EISENBERG: Dict[str, float] = {
 }
 
 #: Boman index contributions per residue (binding potential).
-BOMAN: Dict[str, float] = {
+BOMAN: dict[str, float] = {
     "A": 0.17,
     "C": 0.41,
     "D": -1.23,
@@ -147,8 +144,8 @@ BOMAN: Dict[str, float] = {
     "Y": 0.94,
 }
 
-#: Chou–Fasman helix propensities.
-CF_HELIX: Dict[str, float] = {
+#: Chou-Fasman helix propensities.
+CF_HELIX: dict[str, float] = {
     "A": 1.45,
     "C": 0.77,
     "D": 1.01,
@@ -171,8 +168,8 @@ CF_HELIX: Dict[str, float] = {
     "Y": 0.61,
 }
 
-#: Chou–Fasman sheet propensities.
-CF_SHEET: Dict[str, float] = {
+#: Chou-Fasman sheet propensities.
+CF_SHEET: dict[str, float] = {
     "A": 0.97,
     "C": 1.30,
     "D": 0.54,
@@ -196,7 +193,7 @@ CF_SHEET: Dict[str, float] = {
 }
 
 #: TOP-IDP intrinsic disorder scale.
-TOP_IDP: Dict[str, float] = {
+TOP_IDP: dict[str, float] = {
     "A": 0.06,
     "C": -0.22,
     "D": 0.19,
@@ -231,7 +228,7 @@ PKA_N_TERM: float = 9.69
 PKA_C_TERM: float = 2.34
 
 #: Side-chain pKa values for ionisable residues.
-PKA_SIDE: Dict[str, float] = {
+PKA_SIDE: dict[str, float] = {
     "C": 8.33,
     "D": 3.86,
     "E": 4.25,
@@ -242,25 +239,25 @@ PKA_SIDE: Dict[str, float] = {
 }
 
 #: Aromatic residues.
-AROMATIC: Set[str] = set("FYW")
+AROMATIC: set[str] = set("FYW")
 
 #: Positively charged residues at physiological pH.
-POSITIVE: Set[str] = set("KRH")
+POSITIVE: set[str] = set("KRH")
 
 #: Negatively charged residues at physiological pH.
-NEGATIVE: Set[str] = set("DE")
+NEGATIVE: set[str] = set("DE")
 
 #: Polar uncharged residues (typical classification).
-POLAR_UNCHARGED: Set[str] = set("STNQYC")
+POLAR_UNCHARGED: set[str] = set("STNQYC")
 
 #: Hydrophobic residues (broad, commonly used set).
-HYDROPHOBIC: Set[str] = set("AVLIMFWYPGC")
+HYDROPHOBIC: set[str] = set("AVLIMFWYPGC")
 
 #: Polar residues in a broad sense (uncharged + charged).
-POLAR: Set[str] = POLAR_UNCHARGED | POSITIVE | NEGATIVE
+POLAR: set[str] = POLAR_UNCHARGED | POSITIVE | NEGATIVE
 
 #: Nonpolar residues (alias for hydrophobic set, kept for backwards compatibility).
-NONPOLAR: Set[str] = set(HYDROPHOBIC)
+NONPOLAR: set[str] = set(HYDROPHOBIC)
 
 
 # ---------------------------------------------------------------------------
@@ -268,7 +265,7 @@ NONPOLAR: Set[str] = set(HYDROPHOBIC)
 # ---------------------------------------------------------------------------
 
 #: Approximate count of hydrogen bond donors per residue.
-DONORS: Dict[str, int] = {
+DONORS: dict[str, int] = {
     "K": 1,
     "R": 1,
     "H": 1,
@@ -282,7 +279,7 @@ DONORS: Dict[str, int] = {
 }
 
 #: Approximate count of hydrogen bond acceptors per residue.
-ACCEPTORS: Dict[str, int] = {
+ACCEPTORS: dict[str, int] = {
     "D": 1,
     "E": 1,
     "N": 1,
@@ -292,20 +289,3 @@ ACCEPTORS: Dict[str, int] = {
     "T": 1,
     "Y": 1,
 }
-
-# ---------------------------------------------------------------------------
-# AAIndex configuration
-# ---------------------------------------------------------------------------
-
-#: Default subdirectory name under the user cache directory for Roxy.
-ROXY_CACHE_SUBDIR: str = "roxy"
-
-#: Default filename for the cached AAIndex CSV.
-AAINDEX_FILENAME: str = "aaindex.csv"
-
-#: Default URL to download the AAIndex CSV file.
-#: This points directly to the CSV hosted on Google Drive.
-AAINDEX_URL: str = (
-    "https://drive.google.com/uc"
-    "?export=download&id=1On3-2vQh7BBy5VHk87nlB746rWiMrwqp"
-)
