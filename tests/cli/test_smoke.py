@@ -22,9 +22,50 @@ def test_help():
     assert "roxy" in result.output.lower()
 
 
-def test_list_empty_registry():
+def test_list():
     result = runner.invoke(app, ["list"])
     assert result.exit_code == 0
+    assert "composition" in result.output
+
+
+def test_list_filter_family():
+    result = runner.invoke(app, ["list", "--family", "composition"])
+    assert result.exit_code == 0
+    assert "aac" in result.output
+
+
+def test_describe_known():
+    result = runner.invoke(app, ["describe", "aac"])
+    assert result.exit_code == 0
+    assert "composition" in result.output
+
+
+def test_describe_unknown():
+    result = runner.invoke(app, ["describe", "not_a_descriptor"])
+    assert result.exit_code == 1
+
+
+def test_init_config_stdout():
+    result = runner.invoke(app, ["init-config", "-d", "aac"])
+    assert result.exit_code == 0
+    assert "aac:" in result.output
+
+
+def test_init_config_no_selector():
+    result = runner.invoke(app, ["init-config"])
+    assert result.exit_code == 1
+
+
+def test_compute_help():
+    result = runner.invoke(app, ["compute", "--help"])
+    assert result.exit_code == 0
+    assert "--config" in result.output
+
+
+def test_init_config_help():
+    result = runner.invoke(app, ["init-config", "--help"])
+    assert result.exit_code == 0
+    assert "--all" in result.output
 
 
 def test_aaindex_bundled():
