@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
 import pandas as pd
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class BaseDescriptor(ABC):
@@ -59,6 +62,7 @@ class BaseDescriptor(ABC):
         return df.add_prefix(f"{self.name}_")
 
     def __repr__(self) -> str:  # pragma: no cover
+        """Return a string representation of the descriptor."""
         return f"{self.__class__.__name__}(name={self.name!r}, family={self.family!r})"
 
 

@@ -30,6 +30,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
@@ -86,28 +87,26 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
-    "ANN",     # type annotations — enforced selectively, not globally
-    "COM812",  # trailing comma (conflicts with formatter)
-    "D105",    # missing docstring in magic method
-    "D203",    # one-blank-line-before-class (conflicts with D211)
-    "D213",    # multi-line-summary-second-line (conflicts with D212)
-    "EM101",   # exception message as string literal
-    "FBT001",  # boolean positional argument in function
-    "FBT003",  # boolean positional value in call
-    "N802",    # function name lowercase
-    "N803",    # argument name lowercase
-    "N806",    # variable in function lowercase
-    "PLR0913", # too many arguments
-    "PLW0603", # global statement to update variable
-    "RUF002",  # ambiguous unicode in docstring
-    "RUF003",  # ambiguous unicode in comment
-    "TC003",   # stdlib import not in TYPE_CHECKING block
-    "TRY003",  # long message outside exception class
-    "TRY400",  # use logging.exception instead of error
+    "COM812",
+    "D203",
+    "D213",
+    "N802",
+    "N803",
+    "N806",
+    "PLR0913"
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["ANN", "D", "PLC0415", "PLR2004", "PT017", "S101"]
+"tests/*" = [
+    "ANN",
+    "D",
+    "EM101",
+    "PLC0415",
+    "PLR2004",
+    "PT017",
+    "S101",
+    "TRY003"
+]
 
 [tool.taskipy.tasks]
 sort-imports = "ruff check --fix --select I,F401 roxy/ tests/"

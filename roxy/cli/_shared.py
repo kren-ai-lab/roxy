@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import typer
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 HELP_CONTEXT_SETTINGS: dict = {"help_option_names": ["-h", "--help"]}
 

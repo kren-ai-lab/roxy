@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 DESCRIPTOR_REGISTRY: dict[str, type[BaseDescriptor]] = {}
 
 
-def register(name: str, *, family: str = "misc"):
+def register(name: str, *, family: str = "misc") -> callable:
     """Class decorator that registers a descriptor family by name.
 
     Usage::

@@ -16,7 +16,7 @@ app = typer.Typer(
 )
 
 
-def _version_callback(value: bool | None) -> None:
+def _version_callback(value: bool | None) -> None:  # noqa: FBT001
     if value:
         typer.echo(f"roxy {__version__}")
         raise typer.Exit
@@ -24,7 +24,7 @@ def _version_callback(value: bool | None) -> None:
 
 @app.callback()
 def main(
-    _version: bool | None = typer.Option(
+    _version: bool | None = typer.Option(  # noqa: FBT001
         None,
         "--version",
         "-v",

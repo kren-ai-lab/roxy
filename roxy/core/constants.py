@@ -9,9 +9,9 @@ The constants defined here include:
 
 - Column name lists used when working with antibody or chain-level datasets.
 - The canonical set of 20 amino acids (`AA20`).
-- Hydrophobicity scales (Kyte–Doolittle, Eisenberg).
+- Hydrophobicity scales (Kyte-Doolittle, Eisenberg).
 - Boman index contributions.
-- Chou–Fasman helix and sheet propensities.
+- Chou-Fasman helix and sheet propensities.
 - TOP-IDP intrinsic disorder scale.
 - pKa values for termini and side chains.
 - Residue class sets (aromatic, charged, polar, hydrophobic).
@@ -72,7 +72,7 @@ META_ORDER: list[str] = ["id", "id.pasteur", "aid", "subset", "ighv_status"]
 #: Canonical set of 20 standard amino acids (one-letter codes).
 AA20: set[str] = set("ACDEFGHIKLMNPQRSTVWY")
 
-#: Kyte–Doolittle hydrophobicity scale.
+#: Kyte-Doolittle hydrophobicity scale.
 KD: dict[str, float] = {
     "I": 4.5,
     "V": 4.2,
@@ -144,7 +144,7 @@ BOMAN: dict[str, float] = {
     "Y": 0.94,
 }
 
-#: Chou–Fasman helix propensities.
+#: Chou-Fasman helix propensities.
 CF_HELIX: dict[str, float] = {
     "A": 1.45,
     "C": 0.77,
@@ -168,7 +168,7 @@ CF_HELIX: dict[str, float] = {
     "Y": 0.61,
 }
 
-#: Chou–Fasman sheet propensities.
+#: Chou-Fasman sheet propensities.
 CF_SHEET: dict[str, float] = {
     "A": 0.97,
     "C": 1.30,

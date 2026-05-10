@@ -1,14 +1,17 @@
 """AAIndex utilities for sequence-level descriptors.
 
-The bundled CSV (``roxy/data/aaindex.csv``) contains 566 indices × 20 AAs
+The bundled CSV (``roxy/data/aaindex.csv``) contains 566 indices x 20 AAs
 in wide format: rows = index codes, columns = one-letter AA codes.
 """
 
 from __future__ import annotations
 
 import warnings
-from collections.abc import Iterable
 from importlib.resources import files
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 import pandas as pd
 
@@ -19,7 +22,7 @@ _AAINDEX_TABLE: pd.DataFrame | None = None
 
 
 def load_aaindex() -> pd.DataFrame:
-    """Load the bundled AAIndex table (566 indices × 20 AAs).
+    """Load the bundled AAIndex table (566 indices x 20 AAs).
 
     Returns
     -------
