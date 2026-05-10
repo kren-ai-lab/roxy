@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from collections import Counter
 
-from roxy.core.constants import AA20
+from roxy.core.constants import AA20_ORDERED
 from roxy.descriptors.base import BaseDescriptor
 from roxy.descriptors.registry import register
 
@@ -52,10 +52,10 @@ class AACDescriptor(BaseDescriptor):
             "unique_residue_count": float(len(set(seq))) if not empty else 0.0,
         }
         if self.include_counts:
-            for aa in AA20:
+            for aa in AA20_ORDERED:
                 feats[f"count_{aa}"] = float(counts.get(aa, 0))
         if self.include_frequencies:
-            for aa in AA20:
+            for aa in AA20_ORDERED:
                 feats[f"freq_{aa}"] = counts.get(aa, 0) / n if not empty else _NAN
-            feats["frequency_sum"] = sum(counts.get(aa, 0) for aa in AA20) / n if not empty else _NAN
+            feats["frequency_sum"] = sum(counts.get(aa, 0) for aa in AA20_ORDERED) / n if not empty else _NAN
         return feats

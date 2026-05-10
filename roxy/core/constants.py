@@ -72,6 +72,9 @@ META_ORDER: list[str] = ["id", "id.pasteur", "aid", "subset", "ighv_status"]
 #: Canonical set of 20 standard amino acids (one-letter codes).
 AA20: set[str] = set("ACDEFGHIKLMNPQRSTVWY")
 
+#: Canonical ordered tuple of 20 standard amino acids (alphabetical).
+AA20_ORDERED: tuple[str, ...] = tuple(sorted(AA20))
+
 #: Kyte-Doolittle hydrophobicity scale.
 KD: dict[str, float] = {
     "I": 4.5,

@@ -14,7 +14,7 @@ from ._utils import profile_stats, terminal_segment, windows
 _NAN = math.nan
 
 _POSITIVE_GROUP = frozenset("KRH")
-_NEGATIVE_GROUP = frozenset("DECY")
+_NEGATIVE_GROUP = frozenset("DE")
 _ACIDIC_GROUP = frozenset("DE")
 _BASIC_GROUP = frozenset("KRH")
 _IONIZABLE_GROUP = frozenset("CDEHKRY")
