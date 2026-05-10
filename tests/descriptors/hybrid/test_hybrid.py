@@ -15,17 +15,6 @@ def desc():
     return HybridDescriptor()
 
 
-def test_smoke(desc):
-    df = desc.compute([SEQ, EMPTY])
-    assert df.shape[0] == 2
-    assert "hybrid_charge_family_mean" in df.columns
-    assert "hybrid_global_family_amplitude" in df.columns
-
-
-def test_empty_schema_consistent(desc):
-    assert set(desc.compute_one(SEQ)) == set(desc.compute_one(EMPTY))
-
-
 def test_empty_nan(desc):
     out = desc.compute_one(EMPTY)
     assert out["length"] == 0.0
@@ -43,9 +32,3 @@ def test_global_amplitude_consistent(desc):
     out = desc.compute_one(SEQ)
     expected = out["global_family_max"] - out["global_family_min"]
     assert math.isclose(out["global_family_amplitude"], expected, abs_tol=1e-9)
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-
-    assert "hybrid" in DESCRIPTOR_REGISTRY

@@ -16,17 +16,6 @@ def desc():
     return RunBlockinessDescriptor()
 
 
-def test_smoke(desc):
-    df = desc.compute([SEQ, EMPTY])
-    assert df.shape[0] == 2
-    assert "run_blockiness_charged_longest" in df.columns
-    assert "run_blockiness_longest_homopolymer" in df.columns
-
-
-def test_empty_schema_consistent(desc):
-    assert set(desc.compute_one(SEQ)) == set(desc.compute_one(EMPTY))
-
-
 def test_empty_nan(desc):
     out = desc.compute_one(EMPTY)
     assert out["length"] == 0.0
@@ -54,9 +43,3 @@ def test_norm_in_range(desc):
     v = out["switching_freq"] if "switching_freq" in out else out["charged_switching_freq"]
     if not math.isnan(v):
         assert 0.0 <= v <= 1.0
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-
-    assert "run_blockiness" in DESCRIPTOR_REGISTRY

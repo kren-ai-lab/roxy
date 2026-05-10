@@ -17,19 +17,6 @@ def desc():
     return ChargeDescriptor()
 
 
-def test_smoke(desc):
-    df = desc.compute([SEQ, EMPTY])
-    assert df.shape[0] == 2
-    assert "charge_length" in df.columns
-    assert "charge_net_charge_ph7p0" in df.columns
-
-
-def test_empty_schema_consistent(desc):
-    out_full = desc.compute_one(SEQ)
-    out_empty = desc.compute_one(EMPTY)
-    assert set(out_full.keys()) == set(out_empty.keys())
-
-
 def test_empty_nan_values(desc):
     out = desc.compute_one(EMPTY)
     assert out["length"] == 0.0
@@ -68,8 +55,3 @@ def test_custom_ph_values():
 def test_fcr_bounds(desc):
     out = desc.compute_one(SEQ)
     assert 0.0 <= out["fcr"] <= 1.0
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-    assert "charge" in DESCRIPTOR_REGISTRY

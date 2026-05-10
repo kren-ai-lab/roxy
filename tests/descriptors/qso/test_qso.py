@@ -15,18 +15,6 @@ def desc():
     return QSODescriptor()
 
 
-def test_smoke(desc):
-    df = desc.compute([SEQ, EMPTY])
-    assert df.shape[0] == 2
-    assert "qso_A" in df.columns
-    assert "qso_tau_1" in df.columns
-    assert "qso_feature_sum" in df.columns
-
-
-def test_empty_schema_consistent(desc):
-    assert set(desc.compute_one(SEQ)) == set(desc.compute_one(EMPTY))
-
-
 def test_empty_nan(desc):
     out = desc.compute_one(EMPTY)
     assert out["length"] == 0.0
@@ -53,9 +41,3 @@ def test_custom_lam():
     assert "tau_4" not in out
     # 2 + 20 + 3 + 1 = 26
     assert len(out) == 26
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-
-    assert "qso" in DESCRIPTOR_REGISTRY

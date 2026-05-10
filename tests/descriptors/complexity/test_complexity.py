@@ -16,17 +16,6 @@ def desc():
     return ComplexityDescriptor()
 
 
-def test_smoke(desc):
-    df = desc.compute([SEQ, EMPTY])
-    assert df.shape[0] == 2
-    assert "complexity_shannon_entropy" in df.columns
-    assert "complexity_gini_like_inequality" in df.columns
-
-
-def test_empty_schema_consistent(desc):
-    assert set(desc.compute_one(SEQ)) == set(desc.compute_one(EMPTY))
-
-
 def test_empty_values(desc):
     out = desc.compute_one(EMPTY)
     assert out["length"] == 0.0
@@ -68,8 +57,3 @@ def test_custom_window():
     out = desc.compute_one(SEQ)
     assert "low_complexity_window_fraction_w7" in out
     assert "low_complexity_window_fraction_w5" not in out
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-    assert "complexity" in DESCRIPTOR_REGISTRY

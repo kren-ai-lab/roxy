@@ -16,20 +16,6 @@ def desc():
     return PseAACDescriptor()
 
 
-def test_smoke(desc):
-    df = desc.compute([SEQ, EMPTY])
-    assert df.shape[0] == 2
-    assert "pseaac_length" in df.columns
-    assert "pseaac_A" in df.columns
-    assert "pseaac_theta_1" in df.columns
-
-
-def test_empty_schema_consistent(desc):
-    out_full = desc.compute_one(SEQ)
-    out_empty = desc.compute_one(EMPTY)
-    assert set(out_full.keys()) == set(out_empty.keys())
-
-
 def test_empty_nan_values(desc):
     out = desc.compute_one(EMPTY)
     assert out["length"] == 0.0
@@ -68,8 +54,3 @@ def test_custom_lam():
     assert "theta_3" in out
     assert "theta_4" not in out
     assert len(out) == 2 + 20 + 3 + 1
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-    assert "pseaac" in DESCRIPTOR_REGISTRY

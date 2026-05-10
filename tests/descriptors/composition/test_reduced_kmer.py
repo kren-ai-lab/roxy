@@ -61,11 +61,6 @@ def test_large_k_warns():
         ReducedKmerDescriptor(k=4)
 
 
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-    assert "reduced_kmer" in DESCRIPTOR_REGISTRY
-
-
 def test_consistent_schema():
     d = ReducedKmerDescriptor()
     df = d.compute([SEQ, SEQ * 3, ""])

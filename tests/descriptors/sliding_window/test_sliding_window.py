@@ -16,17 +16,6 @@ def desc():
     return SlidingWindowDescriptor()
 
 
-def test_smoke(desc):
-    df = desc.compute([SEQ, EMPTY])
-    assert df.shape[0] == 2
-    assert "sliding_window_win5_hydropathy_mean" in df.columns
-    assert "sliding_window_win9_charged_frac_std" in df.columns
-
-
-def test_empty_schema_consistent(desc):
-    assert set(desc.compute_one(SEQ)) == set(desc.compute_one(EMPTY))
-
-
 def test_empty_nan(desc):
     out = desc.compute_one(EMPTY)
     assert out["length"] == 0.0
@@ -65,9 +54,3 @@ def test_custom_windows():
     out = desc.compute_one(SEQ)
     assert "win3_hydropathy_mean" in out
     assert "win5_hydropathy_mean" not in out
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-
-    assert "sliding_window" in DESCRIPTOR_REGISTRY

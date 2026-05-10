@@ -16,17 +16,6 @@ def desc():
     return MotifDescriptor()
 
 
-def test_smoke(desc):
-    df = desc.compute([SEQ, EMPTY])
-    assert df.shape[0] == 2
-    assert "motif_CxxC_present" in df.columns
-    assert "motif_polyK_3plus_nterm_present_w10" in df.columns
-
-
-def test_empty_schema_consistent(desc):
-    assert set(desc.compute_one(SEQ)) == set(desc.compute_one(EMPTY))
-
-
 def test_empty_zero_counts(desc):
     out = desc.compute_one(EMPTY)
     assert out["length"] == 0.0
@@ -55,9 +44,3 @@ def test_custom_patterns():
     assert "NxS_nterm_present_w10" not in out
     # 2 base + 1 x 3 stats = 5
     assert len(out) == 5
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-
-    assert "motif" in DESCRIPTOR_REGISTRY

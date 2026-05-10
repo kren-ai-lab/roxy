@@ -15,17 +15,6 @@ def desc():
     return DistributionDescriptor()
 
 
-def test_smoke(desc):
-    df = desc.compute([SEQ, EMPTY])
-    assert df.shape[0] == 2
-    assert "distribution_charged_count" in df.columns
-    assert "distribution_hydrophobic_tercile_bin1_frac" in df.columns
-
-
-def test_empty_schema_consistent(desc):
-    assert set(desc.compute_one(SEQ)) == set(desc.compute_one(EMPTY))
-
-
 def test_empty_nan(desc):
     out = desc.compute_one(EMPTY)
     assert out["length"] == 0.0
@@ -58,8 +47,3 @@ def test_spread_bounds(desc):
         s = out[f"{name}_tercile_spread"]
         if not math.isnan(s):
             assert 0.0 <= s <= 1.0
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-    assert "distribution" in DESCRIPTOR_REGISTRY

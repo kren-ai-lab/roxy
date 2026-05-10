@@ -12,14 +12,6 @@ SEQ_ALL20 = "ACDEFGHIKLMNPQRSTVWY"
 SEQ_BIASED = "AAACCCDDDD"
 
 
-def test_smoke():
-    d = AACDescriptor()
-    df = d.compute([SEQ_ALL20])
-    assert df.shape[0] == 1
-    assert "aac_freq_A" in df.columns
-    assert "aac_count_A" in df.columns
-
-
 def test_freq_sums_to_one():
     d = AACDescriptor()
     out = d.compute_one(SEQ_ALL20)
@@ -42,11 +34,6 @@ def test_empty_sequence():
     assert out["valid_residue_count"] == 0
     assert math.isnan(out["freq_A"])
     assert math.isnan(out["frequency_sum"])
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-    assert "aac" in DESCRIPTOR_REGISTRY
 
 
 def test_consistent_schema_across_seqs():

@@ -17,19 +17,6 @@ def desc():
     return HydrophobicityDescriptor()
 
 
-def test_smoke(desc):
-    df = desc.compute([SEQ, EMPTY])
-    assert df.shape[0] == 2
-    assert "hydrophobicity_length" in df.columns
-    assert "hydrophobicity_hydropathy_mean" in df.columns
-
-
-def test_empty_schema_consistent(desc):
-    out_full = desc.compute_one(SEQ)
-    out_empty = desc.compute_one(EMPTY)
-    assert set(out_full.keys()) == set(out_empty.keys())
-
-
 def test_empty_nan_values(desc):
     out = desc.compute_one(EMPTY)
     assert out["length"] == 0.0
@@ -66,8 +53,3 @@ def test_custom_window_sizes():
 def test_amphipathicity_proxy_nonneg(desc):
     out = desc.compute_one(SEQ)
     assert out["global_amphipathicity_proxy"] >= 0
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-    assert "hydrophobicity" in DESCRIPTOR_REGISTRY

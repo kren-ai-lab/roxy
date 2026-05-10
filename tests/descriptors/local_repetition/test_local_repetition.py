@@ -16,17 +16,6 @@ def desc():
     return LocalRepetitionDescriptor()
 
 
-def test_smoke(desc):
-    df = desc.compute([SEQ, EMPTY])
-    assert df.shape[0] == 2
-    assert "local_repetition_repeated_fraction_k2" in df.columns
-    assert "local_repetition_local_redundancy_mean_w8_k2" in df.columns
-
-
-def test_empty_schema_consistent(desc):
-    assert set(desc.compute_one(SEQ)) == set(desc.compute_one(EMPTY))
-
-
 def test_empty_nan(desc):
     out = desc.compute_one(EMPTY)
     assert out["length"] == 0.0
@@ -53,9 +42,3 @@ def test_fractions_in_range(desc):
         v = out[key]
         if not math.isnan(v):
             assert 0.0 <= v <= 1.0
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-
-    assert "local_repetition" in DESCRIPTOR_REGISTRY

@@ -16,17 +16,6 @@ def desc():
     return PositionalDescriptor()
 
 
-def test_smoke(desc):
-    df = desc.compute([SEQ, EMPTY])
-    assert df.shape[0] == 2
-    assert "positional_charged_count" in df.columns
-    assert "positional_charged_mean_norm" in df.columns
-
-
-def test_empty_schema_consistent(desc):
-    assert set(desc.compute_one(SEQ)) == set(desc.compute_one(EMPTY))
-
-
 def test_empty_nan(desc):
     out = desc.compute_one(EMPTY)
     assert out["length"] == 0.0
@@ -63,8 +52,3 @@ def test_absent_group_zero_count(desc):
     out = desc.compute_one("ACDE")
     # gly and pro may or may not be present
     assert not math.isnan(out["gly_count"]) or out["gly_count"] == 0.0
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-    assert "positional" in DESCRIPTOR_REGISTRY

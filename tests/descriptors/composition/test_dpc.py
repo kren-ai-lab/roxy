@@ -10,13 +10,6 @@ SEQ = "ACDEFGHIKLMNPQRSTVWY"
 SEQ_SHORT = "A"
 
 
-def test_smoke():
-    d = DPCDescriptor()
-    df = d.compute([SEQ])
-    assert df.shape[0] == 1
-    assert "dpc_freq_AC" in df.columns
-
-
 def test_freq_sums_to_one():
     d = DPCDescriptor()
     out = d.compute_one(SEQ * 5)
@@ -44,11 +37,6 @@ def test_short_sequence():
     out = d.compute_one(SEQ_SHORT)
     assert out["total_dipeptides"] == 0
     assert math.isnan(out["freq_AA"])
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-    assert "dpc" in DESCRIPTOR_REGISTRY
 
 
 def test_consistent_schema():

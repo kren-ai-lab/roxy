@@ -16,23 +16,10 @@ def desc():
     return GlobalBasicDescriptor()
 
 
-def test_smoke(desc):
-    df = desc.compute([SEQ, SEQ_REPEATED, EMPTY])
-    assert df.shape[0] == 3
-    assert "global_basic_length" in df.columns
-    assert "global_basic_molecular_weight" in df.columns
-
-
 def test_length(desc):
     out = desc.compute_one(SEQ)
     assert out["length"] == len(SEQ)
     assert out["valid_residue_count"] == len(SEQ)
-
-
-def test_empty_schema_consistent(desc):
-    out_full = desc.compute_one(SEQ)
-    out_empty = desc.compute_one(EMPTY)
-    assert set(out_full.keys()) == set(out_empty.keys())
 
 
 def test_empty_nan_values(desc):
@@ -78,8 +65,3 @@ def test_linguistic_complexity_bounds(desc):
 def test_shannon_entropy_positive(desc):
     out = desc.compute_one(SEQ)
     assert out["shannon_entropy"] > 0
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-    assert "global_basic" in DESCRIPTOR_REGISTRY

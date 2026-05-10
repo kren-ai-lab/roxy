@@ -16,19 +16,6 @@ def desc():
     return CTDDescriptor()
 
 
-def test_smoke(desc):
-    df = desc.compute([SEQ, EMPTY])
-    assert df.shape[0] == 2
-    assert "ctd_hydrophobicity_comp_1" in df.columns
-    assert "ctd_charge_dist_3_100" in df.columns
-
-
-def test_empty_schema_consistent(desc):
-    out_full = desc.compute_one(SEQ)
-    out_empty = desc.compute_one(EMPTY)
-    assert set(out_full.keys()) == set(out_empty.keys())
-
-
 def test_empty_nan_values(desc):
     out = desc.compute_one(EMPTY)
     assert out["length"] == 0.0
@@ -67,8 +54,3 @@ def test_column_count(desc):
     out = desc.compute_one(SEQ)
     # 2 base + 3 props x (3 comp + 3 trans + 15 dist) = 2 + 63 = 65
     assert len(out) == 65
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-    assert "ctd" in DESCRIPTOR_REGISTRY

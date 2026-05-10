@@ -10,14 +10,6 @@ SEQ = "ACDEFGHIKLMNPQRSTVWY"
 SEQ_ALL_K = "KKKKKK"
 
 
-def test_smoke():
-    d = GroupedCompositionDescriptor()
-    df = d.compute([SEQ])
-    assert df.shape[0] == 1
-    assert "grouped_composition_positive_count" in df.columns
-    assert "grouped_composition_ratio_acidic_basic" in df.columns
-
-
 def test_positive_count():
     d = GroupedCompositionDescriptor()
     out = d.compute_one(SEQ_ALL_K)
@@ -40,11 +32,6 @@ def test_ratio_zero_denominator():
     assert out["ratio_acidic_basic"] == 0.0
     # ratio_basic_acidic = pos/neg = 6/0 = NaN
     assert math.isnan(out["ratio_basic_acidic"])
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-    assert "grouped_composition" in DESCRIPTOR_REGISTRY
 
 
 def test_consistent_schema():

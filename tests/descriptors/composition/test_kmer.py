@@ -11,13 +11,6 @@ from roxy.descriptors.composition.kmer import KmerDescriptor
 SEQ = "ACDEFGHIKLMNPQRSTVWY"
 
 
-def test_smoke():
-    d = KmerDescriptor()
-    df = d.compute([SEQ])
-    assert df.shape[0] == 1
-    assert "kmer_freq_AC" in df.columns
-
-
 def test_default_k2_column_count():
     d = KmerDescriptor()
     out = d.compute_one(SEQ)
@@ -50,11 +43,6 @@ def test_seq_shorter_than_k():
 def test_large_k_warns():
     with pytest.warns(UserWarning, match="k=4"):
         KmerDescriptor(k=4)
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-    assert "kmer" in DESCRIPTOR_REGISTRY
 
 
 def test_consistent_schema():

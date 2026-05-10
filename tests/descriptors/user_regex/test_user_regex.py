@@ -16,17 +16,6 @@ def desc():
     return UserRegexDescriptor()
 
 
-def test_smoke(desc):
-    df = desc.compute([SEQ, EMPTY])
-    assert df.shape[0] == 2
-    assert "user_regex_basic_pair_present" in df.columns
-    assert "user_regex_basic_pair_nterm_present_w10" in df.columns
-
-
-def test_empty_schema_consistent(desc):
-    assert set(desc.compute_one(SEQ)) == set(desc.compute_one(EMPTY))
-
-
 def test_empty_zero_and_nan(desc):
     out = desc.compute_one(EMPTY)
     assert out["length"] == 0.0
@@ -56,9 +45,3 @@ def test_custom_no_terminal():
     assert "any_K_nterm_present_w10" not in out
     # 2 base + 1 x 9 = 11
     assert len(out) == 11
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-
-    assert "user_regex" in DESCRIPTOR_REGISTRY

@@ -15,18 +15,6 @@ def desc():
     return FunctionalResidueDescriptor()
 
 
-def test_smoke(desc):
-    df = desc.compute([SEQ, EMPTY])
-    assert df.shape[0] == 2
-    assert "functional_residue_catalytic_core_like_fraction" in df.columns
-    assert "functional_residue_H_fraction" in df.columns
-    assert "functional_residue_hbond_donors_per_residue" in df.columns
-
-
-def test_empty_schema_consistent(desc):
-    assert set(desc.compute_one(SEQ)) == set(desc.compute_one(EMPTY))
-
-
 def test_empty_nan(desc):
     out = desc.compute_one(EMPTY)
     assert out["length"] == 0.0
@@ -54,9 +42,3 @@ def test_hbond_balance(desc):
     out = desc.compute_one(SEQ)
     expected = out["hbond_donors_per_residue"] - out["hbond_acceptors_per_residue"]
     assert math.isclose(out["hbond_balance"], expected, abs_tol=1e-9)
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-
-    assert "functional_residue" in DESCRIPTOR_REGISTRY

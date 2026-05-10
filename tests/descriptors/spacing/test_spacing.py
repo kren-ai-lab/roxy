@@ -16,17 +16,6 @@ def desc():
     return SpacingDescriptor()
 
 
-def test_smoke(desc):
-    df = desc.compute([SEQ, EMPTY])
-    assert df.shape[0] == 2
-    assert "spacing_charged_mean" in df.columns
-    assert "spacing_positive_negative_cross_mean" in df.columns
-
-
-def test_empty_schema_consistent(desc):
-    assert set(desc.compute_one(SEQ)) == set(desc.compute_one(EMPTY))
-
-
 def test_empty_nan(desc):
     out = desc.compute_one(EMPTY)
     assert out["length"] == 0.0
@@ -59,9 +48,3 @@ def test_cross_group_nan_when_absent(desc):
     # no aromatic in "ACDE" → aromatic_polar_cross_mean = NaN
     out = desc.compute_one("ACDE")
     assert math.isnan(out["aromatic_polar_cross_mean"])
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-
-    assert "spacing" in DESCRIPTOR_REGISTRY

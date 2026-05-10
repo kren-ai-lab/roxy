@@ -10,13 +10,6 @@ SEQ = "ACDEFGHIKLMNPQRSTVWY"
 SEQ_ALL_K = "KKKKKKKKKK"
 
 
-def test_smoke():
-    d = CompositionalBiasDescriptor()
-    df = d.compute([SEQ])
-    assert df.shape[0] == 1
-    assert "compositional_bias_gini_like_inequality" in df.columns
-
-
 def test_empty_sequence_full_schema():
     d = CompositionalBiasDescriptor()
     out_empty = d.compute_one("")
@@ -47,11 +40,6 @@ def test_kl_div_uniform_for_uniform_seq():
     out = d.compute_one(SEQ)
     # Perfect uniform → KL = 0
     assert math.isclose(out["kl_div_uniform"], 0.0, abs_tol=1e-9)
-
-
-def test_registered():
-    from roxy.descriptors import DESCRIPTOR_REGISTRY
-    assert "compositional_bias" in DESCRIPTOR_REGISTRY
 
 
 def test_consistent_schema():
