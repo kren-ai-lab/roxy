@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-import pandas as pd
+import polars as pl
 
 SequenceLike = str | Iterable[str]
-FeatureFrame = pd.DataFrame
+FeatureFrame = pl.DataFrame
 
 __all__ = ["FeatureFrame", "SequenceLike"]

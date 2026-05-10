@@ -5,7 +5,7 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 
-import pandas as pd
+import polars as pl
 import pytest
 
 from roxy.core.exceptions import RoxyIOError
@@ -70,14 +70,14 @@ def test_read_sequences_bad_ext():
 
 
 def test_write_table_csv(tmp_path):
-    df = pd.DataFrame({"a": [1.0, 2.0], "b": [3.0, 4.0]})
+    df = pl.DataFrame({"a": [1.0, 2.0], "b": [3.0, 4.0]})
     out = tmp_path / "out.csv"
     write_table(df, out)
-    loaded = pd.read_csv(out, index_col=0)
-    assert list(loaded.columns) == ["a", "b"]
+    loaded = pl.read_csv(out)
+    assert loaded.columns == ["a", "b"]
 
 
 def test_write_table_bad_ext(tmp_path):
-    df = pd.DataFrame({"a": [1]})
+    df = pl.DataFrame({"a": [1]})
     with pytest.raises(RoxyIOError):
         write_table(df, tmp_path / "out.xyz")

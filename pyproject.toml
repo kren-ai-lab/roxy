@@ -36,7 +36,7 @@ classifiers = [
 ]
 dependencies = [
     "numpy>=2.4,<3.0",
-    "pandas>=3.0,<4.0",
+    "polars>=1.40.1",
     "rich>=15.0,<16.0",
     "scikit-learn>=1.8,<2.0",
     "scipy>=1.17,<2.0",
@@ -44,10 +44,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-parquet = [
-    "fastparquet>=2026.0",
-    "pyarrow>=24.0",
-]
 dev = [
     "ruff>=0.15",
     "taskipy>=1.14",
@@ -57,8 +53,6 @@ tests = [
     "pytest-cov>=7.1",
 ]
 all = [
-    "fastparquet>=2026.0",
-    "pyarrow>=24.0",
     "pytest>=9.0",
     "pytest-cov>=7.0",
     "ruff>=0.15",

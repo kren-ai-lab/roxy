@@ -32,4 +32,4 @@ def test_aaindex_bundled():
     from roxy.core.aaindex import load_aaindex
 
     df = load_aaindex()
-    assert df.shape == (566, 20)
+    assert df.shape == (566, 21)  # 20 AA columns + "index" column

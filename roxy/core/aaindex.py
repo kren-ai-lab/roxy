@@ -6,28 +6,29 @@ in wide format: rows = index codes, columns = one-letter AA codes.
 
 from __future__ import annotations
 
+import io
 import warnings
 from importlib.resources import files
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-import pandas as pd
+import polars as pl
 
 from .constants import AA20
 from .exceptions import AAIndexError
 
-_AAINDEX_TABLE: pd.DataFrame | None = None
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+_AAINDEX_TABLE: pl.DataFrame | None = None
 
 
-def load_aaindex() -> pd.DataFrame:
+def load_aaindex() -> pl.DataFrame:
     """Load the bundled AAIndex table (566 indices x 20 AAs).
 
     Returns
     -------
-    pandas.DataFrame
-        Rows = AAIndex codes, columns = one-letter AA codes.
+    polars.DataFrame
+        Column ``index`` = AAIndex code; remaining columns = one-letter AA codes.
         Result is module-level cached after first call.
 
     Raises
@@ -36,14 +37,14 @@ def load_aaindex() -> pd.DataFrame:
         If the bundled CSV cannot be read.
 
     """
-    global _AAINDEX_TABLE  # noqa: PLW0603,RUF100
+    global _AAINDEX_TABLE  # noqa: PLW0603
 
     if _AAINDEX_TABLE is not None:
         return _AAINDEX_TABLE
 
     try:
-        path = files("roxy").joinpath("data/aaindex.csv")
-        df = pd.read_csv(path, index_col=0)
+        raw = files("roxy").joinpath("data/aaindex.csv").read_bytes()
+        df = pl.read_csv(io.BytesIO(raw))
     except Exception as exc:
         msg = f"Could not load bundled AAIndex data: {exc}"
         raise AAIndexError(msg) from exc
@@ -54,13 +55,13 @@ def load_aaindex() -> pd.DataFrame:
 
 def available_indices() -> list[str]:
     """Return the list of all AAIndex codes in the bundled table."""
-    return list(load_aaindex().index)
+    return load_aaindex()["index"].to_list()
 
 
 def compute_aaindex_means(
     seq: str,
     index_codes: Iterable[str],
-    table: pd.DataFrame | None = None,
+    table: pl.DataFrame | None = None,
 ) -> dict[str, float]:
     """Compute mean AAIndex values over a sequence for given index codes.
 
@@ -86,9 +87,10 @@ def compute_aaindex_means(
     if table is None:
         table = load_aaindex()
 
+    all_codes = set(table["index"].to_list())
     feats: dict[str, float] = {}
     for code in index_codes:
-        if code not in table.index:
+        if code not in all_codes:
             warnings.warn(
                 f"AAIndex code {code!r} not in bundled table; returning NaN.",
                 RuntimeWarning,
@@ -97,8 +99,8 @@ def compute_aaindex_means(
             feats[f"aaindex_{code}_mean"] = float("nan")
             continue
 
-        scale = table.loc[code]
-        vals = [scale[aa] for aa in s if aa in AA20 and not pd.isna(scale[aa])]
+        row = table.filter(pl.col("index") == code).row(0, named=True)
+        vals = [row[aa] for aa in s if aa in AA20 and row.get(aa) is not None]
         feats[f"aaindex_{code}_mean"] = float(sum(vals) / len(vals)) if vals else float("nan")
 
     return feats

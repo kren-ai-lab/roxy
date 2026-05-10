@@ -5,7 +5,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-import pandas as pd
+import polars as pl
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -40,7 +40,7 @@ class BaseDescriptor(ABC):
         sequences: Iterable[str],
         *,
         ids: Iterable[str] | None = None,
-    ) -> pd.DataFrame:
+    ) -> pl.DataFrame:
         """Compute descriptors for multiple sequences.
 
         Parameters
@@ -48,18 +48,21 @@ class BaseDescriptor(ABC):
         sequences:
             Iterable of amino-acid strings.
         ids:
-            Optional row labels for the resulting DataFrame.
+            Optional sequence identifiers stored in an ``id`` column.
 
         Returns
         -------
-        pandas.DataFrame
+        polars.DataFrame
             One row per sequence; columns are ``{name}_{feature}``.
+            If ``ids`` is provided, an ``id`` column is prepended.
 
         """
         seqs = list(sequences)
         rows = [self.compute_one(s) for s in seqs]
-        df = pd.DataFrame(rows, index=list(ids) if ids is not None else None)
-        return df.add_prefix(f"{self.name}_")
+        df = pl.DataFrame(rows).rename(lambda col: f"{self.name}_{col}")
+        if ids is not None:
+            df = df.with_columns(pl.Series("id", list(ids))).select(["id", *df.columns])
+        return df
 
     def __repr__(self) -> str:  # pragma: no cover
         """Return a string representation of the descriptor."""
