@@ -137,13 +137,18 @@ def write_table(df: pl.DataFrame, path: Path | str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     ext = path.suffix.lower()
 
-    if ext in _CSV_EXTENSIONS:
-        df.write_csv(path)
-    elif ext in _PARQUET_EXTENSIONS:
-        df.write_parquet(path)
-    else:
+    if ext not in _CSV_EXTENSIONS | _PARQUET_EXTENSIONS:
         msg = f"Unsupported output extension {ext!r}. Use .csv or .parquet."
         raise RoxyIOError(msg)
+
+    try:
+        if ext in _CSV_EXTENSIONS:
+            df.write_csv(path)
+        else:
+            df.write_parquet(path)
+    except Exception as exc:
+        msg = f"Could not write table to {path}: {exc}"
+        raise RoxyIOError(msg) from exc
 
 
 __all__ = [

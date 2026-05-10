@@ -8,7 +8,7 @@ from roxy.descriptors import DESCRIPTOR_REGISTRY
 
 
 def list_descriptors(
-    family: str = typer.Option(None, "--family", "-f", help="Filter by family name."),
+    family: str | None = typer.Option(None, "--family", "-f", help="Filter by family name."),
 ) -> None:
     """List all registered descriptor families."""
     try:

@@ -9,7 +9,7 @@ This file provides guidance to AI agents when working with code in this reposito
 - **PRISM** (data curation) — upstream
 - **Sylphy** (sequence encoders and embeddings) — parallel; Roxy does NOT duplicate Sylphy's one-hot/ordinal/k-mers/FFT encoders
 
-**Roxy scope**: classical descriptors only. Input: amino-acid sequences (strings). Output: `pandas.DataFrames` of numerical features.
+**Roxy scope**: classical descriptors only. Input: amino-acid sequences (strings). Output: `polars.DataFrame` of numerical features.
 
 ## Package Layout
 
@@ -21,11 +21,9 @@ roxy/
     main.py               # Typer root — version callback + sub-command registration
     _shared.py            # HELP_CONTEXT_SETTINGS, load_sequences, ensure_ext
     list_descriptors.py   # roxy list
-    cache.py              # roxy cache {path,list,clear}
   core/
-    config.py             # get_cache_root, set_cache_root, temporary_cache_root
     constants.py          # AA20, KD, EISENBERG, pKa, etc.
-    aaindex.py            # AAIndex CSV loader/downloader
+    aaindex.py            # bundled AAIndex CSV loader (roxy/data/aaindex.csv)
     exceptions.py         # RoxyError > DescriptorError > {AAIndexError, SequenceValidationError}
                           #           > RoxyIOError
     io.py                 # read_fasta, read_csv, read_parquet, read_sequences, write_table
@@ -73,7 +71,6 @@ uv run task format
 uv run roxy --version
 uv run roxy --help
 uv run roxy list
-uv run roxy cache path
 ```
 
 ## Descriptor Architecture
@@ -113,5 +110,5 @@ Notebooks in `dev_notebooks/` define the 29 descriptor families to implement. Re
 - Descriptors must be stateless or only hold configuration (no mutable global state).
 - `compute_one` must handle empty or non-standard sequences gracefully (return NaN, not raise).
 - Never import EDA, projection, or visualisation libraries — those are out of scope.
-- AAIndex CSV lives in `get_cache_root()`. Do not hardcode paths.
+- AAIndex CSV is bundled in `roxy/data/aaindex.csv` and loaded via `importlib.resources`. No download or cache path needed.
 - `dev_notebooks/legacy_sequences.py` contains implementations of `GlobalSequenceDescriptors` and `ProteinSequenceDescriptors` from the previous version — consult it during S2 migration.

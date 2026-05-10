@@ -12,11 +12,6 @@ pip install roxy
 uv add roxy
 ```
 
-Parquet support:
-```bash
-pip install roxy[parquet]
-```
-
 ## Quickstart
 
 ```python
@@ -28,7 +23,7 @@ sequences = [seq for _, seq in records]
 
 # Compute a descriptor family (once families are registered)
 descriptor = DESCRIPTOR_REGISTRY["aac"]()
-features = descriptor.compute(sequences)      # pandas DataFrame
+features = descriptor.compute(sequences)      # polars.DataFrame
 ```
 
 ## CLI
@@ -36,9 +31,6 @@ features = descriptor.compute(sequences)      # pandas DataFrame
 ```bash
 roxy --help
 roxy list                          # show registered descriptor families
-roxy cache path                    # show AAIndex cache location
-roxy cache list                    # list cached files
-roxy cache clear                   # clear cache
 ```
 
 ## Descriptor Families

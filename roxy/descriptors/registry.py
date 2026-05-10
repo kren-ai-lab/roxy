@@ -5,12 +5,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from .base import BaseDescriptor
 
 DESCRIPTOR_REGISTRY: dict[str, type[BaseDescriptor]] = {}
 
 
-def register(name: str, *, family: str = "misc") -> callable:
+def register(name: str, *, family: str = "misc") -> Callable[[type[BaseDescriptor]], type[BaseDescriptor]]:
     """Class decorator that registers a descriptor family by name.
 
     Usage::

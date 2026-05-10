@@ -30,8 +30,6 @@ uv run task test-cov    # pytest + HTML coverage report
 uv run roxy --version
 uv run roxy --help
 uv run roxy list
-uv run roxy cache path
-uv run roxy cache list
 ```
 
 ## Adding a Descriptor Family

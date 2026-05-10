@@ -77,10 +77,12 @@ def compute_aaindex_means(
     if table is None:
         table = load_aaindex()
 
-    all_codes = set(table["index"].to_list())
+    index_map: dict[str, dict[str, float | None]] = {
+        row["index"]: row for row in table.iter_rows(named=True)
+    }
     feats: dict[str, float] = {}
     for code in index_codes:
-        if code not in all_codes:
+        if code not in index_map:
             warnings.warn(
                 f"AAIndex code {code!r} not in bundled table; returning NaN.",
                 RuntimeWarning,
@@ -89,7 +91,7 @@ def compute_aaindex_means(
             feats[f"aaindex_{code}_mean"] = float("nan")
             continue
 
-        row = table.filter(pl.col("index") == code).row(0, named=True)
+        row = index_map[code]
         vals = [row[aa] for aa in s if aa in AA20 and row.get(aa) is not None]
         feats[f"aaindex_{code}_mean"] = float(sum(vals) / len(vals)) if vals else float("nan")
 
