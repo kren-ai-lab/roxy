@@ -1,0 +1,70 @@
+"""Tests for OrderDisorderDescriptor."""
+
+import math
+
+import pytest
+
+from roxy.descriptors.physicochemical.order_disorder import OrderDisorderDescriptor
+
+SEQ = "ACDEFGHIKLMNPQRSTVWY"
+EMPTY = ""
+DISORDER_SEQ = "ARGQSEPKARGQSEPK"
+ORDER_SEQ = "CWYFILNVCWYFILNV"
+
+
+@pytest.fixture
+def desc():
+    return OrderDisorderDescriptor()
+
+
+def test_smoke(desc):
+    df = desc.compute([SEQ, EMPTY])
+    assert df.shape[0] == 2
+    assert "order_disorder_length" in df.columns
+    assert "order_disorder_disorder_fraction" in df.columns
+
+
+def test_empty_schema_consistent(desc):
+    out_full = desc.compute_one(SEQ)
+    out_empty = desc.compute_one(EMPTY)
+    assert set(out_full.keys()) == set(out_empty.keys())
+
+
+def test_empty_nan_values(desc):
+    out = desc.compute_one(EMPTY)
+    assert out["length"] == 0.0
+    assert math.isnan(out["disorder_fraction"])
+    assert math.isnan(out["w5_disorder_mean"])
+    assert math.isnan(out["terminal_disorder_asymmetry"])
+
+
+def test_disorder_seq_high_fraction(desc):
+    out = desc.compute_one(DISORDER_SEQ)
+    assert out["disorder_fraction"] > out["order_fraction"]
+    assert out["disorder_order_balance"] > 0
+
+
+def test_order_seq_high_fraction(desc):
+    out = desc.compute_one(ORDER_SEQ)
+    assert out["order_fraction"] > out["disorder_fraction"]
+    assert out["order_disorder_balance"] > 0
+
+
+def test_window_columns_present(desc):
+    out = desc.compute_one(SEQ)
+    for ws in (5, 7):
+        assert f"w{ws}_disorder_patch_fraction" in out
+        assert f"w{ws}_order_patch_fraction" in out
+        assert f"w{ws}_disorder_mean" in out
+        assert f"w{ws}_order_mean" in out
+
+
+def test_fraction_bounds(desc):
+    out = desc.compute_one(SEQ)
+    for key in ("disorder_fraction", "order_fraction", "flexibility_fraction"):
+        assert 0.0 <= out[key] <= 1.0
+
+
+def test_registered():
+    from roxy.descriptors import DESCRIPTOR_REGISTRY
+    assert "order_disorder" in DESCRIPTOR_REGISTRY

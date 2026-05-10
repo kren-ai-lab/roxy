@@ -1,0 +1,181 @@
+"""Global basic sequence descriptor."""
+
+from __future__ import annotations
+
+import math
+from collections import Counter
+
+import numpy as np
+
+from roxy.core.constants import (
+    AA_GROUPS,
+    AA_MOLECULAR_WEIGHT,
+    ACCEPTORS,
+    BOMAN,
+    CF_HELIX,
+    CF_SHEET,
+    CF_TURN,
+    DONORS,
+    FLEXIBILITY,
+    KD,
+    POLARITY,
+)
+from roxy.descriptors.base import BaseDescriptor
+from roxy.descriptors.composition._utils import clean_sequence
+from roxy.descriptors.registry import register
+
+from ._utils import (
+    fraction_from_group,
+    longest_homopolymer_run,
+    net_charge_at_ph,
+    scale_values,
+)
+
+_NAN = math.nan
+_WATER_MW = 18.015
+
+
+def _linguistic_complexity(seq: str, k: int) -> float:
+    if not seq or len(seq) < k or k < 1:
+        return _NAN
+    observed = len({seq[i : i + k] for i in range(len(seq) - k + 1)})
+    possible = min(20**k, len(seq) - k + 1)
+    return observed / possible if possible > 0 else _NAN
+
+
+def _shannon_entropy(seq: str) -> float:
+    counts = Counter(seq)
+    total = sum(counts.values())
+    if total == 0:
+        return _NAN
+    probs = np.array([c / total for c in counts.values()], dtype=float)
+    return float(-(probs * np.log2(probs)).sum())
+
+
+def _aliphatic_index(seq: str, n: int) -> float:
+    c = Counter(seq)
+    return 100 * (c["A"] / n + 2.9 * c["V"] / n + 3.9 * (c["I"] + c["L"]) / n)
+
+
+def _repeated_dipeptide_fraction(seq: str) -> float:
+    if len(seq) < 2:  # noqa: PLR2004
+        return _NAN
+    kmers = [seq[i : i + 2] for i in range(len(seq) - 1)]
+    counts = Counter(kmers)
+    repeated = sum(v for v in counts.values() if v > 1)
+    return repeated / len(kmers)
+
+
+@register("global_basic", family="physicochemical")
+class GlobalBasicDescriptor(BaseDescriptor):
+    """46 global sequence properties: composition, scales, charge, complexity.
+
+    Output columns (prefix ``global_basic_``):
+        ``length``, ``valid_residue_count``, ``unique_residue_count``,
+        ``molecular_weight``, 17 group fractions, ``aliphatic_index``,
+        ``hydropathy_mean/std``, ``polarity_mean/std``, ``flexibility_mean/std``,
+        ``helix/sheet/turn_propensity_mean``, ``boman_index_mean``,
+        ``net_charge_ph7``, ``fcr``, ``ncpr``,
+        ``acidic_basic_ratio``, ``basic_acidic_ratio``,
+        ``donors_per_residue``, ``acceptors_per_residue``,
+        ``shannon_entropy``, ``linguistic_complexity_k1/k2/k3``,
+        ``longest_homopolymer_run``, ``repeated_dipeptide_fraction``,
+        ``local_hydropathy_amplitude_w5``.
+
+    """
+
+    def compute_one(self, sequence: str) -> dict[str, float]:
+        """Compute global basic features for a single sequence."""
+        seq = clean_sequence(sequence)
+        n = len(seq)
+        empty = n == 0
+        counts = Counter(seq)
+
+        feats: dict[str, float] = {
+            "length": float(n),
+            "valid_residue_count": float(n),
+            "unique_residue_count": float(len(counts)) if not empty else 0.0,
+        }
+
+        if empty:
+            for key in (
+                "molecular_weight", "aliphatic_index",
+                "hydropathy_mean", "hydropathy_std",
+                "polarity_mean", "polarity_std",
+                "flexibility_mean", "flexibility_std",
+                "helix_propensity_mean", "sheet_propensity_mean", "turn_propensity_mean",
+                "boman_index_mean", "net_charge_ph7",
+                "fcr", "ncpr", "acidic_basic_ratio", "basic_acidic_ratio",
+                "donors_per_residue", "acceptors_per_residue",
+                "shannon_entropy", "linguistic_complexity_k1", "linguistic_complexity_k2",
+                "linguistic_complexity_k3", "repeated_dipeptide_fraction",
+                "local_hydropathy_amplitude_w5",
+            ):
+                feats[key] = _NAN
+            for group in AA_GROUPS:
+                feats[f"{group}_fraction"] = _NAN
+            feats["longest_homopolymer_run"] = 0.0
+            return feats
+
+        # MW: sum of residue weights minus water per peptide bond
+        feats["molecular_weight"] = (
+            sum(AA_MOLECULAR_WEIGHT[aa] for aa in seq) - (n - 1) * _WATER_MW
+        )
+
+        # Group fractions
+        for group, members in AA_GROUPS.items():
+            feats[f"{group}_fraction"] = fraction_from_group(seq, members)
+
+        feats["aliphatic_index"] = _aliphatic_index(seq, n)
+
+        # Scale means/stds
+        for name, scale in (
+            ("hydropathy", KD),
+            ("polarity", POLARITY),
+            ("flexibility", FLEXIBILITY),
+        ):
+            vals = scale_values(seq, scale)
+            feats[f"{name}_mean"] = float(np.mean(vals)) if vals else _NAN
+            feats[f"{name}_std"] = float(np.std(vals, ddof=0)) if vals else _NAN
+
+        for name, scale in (
+            ("helix_propensity", CF_HELIX),
+            ("sheet_propensity", CF_SHEET),
+            ("turn_propensity", CF_TURN),
+            ("boman_index", BOMAN),
+        ):
+            vals = scale_values(seq, scale)
+            feats[f"{name}_mean"] = float(np.mean(vals)) if vals else _NAN
+
+        # Charge
+        feats["net_charge_ph7"] = net_charge_at_ph(seq, 7.0)
+        pos = fraction_from_group(seq, AA_GROUPS["positive"])
+        neg = fraction_from_group(seq, AA_GROUPS["negative"])
+        feats["fcr"] = pos + neg
+        feats["ncpr"] = pos - neg
+        n_acidic = sum(aa in AA_GROUPS["negative"] for aa in seq)
+        n_basic = sum(aa in AA_GROUPS["positive"] for aa in seq)
+        feats["acidic_basic_ratio"] = n_acidic / n_basic if n_basic else _NAN
+        feats["basic_acidic_ratio"] = n_basic / n_acidic if n_acidic else _NAN
+
+        # H-bond donors/acceptors per residue
+        feats["donors_per_residue"] = sum(DONORS.get(aa, 0) for aa in seq) / n
+        feats["acceptors_per_residue"] = sum(ACCEPTORS.get(aa, 0) for aa in seq) / n
+
+        # Complexity
+        feats["shannon_entropy"] = _shannon_entropy(seq)
+        feats["linguistic_complexity_k1"] = _linguistic_complexity(seq, 1)
+        feats["linguistic_complexity_k2"] = _linguistic_complexity(seq, 2)
+        feats["linguistic_complexity_k3"] = _linguistic_complexity(seq, 3)
+        feats["longest_homopolymer_run"] = float(longest_homopolymer_run(seq))
+        feats["repeated_dipeptide_fraction"] = _repeated_dipeptide_fraction(seq)
+
+        # Local hydropathy amplitude (window=5)
+        kd_vals = scale_values(seq, KD)
+        if len(kd_vals) >= 5:  # noqa: PLR2004
+            w_means = [float(np.mean(kd_vals[i : i + 5])) for i in range(len(kd_vals) - 4)]
+            feats["local_hydropathy_amplitude_w5"] = max(w_means) - min(w_means)
+        else:
+            feats["local_hydropathy_amplitude_w5"] = _NAN
+
+        return feats
