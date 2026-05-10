@@ -16,12 +16,9 @@ if not _root_logger.handlers:
 def get_logger(name: str | None = None) -> logging.Logger:
     """Return a logger under the ``roxy`` namespace.
 
-    Parameters
-    ----------
-    name:
-        Optional fully-qualified logger name. If ``None``, the top-level
-        ``"roxy"`` logger is returned. When a dotted name is provided,
-        it is attached as a child of ``"roxy"``, e.g. ``roxy.core.dataset``.
+    Args:
+        name: Optional logger name. If ``None``, returns the top-level ``"roxy"``
+            logger. Dotted names are attached as children, e.g. ``roxy.core.io``.
 
     """
     if name is None:
@@ -41,29 +38,17 @@ def setup_logger(
 ) -> logging.Logger:
     """Configure a basic logger for Roxy.
 
-    This is an optional convenience for quick experiments, notebooks and
-    CLI use. It sets the log level on the ``"roxy"`` logger and attaches:
+    Optional convenience for quick experiments, notebooks and CLI use.
+    Sets the log level on the ``"roxy"`` logger and attaches a
+    ``StreamHandler`` (stderr) and optionally a ``FileHandler``.
 
-    - a :class:`logging.StreamHandler` to stderr (console), and
-    - optionally a :class:`logging.FileHandler` if ``log_file`` is provided.
+    Args:
+        level: Logging level, e.g. ``logging.INFO``.
+        fmt: Log message format. Defaults to timestamp + level + logger name.
+        log_file: Optional path to a log file.
+        file_mode: File open mode — ``"a"`` (append) or ``"w"`` (overwrite).
 
-    Parameters
-    ----------
-    level:
-        Logging level to use, e.g. :data:`logging.INFO`.
-    fmt:
-        Optional log message format. If omitted, a default including
-        timestamp, level and logger name is used.
-    log_file:
-        Optional path to a log file. If provided, a file handler is
-        attached writing to this file.
-    file_mode:
-        File mode for the log file, e.g. ``"a"`` (append, default) or
-        ``"w"`` (overwrite).
-
-    Returns
-    -------
-    logging.Logger
+    Returns:
         The configured top-level ``"roxy"`` logger.
 
     """

@@ -16,10 +16,8 @@ _PARQUET_EXTENSIONS = {".parquet", ".pq"}
 def read_fasta(path: Path | str) -> list[tuple[str, str]]:
     """Parse a FASTA file into (header, sequence) pairs.
 
-    Raises
-    ------
-    RoxyIOError
-        If the file does not exist or cannot be parsed.
+    Raises:
+        RoxyIOError: If the file does not exist or cannot be parsed.
 
     """
     path = Path(path)
@@ -55,10 +53,8 @@ def read_fasta(path: Path | str) -> list[tuple[str, str]]:
 def read_csv(path: Path | str, seq_col: str | None = None) -> pl.DataFrame:
     """Load a CSV into a Polars DataFrame.
 
-    Raises
-    ------
-    RoxyIOError
-        If the file does not exist or ``seq_col`` is missing.
+    Raises:
+        RoxyIOError: If the file does not exist or ``seq_col`` is missing.
 
     """
     path = Path(path)
@@ -76,10 +72,8 @@ def read_csv(path: Path | str, seq_col: str | None = None) -> pl.DataFrame:
 def read_parquet(path: Path | str, seq_col: str | None = None) -> pl.DataFrame:
     """Load a Parquet file into a Polars DataFrame.
 
-    Raises
-    ------
-    RoxyIOError
-        If the file does not exist or ``seq_col`` is missing.
+    Raises:
+        RoxyIOError: If the file does not exist or ``seq_col`` is missing.
 
     """
     path = Path(path)
@@ -103,11 +97,9 @@ def read_sequences(
     Accepts FASTA, CSV and Parquet. For CSV/Parquet, ``seq_col`` must be
     provided unless the file has a column named ``"sequence"``.
 
-    Raises
-    ------
-    RoxyIOError
-        If the extension is unsupported, the file is missing, or ``seq_col``
-        is absent.
+    Raises:
+        RoxyIOError: If the extension is unsupported, the file is missing,
+            or ``seq_col`` is absent.
 
     """
     path = Path(path)
@@ -137,10 +129,8 @@ def read_sequences(
 def write_table(df: pl.DataFrame, path: Path | str) -> None:
     """Write a Polars DataFrame to CSV or Parquet (dispatched by extension).
 
-    Raises
-    ------
-    RoxyIOError
-        If the extension is unsupported or write fails.
+    Raises:
+        RoxyIOError: If the extension is unsupported or write fails.
 
     """
     path = Path(path)

@@ -25,16 +25,12 @@ _AAINDEX_TABLE: pl.DataFrame | None = None
 def load_aaindex() -> pl.DataFrame:
     """Load the bundled AAIndex table (566 indices x 20 AAs).
 
-    Returns
-    -------
-    polars.DataFrame
-        Column ``index`` = AAIndex code; remaining columns = one-letter AA codes.
-        Result is module-level cached after first call.
+    Returns:
+        DataFrame with column ``index`` = AAIndex code and one column per
+        one-letter AA code. Result is module-level cached after first call.
 
-    Raises
-    ------
-    AAIndexError
-        If the bundled CSV cannot be read.
+    Raises:
+        AAIndexError: If the bundled CSV cannot be read.
 
     """
     global _AAINDEX_TABLE  # noqa: PLW0603
@@ -65,18 +61,12 @@ def compute_aaindex_means(
 ) -> dict[str, float]:
     """Compute mean AAIndex values over a sequence for given index codes.
 
-    Parameters
-    ----------
-    seq:
-        Amino-acid sequence (one-letter codes).
-    index_codes:
-        AAIndex identifiers to compute (e.g. ``["ANDN920101", "ARGP820101"]``).
-    table:
-        Optional pre-loaded AAIndex table. Loaded from bundle if ``None``.
+    Args:
+        seq: Amino-acid sequence (one-letter codes).
+        index_codes: AAIndex identifiers to compute (e.g. ``["ANDN920101", "ARGP820101"]``).
+        table: Optional pre-loaded AAIndex table. Loaded from bundle if ``None``.
 
-    Returns
-    -------
-    dict
+    Returns:
         ``{"aaindex_<CODE>_mean": float, ...}``
 
     """

@@ -27,10 +27,8 @@ class BaseDescriptor(ABC):
     def compute_one(self, sequence: str) -> dict[str, float]:
         """Compute descriptors for a single amino-acid sequence.
 
-        Returns
-        -------
-        dict
-            Mapping of unprefixed feature name → value.
+        Returns:
+            Mapping of unprefixed feature name to value.
 
         """
         raise NotImplementedError
@@ -43,16 +41,11 @@ class BaseDescriptor(ABC):
     ) -> pl.DataFrame:
         """Compute descriptors for multiple sequences.
 
-        Parameters
-        ----------
-        sequences:
-            Iterable of amino-acid strings.
-        ids:
-            Optional sequence identifiers stored in an ``id`` column.
+        Args:
+            sequences: Iterable of amino-acid strings.
+            ids: Optional sequence identifiers stored in an ``id`` column.
 
-        Returns
-        -------
-        polars.DataFrame
+        Returns:
             One row per sequence; columns are ``{name}_{feature}``.
             If ``ids`` is provided, an ``id`` column is prepended.
 
