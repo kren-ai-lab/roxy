@@ -91,11 +91,15 @@ def read_parquet(path: Path | str, seq_col: str | None = None) -> pl.DataFrame:
 def read_sequences(
     path: Path | str,
     seq_col: str | None = None,
+    id_col: str | None = None,
 ) -> list[tuple[str, str]]:
     """Dispatch-by-extension loader returning (id, sequence) pairs.
 
     Accepts FASTA, CSV and Parquet. For CSV/Parquet, ``seq_col`` must be
     provided unless the file has a column named ``"sequence"``.
+
+    For the id, the function checks (in order): ``id_col`` if given, then
+    a column named ``"id"``, then falls back to row indices.
 
     Raises:
         RoxyIOError: If the extension is unsupported, the file is missing,
@@ -121,7 +125,8 @@ def read_sequences(
         )
         raise RoxyIOError(msg)
 
-    ids = [str(i) for i in range(len(df))]
+    _id_col = id_col or ("id" if "id" in df.columns else None)
+    ids = df[_id_col].cast(pl.String).to_list() if _id_col else [str(i) for i in range(len(df))]
     seqs = df[_col].cast(pl.String).str.strip_chars().str.to_uppercase().to_list()
     return list(zip(ids, seqs, strict=True))
 
