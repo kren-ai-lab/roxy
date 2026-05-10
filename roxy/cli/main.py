@@ -6,6 +6,7 @@ import typer
 
 from roxy import __version__
 from roxy.cli._shared import HELP_CONTEXT_SETTINGS
+from roxy.cli.describe_descriptor import describe_descriptor
 from roxy.cli.list_descriptors import list_descriptors
 
 app = typer.Typer(
@@ -38,8 +39,13 @@ def main(
 
 app.command(
     name="list",
-    help="List all registered descriptor families.",
+    help="List all registered descriptors grouped by family.",
 )(list_descriptors)
+
+app.command(
+    name="describe",
+    help="Show full details for a descriptor.",
+)(describe_descriptor)
 
 
 if __name__ == "__main__":
