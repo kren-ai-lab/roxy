@@ -9,6 +9,7 @@ import polars as pl
 import typer
 import yaml
 
+from roxy.cli._utils import _resolve_names
 from roxy.core.exceptions import RoxyIOError
 from roxy.core.io import read_sequences, write_table
 from roxy.descriptors import DESCRIPTOR_REGISTRY
@@ -48,25 +49,6 @@ def _load_config(path: Path) -> dict[str, dict[str, object]]:
             raise typer.BadParameter(msg)
         validated[name] = dict(norm_params)
     return validated
-
-
-def _resolve_names(
-    all_: bool,
-    descriptors: list[str],
-    family: list[str],
-) -> list[str]:
-    if all_:
-        return sorted(DESCRIPTOR_REGISTRY)
-    names: list[str] = list(descriptors)
-    for fam in family:
-        names += [n for n, c in DESCRIPTOR_REGISTRY.items() if c.family == fam]
-    seen: set[str] = set()
-    result: list[str] = []
-    for n in names:
-        if n not in seen:
-            seen.add(n)
-            result.append(n)
-    return sorted(result)
 
 
 def _build_instances(

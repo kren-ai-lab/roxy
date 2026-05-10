@@ -2,9 +2,10 @@
 
 import pytest
 
+from roxy.core.constants import AA20_ORDERED
 from roxy.descriptors import DESCRIPTOR_REGISTRY
 
-_SEQ = "ACDEFGHIKLMNPQRSTVWY"
+_SEQ = "".join(AA20_ORDERED)
 _EMPTY = ""
 
 _ALL_NAMES = sorted(DESCRIPTOR_REGISTRY)

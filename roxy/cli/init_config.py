@@ -8,6 +8,7 @@ from pathlib import Path
 
 import typer
 
+from roxy.cli._utils import _resolve_names
 from roxy.descriptors import DESCRIPTOR_REGISTRY
 
 _YAML_SPECIAL = frozenset(': #{}[]|>&*!,\'"')
@@ -51,25 +52,6 @@ def _descriptor_block(name: str, cls: type) -> str:
         ann = f"  # {_ann_str(p.annotation)}" if p.annotation is not inspect.Parameter.empty else ""
         lines.append(f"  {pname}: {val}{ann}")
     return "\n".join(lines)
-
-
-def _resolve_names(
-    all_: bool,
-    descriptors: list[str],
-    family: list[str],
-) -> list[str]:
-    if all_:
-        return sorted(DESCRIPTOR_REGISTRY)
-    names: list[str] = list(descriptors)
-    for fam in family:
-        names += [n for n, c in DESCRIPTOR_REGISTRY.items() if c.family == fam]
-    seen: set[str] = set()
-    result: list[str] = []
-    for n in names:
-        if n not in seen:
-            seen.add(n)
-            result.append(n)
-    return sorted(result)
 
 
 def init_config(

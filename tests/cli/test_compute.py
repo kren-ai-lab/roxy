@@ -7,7 +7,8 @@ import pytest
 import typer
 from typer.testing import CliRunner
 
-from roxy.cli.compute import _concat_frames, _load_config, _resolve_names
+from roxy.cli._utils import _resolve_names
+from roxy.cli.compute import _concat_frames, _load_config
 from roxy.cli.main import app
 from roxy.descriptors import DESCRIPTOR_REGISTRY
 
@@ -70,6 +71,18 @@ def test_concat_two_frames_no_duplicate_base():
     assert result.columns.count("id") == 1
     assert "charge_length" not in result.columns
     assert "charge_positive_fraction" in result.columns
+
+
+def test_concat_three_frames_no_duplicate_base():
+    df1 = _make_frame("aac")
+    df2 = _make_frame("charge")
+    df3 = _make_frame("dpc")
+    result = _concat_frames([df1, df2, df3], ["aac", "charge", "dpc"])
+    assert result.columns.count("length") == 1
+    assert result.columns.count("id") == 1
+    assert "charge_length" not in result.columns
+    assert "dpc_length" not in result.columns
+    assert "dpc_freq_AA" in result.columns
 
 
 # ---------------------------------------------------------------------------

@@ -70,10 +70,10 @@ def list_descriptors(
             console.print()
             console.print(title)
 
+            desc_width = max(24, console.width - max_name - 2)
             for name, cls in descriptors:
                 doc = inspect.getdoc(cls) or ""
                 first_line = doc.splitlines()[0] if doc else ""
-                desc_width = max(24, console.width - max_name - 2)
                 for line in _descriptor_lines(
                     name,
                     first_line,

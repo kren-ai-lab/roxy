@@ -6,9 +6,10 @@ import inspect
 
 import typer
 
+from roxy.core.constants import AA20_ORDERED
 from roxy.descriptors import DESCRIPTOR_REGISTRY
 
-_SEQ = "ACDEFGHIKLMNPQRSTVWY"
+_SEQ = "".join(AA20_ORDERED)
 
 
 def _parse_google_args(doc: str) -> dict[str, str]:
