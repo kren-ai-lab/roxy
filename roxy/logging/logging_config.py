@@ -1,32 +1,9 @@
+"""Logging utilities for Roxy."""
+
 from __future__ import annotations
-
-"""Logging utilities for Roxy.
-
-This module provides a small helper to obtain namespaced loggers for the
-library, as well as an optional convenience function to configure
-console/file handlers. By default, Roxy does **not** configure global
-logging; it only attaches a :class:`logging.NullHandler` to the top-level
-``"roxy"`` logger so that importing the library does not emit warnings
-if the application has not configured logging.
-
-Typical usage within the library::
-
-    from roxy.core.logging_utils import get_logger
-
-    logger = get_logger(__name__)
-    logger.info("Starting descriptor computation for %d samples", n_samples)
-
-For applications, CLI or notebooks, you can call
-:func:`setup_logger` once to configure handlers::
-
-    from roxy.core.logging_utils import setup_logger
-    setup_logger(level=logging.INFO, log_file="logs/roxy.log")
-"""
 
 import logging
 from pathlib import Path
-from typing import Optional, Union
-
 
 # Ensure the top-level 'roxy' logger has a NullHandler to avoid
 # "No handler found" warnings when the host application has not
@@ -36,7 +13,7 @@ if not _root_logger.handlers:
     _root_logger.addHandler(logging.NullHandler())
 
 
-def get_logger(name: Optional[str] = None) -> logging.Logger:
+def get_logger(name: str | None = None) -> logging.Logger:
     """Return a logger under the ``roxy`` namespace.
 
     Parameters
@@ -45,6 +22,7 @@ def get_logger(name: Optional[str] = None) -> logging.Logger:
         Optional fully-qualified logger name. If ``None``, the top-level
         ``"roxy"`` logger is returned. When a dotted name is provided,
         it is attached as a child of ``"roxy"``, e.g. ``roxy.core.dataset``.
+
     """
     if name is None:
         return logging.getLogger("roxy")
@@ -57,8 +35,8 @@ def get_logger(name: Optional[str] = None) -> logging.Logger:
 
 def setup_logger(
     level: int = logging.INFO,
-    fmt: Optional[str] = None,
-    log_file: Optional[Union[str, Path]] = None,
+    fmt: str | None = None,
+    log_file: str | Path | None = None,
     file_mode: str = "a",
 ) -> logging.Logger:
     """Configure a basic logger for Roxy.
@@ -87,6 +65,7 @@ def setup_logger(
     -------
     logging.Logger
         The configured top-level ``"roxy"`` logger.
+
     """
     logger = logging.getLogger("roxy")
     logger.setLevel(level)

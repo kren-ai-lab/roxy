@@ -1,19 +1,50 @@
-"""Default configuration placeholders for Roxy.
-
-This module groups together small configuration snippets and defaults
-used by higher-level components (e.g. CLI helpers, pipelines). It is
-intentionally minimal at this stage and can be extended as the library
-grows.
-"""
+"""Roxy cache configuration and runtime overrides."""
 
 from __future__ import annotations
 
-from typing import Dict, List
+import os
+from contextlib import contextmanager
+from pathlib import Path
+from threading import RLock
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
+_LOCK = RLock()
+_CACHE_ROOT: Path | None = None
+
+_DEFAULT_CACHE_ROOT = Path(
+    os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")
+) / "roxy"
 
 
-#: Default descriptor engines to run per modality in simple pipelines.
-DEFAULT_DESCRIPTOR_ENGINES: Dict[str, List[str]] = {
-    "sequence": ["seq_global"],
-    "structure": ["struct_basic"],
-    "compound": ["mol_basic"],
-}
+def get_cache_root() -> Path:
+    """Return current cache root (default: ``~/.cache/roxy``)."""
+    with _LOCK:
+        root = _CACHE_ROOT if _CACHE_ROOT is not None else _DEFAULT_CACHE_ROOT
+    root.mkdir(parents=True, exist_ok=True)
+    return root
+
+
+def set_cache_root(new_root: Path | str) -> None:
+    """Override cache root programmatically."""
+    global _CACHE_ROOT  # noqa: PLW0603,RUF100
+    resolved = Path(new_root).expanduser().resolve()
+    with _LOCK:
+        _CACHE_ROOT = resolved
+    resolved.mkdir(parents=True, exist_ok=True)
+
+
+@contextmanager
+def temporary_cache_root(temp_root: Path | str) -> Generator[None, None, None]:
+    """Context manager: temporarily override cache root."""
+    prev = get_cache_root()
+    set_cache_root(temp_root)
+    try:
+        yield
+    finally:
+        set_cache_root(prev)
+
+
+__all__ = ["get_cache_root", "set_cache_root", "temporary_cache_root"]

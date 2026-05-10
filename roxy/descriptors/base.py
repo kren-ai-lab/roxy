@@ -1,47 +1,65 @@
+"""Base class for Roxy descriptor families."""
+
 from __future__ import annotations
 
-"""Base interface for descriptor engines in Roxy.
-
-All descriptor engines operate on a samples table (pandas DataFrame) and
-return a feature table with one row per sample. Engines should be
-stateless or only store configuration (e.g. pH, list of AAIndex codes).
-"""
-
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 
 import pandas as pd
 
 
-class BaseDescriptorEngine(ABC):
-    """
-    Abstract base class for descriptor calculators.
+class BaseDescriptor(ABC):
+    """Abstract base for sequence descriptor families.
 
-    Subclasses must implement :meth:`compute`, which receives a samples
-    DataFrame and returns a feature table (DataFrame) indexed like
-    ``samples``.
+    Subclasses declare ``name`` (registry key) and ``family`` (grouping
+    label), then implement :meth:`compute_one`. The :meth:`compute` method
+    is provided and applies ``compute_one`` to each sequence, returning a
+    DataFrame with columns prefixed by ``{name}_``.
     """
 
-    #: Optional engine name used for registration, logging or display.
-    name: str = "base_descriptor_engine"
+    name: str = "base"
+    family: str = "misc"
 
     @abstractmethod
-    def compute(self, samples: pd.DataFrame) -> pd.DataFrame:
+    def compute_one(self, sequence: str) -> dict[str, float]:
+        """Compute descriptors for a single amino-acid sequence.
+
+        Returns
+        -------
+        dict
+            Mapping of unprefixed feature name → value.
+
         """
-        Compute descriptors for the given samples table.
+        raise NotImplementedError
+
+    def compute(
+        self,
+        sequences: Iterable[str],
+        *,
+        ids: Iterable[str] | None = None,
+    ) -> pd.DataFrame:
+        """Compute descriptors for multiple sequences.
 
         Parameters
         ----------
-        samples :
-            DataFrame with at least the columns required by the engine
-            (e.g. ``'sequence'``, ``'pdb_path'`` or ``'smiles'``).
+        sequences:
+            Iterable of amino-acid strings.
+        ids:
+            Optional row labels for the resulting DataFrame.
 
         Returns
         -------
         pandas.DataFrame
-            Feature table indexed like ``samples``.
-        """
-        raise NotImplementedError
+            One row per sequence; columns are ``{name}_{feature}``.
 
-    def __repr__(self) -> str:  # pragma: no cover - trivial
-        name = getattr(self, "name", self.__class__.__name__)
-        return f"{self.__class__.__name__}(name={name!r})"
+        """
+        seqs = list(sequences)
+        rows = [self.compute_one(s) for s in seqs]
+        df = pd.DataFrame(rows, index=list(ids) if ids is not None else None)
+        return df.add_prefix(f"{self.name}_")
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"{self.__class__.__name__}(name={self.name!r}, family={self.family!r})"
+
+
+__all__ = ["BaseDescriptor"]

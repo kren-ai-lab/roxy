@@ -1,98 +1,122 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "roxy"
-version = "0.1.0"
-description = "Roxy: exploratory analysis and descriptors for molecular machine learning"
+dynamic = ["version"]
+description = "Protein sequence descriptors for machine learning."
 readme = "README.md"
-requires-python = ">=3.9"
 license = "GPL-3.0-only"
-
+requires-python = ">=3.11,<3.15"
 authors = [
-  { name = "Kren AI Lab", email = "krenai@umag.cl" },
+    { name = "Kren AI Lab", email = "krenai@umag.cl" },
 ]
-
 keywords = [
-  "machine-learning",
-  "bioinformatics",
-  "proteins",
-  "chemoinformatics",
-  "EDA",
-  "feature-engineering",
+    "bioinformatics",
+    "descriptors",
+    "feature-engineering",
+    "machine-learning",
+    "proteins",
 ]
-
 classifiers = [
-  "Development Status :: 3 - Alpha",
-  "Intended Audience :: Science/Research",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Topic :: Scientific/Engineering :: Bio-Informatics",
-  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-
 dependencies = [
-  "numpy>=1.23",
-  "pandas>=1.5",
-  "scikit-learn>=1.2",
-  "matplotlib>=3.6",
-  "requests>=2.28",
-  "typer>=0.9",
-  "joblib>=1.2",
+    "appdirs>=1.4.4,<2.0",
+    "numpy>=1.26,<3.0",
+    "pandas>=2.0,<3.0",
+    "requests>=2.28,<3.0",
+    "rich>=13.0,<15.0",
+    "scikit-learn>=1.3,<2.0",
+    "scipy>=1.10,<2.0",
+    "typer>=0.9,<1.0",
 ]
 
 [project.optional-dependencies]
-# For interactive plots and dashboard helpers
-viz = [
-  "plotly>=5.0",
+parquet = [
+    "fastparquet>=2024.0",
+    "pyarrow>=14.0",
 ]
-
-# For UMAP-based projection
-umap = [
-  "umap-learn>=0.5",
-]
-
-# Developer tools: tests, linting, formatting, notebooks
 dev = [
-  "pytest>=7.0",
-  "pytest-cov>=4.0",
-  "mypy>=1.0",
-  "ruff>=0.4",
-  "black>=24.0",
-  "ipykernel",
-  "nbformat",
-  "nbclient",
+    "ruff>=0.4",
+    "taskipy>=1.12",
 ]
-
-# Convenience extra to install "everything"
+tests = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+]
 all = [
-  "plotly>=5.0",
-  "umap-learn>=0.5",
-  "pytest>=7.0",
-  "pytest-cov>=4.0",
-  "mypy>=1.0",
-  "ruff>=0.4",
-  "black>=24.0",
-  "ipykernel",
-  "nbformat",
-  "nbclient",
+    "fastparquet>=2024.0",
+    "pyarrow>=14.0",
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.4",
+    "taskipy>=1.12",
 ]
 
 [project.scripts]
-roxy = "roxy.cli:app"
+roxy = "roxy.cli.main:app"
 
 [project.urls]
-homepage = "https://github.com/ProteinEngineering-PESB2/roxy_library"
-repository = "https://github.com/ProteinEngineering-PESB2/roxy_library"
-issues = "https://github.com/ProteinEngineering-PESB2/roxy_library/issues"
+Homepage = "https://github.com/ProteinEngineering-PESB2/roxy_library"
+Repository = "https://github.com/ProteinEngineering-PESB2/roxy_library"
+Issues = "https://github.com/ProteinEngineering-PESB2/roxy_library/issues"
 
-[build-system]
-requires = ["setuptools>=61", "wheel"]
-build-backend = "setuptools.build_meta"
+[tool.hatch.version]
+path = "roxy/__init__.py"
+pattern = '__version__ = "(?P<version>[^"]+)"'
 
-[tool.setuptools]
-package-dir = { "" = "." }
+[tool.hatch.build.targets.sdist]
+include = ["/roxy"]
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["roxy*"]
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "ANN",     # type annotations — enforced selectively, not globally
+    "COM812",  # trailing comma (conflicts with formatter)
+    "D105",    # missing docstring in magic method
+    "D203",    # one-blank-line-before-class (conflicts with D211)
+    "D213",    # multi-line-summary-second-line (conflicts with D212)
+    "EM101",   # exception message as string literal
+    "FBT001",  # boolean positional argument in function
+    "FBT003",  # boolean positional value in call
+    "N802",    # function name lowercase
+    "N803",    # argument name lowercase
+    "N806",    # variable in function lowercase
+    "PLR0913", # too many arguments
+    "PLW0603", # global statement to update variable
+    "RUF002",  # ambiguous unicode in docstring
+    "RUF003",  # ambiguous unicode in comment
+    "TC003",   # stdlib import not in TYPE_CHECKING block
+    "TRY003",  # long message outside exception class
+    "TRY400",  # use logging.exception instead of error
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ANN", "D", "PLC0415", "PLR2004", "PT017", "S101"]
+
+[tool.taskipy.tasks]
+sort-imports = "ruff check --fix --select I,F401 roxy/ tests/"
+format = "task sort-imports && ruff format roxy/ tests/"
+lint = "ruff check roxy/ tests/"
+lint-fix = "ruff check --fix roxy/ tests/"
+test = "pytest -q"
+test-v = "pytest -v"
+test-cov = "pytest --cov=roxy --cov-report=html"
 

@@ -1,70 +1,33 @@
 """AAIndex handling utilities for sequence-level descriptors.
 
-This module manages the AAIndex CSV file used to derive residue-level
-properties for protein sequences. It provides functions to:
+The AAIndex CSV is expected in residue-wise wide format:
 
-- determine the cache directory for Roxy,
-- download or update the AAIndex CSV file,
-- load the AAIndex table as a pandas DataFrame,
-- compute per-sequence mean AAIndex values for one or more indices.
-
-The AAIndex CSV is expected to be in *residue-wise* wide format, with one
-row per amino acid and one column per index code, e.g.:
-
-    residue, ANDN920101, ARGP820101, ARGP820102, ...
-    A,      4.35,       0.61,      1.18,      ...
-    L,      4.17,       1.53,      3.23,      ...
+    residue, ANDN920101, ARGP820101, ...
+    A,      4.35,       0.61,      ...
     ...
-
-If your CSV uses a different schema, adapt the loader accordingly.
 """
 
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Dict, Iterable, List, Optional
-
-import os
 import warnings
+from collections.abc import Iterable
+from pathlib import Path
 
 import pandas as pd
 import requests
 
-from .constants import AA20, AAINDEX_URL, AAINDEX_FILENAME, ROXY_CACHE_SUBDIR
+from roxy.logging import get_logger
+
+from .config import get_cache_root
+from .constants import AA20, AAINDEX_FILENAME, AAINDEX_URL
 from .exceptions import AAIndexError
-from .logging_utils import get_logger
 
 logger = get_logger(__name__)
-
-# ---------------------------------------------------------------------------
-# Cache directory utilities
-# ---------------------------------------------------------------------------
-
-
-def get_cache_dir() -> Path:
-    """Return the Roxy cache directory.
-
-    The default location is ``~/.cache/roxy`` on Unix-like systems,
-    and the analogous location on other platforms based on the
-    ``XDG_CACHE_HOME`` or user home directory.
-
-    Returns
-    -------
-    pathlib.Path
-        Path to the cache directory. The directory is created if it
-        does not already exist.
-    """
-    base = os.environ.get("XDG_CACHE_HOME", None)
-    if base is None:
-        base = os.path.join(Path.home(), ".cache")
-    cache_dir = Path(base) / ROXY_CACHE_SUBDIR
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    return cache_dir
 
 
 def get_aaindex_path() -> Path:
     """Return the full path to the AAIndex CSV file in the cache."""
-    return get_cache_dir() / AAINDEX_FILENAME
+    return get_cache_root() / AAINDEX_FILENAME
 
 
 # ---------------------------------------------------------------------------
@@ -72,7 +35,7 @@ def get_aaindex_path() -> Path:
 # ---------------------------------------------------------------------------
 
 
-def download_aaindex(url: Optional[str] = None, *, force: bool = False) -> Path:
+def download_aaindex(url: str | None = None, *, force: bool = False) -> Path:
     """Download or update the AAIndex CSV file in the cache directory.
 
     Parameters
@@ -93,6 +56,7 @@ def download_aaindex(url: Optional[str] = None, *, force: bool = False) -> Path:
     ------
     AAIndexError
         If the download fails or the remote server returns an error.
+
     """
     target = get_aaindex_path()
     if target.exists() and not force:
@@ -121,7 +85,7 @@ def download_aaindex(url: Optional[str] = None, *, force: bool = False) -> Path:
 # Loading and lookup
 # ---------------------------------------------------------------------------
 
-_AAINDEX_TABLE: Optional[pd.DataFrame] = None
+_AAINDEX_TABLE: pd.DataFrame | None = None
 
 
 def load_aaindex(*, auto_download: bool = True) -> pd.DataFrame:
@@ -147,6 +111,7 @@ def load_aaindex(*, auto_download: bool = True) -> pd.DataFrame:
     AAIndexError
         If the CSV is missing and cannot be downloaded, cannot be read,
         or is structurally invalid.
+
     """
     global _AAINDEX_TABLE
 
@@ -217,8 +182,8 @@ def load_aaindex(*, auto_download: bool = True) -> pd.DataFrame:
 def compute_aaindex_means_for_sequence(
     seq: str,
     index_codes: Iterable[str],
-    table: Optional[pd.DataFrame] = None,
-) -> Dict[str, float]:
+    table: pd.DataFrame | None = None,
+) -> dict[str, float]:
     """Compute mean AAIndex values for a sequence and a set of indices.
 
     For each AAIndex code, this function looks up the per-residue values
@@ -240,6 +205,7 @@ def compute_aaindex_means_for_sequence(
     dict
         Mapping from feature name to mean value. Each key has the form
         ``aaindex_<CODE>_mean``.
+
     """
     s = (seq or "").strip().upper().replace("*", "")
     L = len(s)
@@ -249,13 +215,14 @@ def compute_aaindex_means_for_sequence(
     if table is None:
         table = load_aaindex(auto_download=True)
 
-    feats: Dict[str, float] = {}
+    feats: dict[str, float] = {}
     for code in index_codes:
         if code not in table.columns:
             warnings.warn(
                 f"AAIndex code {code!r} not found in AAIndex table; "
                 "returning NaN for this descriptor.",
                 RuntimeWarning,
+                stacklevel=2,
             )
             feats[f"aaindex_{code}_mean"] = float("nan")
             continue
@@ -263,10 +230,7 @@ def compute_aaindex_means_for_sequence(
         # This is a Series indexed by residue (A, C, D, ...)
         scale = table[code]
 
-        vals: List[float] = []
-        for aa in s:
-            if aa in AA20:
-                vals.append(scale[aa])
+        vals = [scale[aa] for aa in s if aa in AA20]
 
         if not vals:
             feats[f"aaindex_{code}_mean"] = float("nan")
@@ -291,5 +255,6 @@ def ensure_aaindex_available() -> None:
     >>> ensure_aaindex_available()  # doctest: +SKIP
 
     or call it explicitly from your own installation scripts.
+
     """
     _ = load_aaindex(auto_download=True)
