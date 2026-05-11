@@ -64,11 +64,3 @@ def test_compute_help():
 def test_init_config_help():
     result = runner.invoke(app, ["init-config", "--help"])
     assert result.exit_code == 0
-
-
-def test_aaindex_bundled():
-    """AAIndex data ships with the package — no download needed."""
-    from roxy.core.aaindex import load_aaindex
-
-    df = load_aaindex()
-    assert df.shape == (566, 21)  # 20 AA columns + "index" column

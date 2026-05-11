@@ -22,6 +22,12 @@ def test_list_indices():
     assert "KYTJ820101" in codes
 
 
+def test_aaindex_bundled():
+    """AAIndex data ships with the package and is available to the descriptor."""
+    codes = list_indices()
+    assert len(codes) == 566
+
+
 def test_empty_nan(desc):
     out = desc.compute_one(EMPTY)
     assert out["length"] == 0.0
