@@ -50,39 +50,16 @@ def read_fasta(path: Path | str) -> list[tuple[str, str]]:
     return records
 
 
-def read_csv(path: Path | str, seq_col: str | None = None) -> pl.DataFrame:
-    """Load a CSV into a Polars DataFrame.
-
-    Raises:
-        RoxyIOError: If the file does not exist or ``seq_col`` is missing.
-
-    """
+def _read_table(path: Path | str, *, seq_col: str, fmt: str) -> pl.DataFrame:
+    """Load a CSV or Parquet file into a Polars DataFrame."""
     path = Path(path)
     if not path.exists():
-        msg = f"CSV file not found: {path}"
+        msg = f"{fmt} file not found: {path}"
         raise RoxyIOError(msg)
 
-    df = pl.read_csv(path)
-    if seq_col is not None and seq_col not in df.columns:
-        msg = f"Column {seq_col!r} not found. Available: {df.columns}"
-        raise RoxyIOError(msg)
-    return df
-
-
-def read_parquet(path: Path | str, seq_col: str | None = None) -> pl.DataFrame:
-    """Load a Parquet file into a Polars DataFrame.
-
-    Raises:
-        RoxyIOError: If the file does not exist or ``seq_col`` is missing.
-
-    """
-    path = Path(path)
-    if not path.exists():
-        msg = f"Parquet file not found: {path}"
-        raise RoxyIOError(msg)
-
-    df = pl.read_parquet(path)
-    if seq_col is not None and seq_col not in df.columns:
+    reader = pl.read_csv if fmt == "CSV" else pl.read_parquet
+    df = reader(path)
+    if seq_col not in df.columns:
         msg = f"Column {seq_col!r} not found. Available: {df.columns}"
         raise RoxyIOError(msg)
     return df
@@ -115,9 +92,9 @@ def read_sequences(
     _col = seq_col or "sequence"
 
     if ext in _CSV_EXTENSIONS:
-        df = read_csv(path, seq_col=_col)
+        df = _read_table(path, seq_col=_col, fmt="CSV")
     elif ext in _PARQUET_EXTENSIONS:
-        df = read_parquet(path, seq_col=_col)
+        df = _read_table(path, seq_col=_col, fmt="Parquet")
     else:
         msg = (
             f"Unsupported file extension {ext!r}. "
@@ -157,9 +134,7 @@ def write_table(df: pl.DataFrame, path: Path | str) -> None:
 
 
 __all__ = [
-    "read_csv",
     "read_fasta",
-    "read_parquet",
     "read_sequences",
     "write_table",
 ]

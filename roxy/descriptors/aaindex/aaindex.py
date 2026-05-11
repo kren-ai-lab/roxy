@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import contextlib
 import csv
 import math
 import statistics
@@ -27,10 +26,9 @@ def _load_aaindex() -> dict[str, dict[str, float]]:
         code = row["index"]
         scale: dict[str, float] = {}
         for aa, val in row.items():
-            if aa == "index":
+            if aa == "index" or val in (None, ""):
                 continue
-            with contextlib.suppress(ValueError, TypeError):
-                scale[aa] = float(val)
+            scale[aa] = float(val)
         result[code] = scale
     return result
 

@@ -5,16 +5,17 @@ from __future__ import annotations
 import typer
 
 from roxy import __version__
-from roxy.cli._shared import HELP_CONTEXT_SETTINGS
 from roxy.cli.compute import compute
 from roxy.cli.describe_descriptor import describe_descriptor
 from roxy.cli.init_config import init_config
 from roxy.cli.list_descriptors import list_descriptors
 
+_HELP_CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
+
 app = typer.Typer(
     name="roxy",
     add_completion=False,
-    context_settings=HELP_CONTEXT_SETTINGS,
+    context_settings=_HELP_CONTEXT_SETTINGS,
     help="Roxy — protein sequence descriptors for ML.",
 )
 

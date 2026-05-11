@@ -27,18 +27,20 @@ descriptor = DESCRIPTOR_REGISTRY["aac"]()
 features = descriptor.compute(sequences, ids=ids)  # polars.DataFrame
 ```
 
-For direct Python use, descriptors are also importable by family or from the
-aggregate `roxy.descriptors` namespace:
+For direct Python use, descriptors are importable by family:
 
 ```python
+from roxy.descriptors.aaindex import AAIndexDescriptor
 from roxy.descriptors.composition import KmerFullAlphabetDescriptor
-from roxy.descriptors import AACDescriptor
+from roxy.descriptors.physicochemical import ChargeDescriptor
 
 kmer = KmerFullAlphabetDescriptor(k=2)
-aac = AACDescriptor()
+aaindex = AAIndexDescriptor()
+charge = ChargeDescriptor()
 
 kmer_features = kmer.compute(["ACDEFGHIK"])
-aac_features = aac.compute(["ACDEFGHIK"])
+aaindex_features = aaindex.compute(["ACDEFGHIK"])
+charge_features = charge.compute(["ACDEFGHIK"])
 ```
 
 ## CLI

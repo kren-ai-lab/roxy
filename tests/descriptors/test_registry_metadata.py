@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-from roxy.descriptors import (
-    DESCRIPTOR_REGISTRY,
-    AACDescriptor,
-    CTDClassicDescriptor,
-    GroupedDescriptor,
-    KmerFullAlphabetDescriptor,
-)
+from roxy.descriptors import DESCRIPTOR_REGISTRY
+from roxy.descriptors.composition.aac import AACDescriptor
+from roxy.descriptors.composition.grouped import GroupedDescriptor
+from roxy.descriptors.composition.kmer_full_alphabet import KmerFullAlphabetDescriptor
+from roxy.descriptors.ctd.ctd_classic import CTDClassicDescriptor
 
 
 def test_documented_descriptor_names_are_registered():

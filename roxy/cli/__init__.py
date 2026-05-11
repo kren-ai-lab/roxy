@@ -1,13 +1,4 @@
-"""CLI entry point for Roxy.
-
-Usage (once installed):
-
-    roxy describe-sequences ...
-    roxy scale-data ...
-    roxy select-features ...
-    roxy full-pipeline ...
-    roxy info --what descriptors
-"""
+"""Roxy CLI package."""
 
 from __future__ import annotations
 

@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from roxy.descriptors import AAIndexDescriptor, ChargeDescriptor
+from roxy.descriptors.aaindex import AAIndexDescriptor
+from roxy.descriptors.physicochemical import ChargeDescriptor
 
 
 def main() -> None:

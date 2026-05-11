@@ -7,51 +7,19 @@ import sys
 from pathlib import Path
 
 import typer
+import yaml
 
 from roxy.cli._utils import _resolve_names
 from roxy.descriptors import DESCRIPTOR_REGISTRY
 
-_YAML_SPECIAL = frozenset(': #{}[]|>&*!,\'"')
 
-
-def _value_to_yaml(v: object) -> str:
-    if v is None:
-        return "null"
-    if isinstance(v, bool):
-        return "true" if v else "false"
-    if isinstance(v, (int, float)):
-        return str(v)
-    if isinstance(v, str):
-        return f'"{v}"' if any(c in v for c in _YAML_SPECIAL) else v
-    if isinstance(v, (list, tuple)):
-        return "[]" if not v else "[" + ", ".join(_value_to_yaml(i) for i in v) + "]"
-    return str(v)
-
-
-def _ann_str(ann: object) -> str:
-    raw = str(ann)
-    for old, new in (
-        ("<class '", ""),
-        ("'>", ""),
-        ("typing.", ""),
-        ("collections.abc.", ""),
-        ("builtins.", ""),
-    ):
-        raw = raw.replace(old, new)
-    return raw
-
-
-def _descriptor_block(name: str, cls: type) -> str:
+def _default_params(cls: type) -> dict[str, object]:
     sig = inspect.signature(cls.__init__)
-    params = {k: v for k, v in sig.parameters.items() if k != "self"}
-    lines = [f"{name}:"]
-    if not params:
-        lines.append("  {}  # no configurable parameters")
-    for pname, p in params.items():
-        val = _value_to_yaml(p.default) if p.default is not inspect.Parameter.empty else "~"
-        ann = f"  # {_ann_str(p.annotation)}" if p.annotation is not inspect.Parameter.empty else ""
-        lines.append(f"  {pname}: {val}{ann}")
-    return "\n".join(lines)
+    return {
+        name: param.default
+        for name, param in sig.parameters.items()
+        if name != "self" and param.default is not inspect.Parameter.empty
+    }
 
 
 def init_config(
@@ -78,10 +46,15 @@ def init_config(
         "#   roxy compute sequences.fasta --config <this-file> -o results.parquet\n"
         "# Use 'roxy describe <name>' for parameter documentation.\n"
     )
-    blocks = "\n\n".join(
-        _descriptor_block(n, DESCRIPTOR_REGISTRY[n]) for n in names
+    config_map = {
+        name: _default_params(DESCRIPTOR_REGISTRY[name]) for name in names
+    }
+    body = yaml.safe_dump(
+        config_map,
+        sort_keys=False,
+        default_flow_style=False,
     )
-    content = header + "\n" + blocks + "\n"
+    content = header + "\n" + body
 
     if output is None:
         sys.stdout.write(content)
