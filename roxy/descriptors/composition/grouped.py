@@ -5,10 +5,9 @@ from __future__ import annotations
 import math
 
 from roxy.core.constants import AA_GROUPS
+from roxy.descriptors._utils import clean_sequence, safe_ratio
 from roxy.descriptors.base import BaseDescriptor
 from roxy.descriptors.registry import register
-
-from ._utils import clean_sequence, safe_ratio
 
 _NAN = math.nan
 

@@ -1,21 +1,41 @@
-"""Shared utilities for physicochemical descriptors."""
+"""Shared utilities for descriptor implementations."""
 
 from __future__ import annotations
 
 import math
-from itertools import groupby
+from collections import Counter
+from itertools import groupby, product
 from typing import TYPE_CHECKING
 
 import numpy as np
 
-from roxy.core.constants import PKA_C_TERM, PKA_N_TERM, PKA_SIDE
+from roxy.core.constants import AA20, PKA_C_TERM, PKA_N_TERM, PKA_SIDE
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from collections.abc import Set as AbstractSet
 
+_AA20_SET: frozenset[str] = frozenset(AA20)
 _NAN = math.nan
 _POSITIVE_IONIZABLE = frozenset("KRH")
 _NEGATIVE_IONIZABLE = frozenset("DECY")
+
+
+def clean_sequence(seq: str | None) -> str:
+    """Strip whitespace, uppercase, remove stop codons, keep only standard AAs."""
+    if not seq or not isinstance(seq, str):
+        return ""
+    return "".join(aa for aa in seq.strip().upper().replace("*", "") if aa in _AA20_SET)
+
+
+def generate_all_kmers(alphabet: Iterable[str], k: int) -> list[str]:
+    """Return sorted list of all k-mers over alphabet."""
+    return ["".join(p) for p in product(sorted(alphabet), repeat=k)]
+
+
+def safe_ratio(a: float, b: float) -> float:
+    """Return a/b, or NaN if b is zero."""
+    return a / b if b != 0 else _NAN
 
 
 def windows(seq: str, size: int) -> list[str]:
@@ -42,6 +62,16 @@ def scale_std(seq: str, scale: dict[str, float]) -> float:
     return float(np.std(vals, ddof=0)) if vals else _NAN
 
 
+def zscore_scale(scale: dict[str, float], alphabet: Iterable[str] = AA20) -> dict[str, float]:
+    """Return z-score normalized values for a residue scale."""
+    residues = sorted(alphabet)
+    vals = np.array([scale[aa] for aa in residues], dtype=float)
+    mean, std = vals.mean(), vals.std(ddof=0)
+    if std == 0:
+        return dict.fromkeys(residues, 0.0)
+    return {aa: (scale[aa] - mean) / std for aa in residues}
+
+
 def fraction_from_group(seq: str, group: AbstractSet[str]) -> float:
     """Fraction of seq residues that belong to group; NaN if empty."""
     n = len(seq)
@@ -54,8 +84,12 @@ def profile_stats(values: list[float]) -> dict[str, float]:
     """Compute summary statistics over a profile vector."""
     if not values:
         return {
-            "mean": _NAN, "std": _NAN, "min": _NAN,
-            "max": _NAN, "amplitude": _NAN, "start_end_diff": _NAN,
+            "mean": _NAN,
+            "std": _NAN,
+            "min": _NAN,
+            "max": _NAN,
+            "amplitude": _NAN,
+            "start_end_diff": _NAN,
         }
     arr = np.array(values, dtype=float)
     return {
@@ -113,7 +147,7 @@ def transition_fraction(
 
 
 def net_charge_at_ph(seq: str, ph: float) -> float:
-    """Compute Henderson-Hasselbalch net charge (includes termini)."""
+    """Compute Henderson-Hasselbalch net charge including termini."""
     if not seq:
         return _NAN
     pos = 1.0 / (1.0 + 10 ** (ph - PKA_N_TERM))
@@ -136,17 +170,42 @@ def longest_homopolymer_run(seq: str) -> int:
     return max(len(list(g)) for _, g in groupby(seq))
 
 
+def linguistic_complexity(seq: str, k: int) -> float:
+    """Fraction of possible k-mers observed in seq; NaN if seq is too short."""
+    if len(seq) < k or k < 1:
+        return _NAN
+    observed = len(set(windows(seq, k)))
+    possible = min(len(seq) - k + 1, 20**k)
+    return observed / possible if possible > 0 else _NAN
+
+
+def shannon_entropy(seq: str) -> float:
+    """Return Shannon entropy in bits over symbols in seq."""
+    if not seq:
+        return _NAN
+    counts = Counter(seq)
+    total = len(seq)
+    probs = np.array([c / total for c in counts.values()], dtype=float)
+    return float(-(probs * np.log2(probs)).sum())
+
+
 __all__ = [
+    "clean_sequence",
     "fraction_above_threshold",
     "fraction_from_group",
+    "generate_all_kmers",
+    "linguistic_complexity",
     "longest_homopolymer_run",
     "longest_run",
     "net_charge_at_ph",
     "profile_stats",
+    "safe_ratio",
     "scale_mean",
     "scale_std",
     "scale_values",
+    "shannon_entropy",
     "terminal_segment",
     "transition_fraction",
     "windows",
+    "zscore_scale",
 ]

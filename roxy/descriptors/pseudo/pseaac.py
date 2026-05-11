@@ -4,11 +4,9 @@ from __future__ import annotations
 
 import math
 
-import numpy as np
-
 from roxy.core.constants import AA20, EISENBERG, HYDROPHILICITY, SIDECHAIN_MASS
+from roxy.descriptors._utils import clean_sequence, zscore_scale
 from roxy.descriptors.base import BaseDescriptor
-from roxy.descriptors.composition._utils import clean_sequence
 from roxy.descriptors.registry import register
 
 _NAN = math.nan
@@ -19,15 +17,6 @@ _DEFAULT_PROPERTIES: dict[str, dict[str, float]] = {
     "hydrophilicity": HYDROPHILICITY,
     "sidechain_mass": SIDECHAIN_MASS,
 }
-
-
-def _zscore_scale(scale: dict[str, float]) -> dict[str, float]:
-    """Return z-score normalized version of a per-residue scale."""
-    vals = np.array([scale[aa] for aa in _AA20_LIST], dtype=float)
-    mean, std = vals.mean(), vals.std(ddof=0)
-    if std == 0:
-        return dict.fromkeys(_AA20_LIST, 0.0)
-    return {aa: (scale[aa] - mean) / std for aa in _AA20_LIST}
 
 
 def _correlation_theta(
@@ -104,7 +93,7 @@ class PseAACDescriptor(BaseDescriptor):
         if n == 0:
             return self._nan_schema(feats)
 
-        norm_scales = {name: _zscore_scale(scale) for name, scale in self.properties.items()}
+        norm_scales = {name: zscore_scale(scale, _AA20_LIST) for name, scale in self.properties.items()}
 
         thetas = []
         for lag in range(1, self.lam + 1):

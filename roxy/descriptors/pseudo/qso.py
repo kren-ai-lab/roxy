@@ -7,8 +7,8 @@ import math
 import numpy as np
 
 from roxy.core.constants import AA20, EISENBERG, HYDROPHILICITY, SIDECHAIN_MASS
+from roxy.descriptors._utils import clean_sequence, zscore_scale
 from roxy.descriptors.base import BaseDescriptor
-from roxy.descriptors.composition._utils import clean_sequence
 from roxy.descriptors.registry import register
 
 _NAN = math.nan
@@ -20,12 +20,6 @@ _DEFAULT_PROPERTIES = {
     "hydrophilicity": HYDROPHILICITY,
     "sidechain_mass": SIDECHAIN_MASS,
 }
-
-
-def _zscore(scale: dict[str, float]) -> dict[str, float]:
-    vals = np.array([scale[aa] for aa in _AA20], dtype=float)
-    mu, sigma = vals.mean(), vals.std(ddof=0)
-    return {aa: (scale[aa] - mu) / sigma for aa in _AA20}
 
 
 def _residue_dist(aa1: str, aa2: str, norm_scales: list[dict[str, float]]) -> float:
@@ -87,7 +81,7 @@ class QSODescriptor(BaseDescriptor):
         if n == 0:
             return self._nan_schema(feats)
 
-        norm_scales = [_zscore(s) for s in self.properties.values()]
+        norm_scales = [zscore_scale(s, _AA20) for s in self.properties.values()]
 
         aac = {aa: seq.count(aa) / n for aa in _AA20}
 

@@ -5,30 +5,13 @@ from __future__ import annotations
 import math
 from collections import Counter
 
-import numpy as np
-
 from roxy.core.constants import AA20, AA_GROUPS, KD, POLARITY
+from roxy.descriptors._utils import clean_sequence, scale_mean, shannon_entropy
 from roxy.descriptors.base import BaseDescriptor
-from roxy.descriptors.composition._utils import clean_sequence
 from roxy.descriptors.registry import register
 
 _NAN = math.nan
 _AA20_LIST: list[str] = sorted(AA20)
-
-
-def _shannon_entropy(seq: str) -> float:
-    if not seq:
-        return _NAN
-    counts = Counter(seq)
-    total = len(seq)
-    probs = np.array([c / total for c in counts.values()], dtype=float)
-    return float(-(probs * np.log2(probs)).sum())
-
-
-def _scale_mean(seq: str, scale: dict[str, float]) -> float:
-    if not seq:
-        return _NAN
-    return float(np.mean([scale[aa] for aa in seq if aa in scale]))
 
 
 def _feats_for_window(tsq: str, prefix: str) -> dict[str, float]:
@@ -36,9 +19,9 @@ def _feats_for_window(tsq: str, prefix: str) -> dict[str, float]:
     n = len(tsq)
     out: dict[str, float] = {f"{prefix}_length": float(n)}
 
-    out[f"{prefix}_hydropathy_mean"] = _scale_mean(tsq, KD)
-    out[f"{prefix}_polarity_mean"] = _scale_mean(tsq, POLARITY)
-    out[f"{prefix}_entropy"] = _shannon_entropy(tsq)
+    out[f"{prefix}_hydropathy_mean"] = scale_mean(tsq, KD)
+    out[f"{prefix}_polarity_mean"] = scale_mean(tsq, POLARITY)
+    out[f"{prefix}_entropy"] = shannon_entropy(tsq)
 
     for name, group in AA_GROUPS.items():
         out[f"{prefix}_{name}_frac"] = (

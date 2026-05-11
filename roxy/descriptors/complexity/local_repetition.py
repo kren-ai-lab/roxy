@@ -8,18 +8,12 @@ from itertools import groupby
 
 import numpy as np
 
+from roxy.descriptors._utils import clean_sequence, windows
 from roxy.descriptors.base import BaseDescriptor
-from roxy.descriptors.composition._utils import clean_sequence
 from roxy.descriptors.registry import register
 
 _NAN = math.nan
 _MIN_REPEAT = 2
-
-
-def _kmers(seq: str, k: int) -> list[str]:
-    if len(seq) < k:
-        return []
-    return [seq[i : i + k] for i in range(len(seq) - k + 1)]
 
 
 def _repeated_fraction(words: list[str]) -> float:
@@ -54,7 +48,7 @@ def _top_freq(words: list[str]) -> float:
 
 
 def _dup_window_frac(seq: str, window: int) -> float:
-    words = _kmers(seq, window)
+    words = windows(seq, window)
     if not words:
         return _NAN
     counts = Counter(words)
@@ -62,7 +56,7 @@ def _dup_window_frac(seq: str, window: int) -> float:
 
 
 def _repeated_burden(seq: str, k: int) -> float:
-    words = _kmers(seq, k)
+    words = windows(seq, k)
     if not words:
         return _NAN
     counts = Counter(words)
@@ -81,7 +75,7 @@ def _recurrence_entropy(words: list[str]) -> float:
 
 
 def _repeated_span(seq: str, k: int) -> float:
-    words = _kmers(seq, k)
+    words = windows(seq, k)
     if not words:
         return _NAN
     positions: dict[str, list[int]] = defaultdict(list)
@@ -94,7 +88,7 @@ def _repeated_span(seq: str, k: int) -> float:
 
 
 def _repeated_block_density(seq: str, k: int) -> float:
-    words = _kmers(seq, k)
+    words = windows(seq, k)
     if not words:
         return _NAN
     counts = Counter(words)
@@ -102,7 +96,7 @@ def _repeated_block_density(seq: str, k: int) -> float:
 
 
 def _longest_redundant_block(seq: str, k: int) -> float:
-    words = _kmers(seq, k)
+    words = windows(seq, k)
     if not words:
         return _NAN
     counts = Counter(words)
@@ -125,7 +119,7 @@ def _local_redundancy_profile(seq: str, outer_window: int, inner_k: int) -> list
     if len(seq) < outer_window or outer_window < inner_k:
         return []
     return [
-        _redundancy_score(_kmers(seq[i : i + outer_window], inner_k))
+        _redundancy_score(windows(seq[i : i + outer_window], inner_k))
         for i in range(len(seq) - outer_window + 1)
     ]
 
@@ -163,9 +157,9 @@ class LocalRepetitionDescriptor(BaseDescriptor):
         seq = clean_sequence(sequence)
         n = len(seq)
 
-        w2 = _kmers(seq, 2)
-        w3 = _kmers(seq, 3)
-        w4 = _kmers(seq, 4)
+        w2 = windows(seq, 2)
+        w3 = windows(seq, 3)
+        w4 = windows(seq, 4)
 
         def _span_norm(seq: str, k: int) -> float:
             span = _repeated_span(seq, k)

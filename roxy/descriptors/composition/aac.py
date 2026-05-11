@@ -6,10 +6,9 @@ import math
 from collections import Counter
 
 from roxy.core.constants import AA20_ORDERED
+from roxy.descriptors._utils import clean_sequence
 from roxy.descriptors.base import BaseDescriptor
 from roxy.descriptors.registry import register
-
-from ._utils import clean_sequence
 
 _NAN = math.nan
 

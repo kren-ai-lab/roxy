@@ -6,10 +6,9 @@ import math
 from collections import Counter
 
 from roxy.core.constants import AA20
+from roxy.descriptors._utils import clean_sequence, generate_all_kmers
 from roxy.descriptors.base import BaseDescriptor
 from roxy.descriptors.registry import register
-
-from ._utils import clean_sequence, generate_all_kmers
 
 _NAN = math.nan
 _ALL_DIPEPTIDES: list[str] = generate_all_kmers(AA20, 2)

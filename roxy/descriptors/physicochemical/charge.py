@@ -4,12 +4,10 @@ from __future__ import annotations
 
 import math
 
-from roxy.core.constants import PKA_C_TERM, PKA_N_TERM, PKA_SIDE
+from roxy.core.constants import PKA_SIDE
+from roxy.descriptors._utils import clean_sequence, net_charge_at_ph, profile_stats, terminal_segment, windows
 from roxy.descriptors.base import BaseDescriptor
-from roxy.descriptors.composition._utils import clean_sequence
 from roxy.descriptors.registry import register
-
-from ._utils import profile_stats, terminal_segment, windows
 
 _NAN = math.nan
 
@@ -18,27 +16,6 @@ _NEGATIVE_GROUP = frozenset("DE")
 _ACIDIC_GROUP = frozenset("DE")
 _BASIC_GROUP = frozenset("KRH")
 _IONIZABLE_GROUP = frozenset("CDEHKRY")
-_POSITIVE_IONIZABLE = frozenset("KRH")
-_NEGATIVE_IONIZABLE = frozenset("DECY")
-
-
-def _net_charge(seq: str, ph: float) -> float:
-    """Compute Henderson-Hasselbalch net charge including termini."""
-    if not seq:
-        return _NAN
-    pos = 1.0 / (1.0 + 10 ** (ph - PKA_N_TERM))
-    neg = 1.0 / (1.0 + 10 ** (PKA_C_TERM - ph))
-    for aa in seq:
-        pka = PKA_SIDE.get(aa)
-        if pka is None:
-            continue
-        if aa in _POSITIVE_IONIZABLE:
-            pos += 1.0 / (1.0 + 10 ** (ph - pka))
-        elif aa in _NEGATIVE_IONIZABLE:
-            neg += 1.0 / (1.0 + 10 ** (pka - ph))
-    return pos - neg
-
-
 def _protonated_basic_fraction(seq: str, ph: float) -> float:
     """Mean protonation degree of basic residues (KRH)."""
     vals = [
@@ -150,14 +127,14 @@ class ChargeDescriptor(BaseDescriptor):
 
         for ph in self.ph_values:
             tag = self._ph_tag(ph)
-            nc = _net_charge(seq, ph)
+            nc = net_charge_at_ph(seq, ph)
             feats[f"net_charge_ph{tag}"] = nc
             feats[f"density_ph{tag}"] = nc / n
             feats[f"protonated_basic_fraction_ph{tag}"] = _protonated_basic_fraction(seq, ph)
             feats[f"deprotonated_acidic_fraction_ph{tag}"] = _deprotonated_acidic_fraction(seq, ph)
 
             local_profile = [
-                _net_charge(w, ph) / self.local_window
+                net_charge_at_ph(w, ph) / self.local_window
                 for w in windows(seq, self.local_window)
             ]
             stats = profile_stats(local_profile)
@@ -168,8 +145,8 @@ class ChargeDescriptor(BaseDescriptor):
             feats[f"local_amplitude_ph{tag}"] = stats["amplitude"]
             feats[f"local_start_end_diff_ph{tag}"] = stats["start_end_diff"]
 
-            nterm_nc = _net_charge(nterm, ph)
-            cterm_nc = _net_charge(cterm, ph)
+            nterm_nc = net_charge_at_ph(nterm, ph)
+            cterm_nc = net_charge_at_ph(cterm, ph)
             nterm_n = len(nterm) or 1
             cterm_n = len(cterm) or 1
             feats[f"nterm_net_ph{tag}"] = nterm_nc

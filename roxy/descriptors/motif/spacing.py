@@ -7,8 +7,8 @@ import math
 import numpy as np
 
 from roxy.core.constants import AA_GROUPS
+from roxy.descriptors._utils import clean_sequence
 from roxy.descriptors.base import BaseDescriptor
-from roxy.descriptors.composition._utils import clean_sequence
 from roxy.descriptors.registry import register
 
 _NAN = math.nan

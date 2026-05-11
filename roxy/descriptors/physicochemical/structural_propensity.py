@@ -7,11 +7,16 @@ import math
 import numpy as np
 
 from roxy.core.constants import CF_HELIX, CF_SHEET, CF_TURN
+from roxy.descriptors._utils import (
+    clean_sequence,
+    fraction_above_threshold,
+    fraction_from_group,
+    profile_stats,
+    scale_mean,
+    windows,
+)
 from roxy.descriptors.base import BaseDescriptor
-from roxy.descriptors.composition._utils import clean_sequence
 from roxy.descriptors.registry import register
-
-from ._utils import fraction_above_threshold, fraction_from_group, profile_stats, scale_mean, windows
 
 _NAN = math.nan
 

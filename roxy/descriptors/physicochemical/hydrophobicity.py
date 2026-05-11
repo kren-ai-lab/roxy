@@ -5,11 +5,8 @@ from __future__ import annotations
 import math
 
 from roxy.core.constants import AA_GROUPS, KD, POLARITY
-from roxy.descriptors.base import BaseDescriptor
-from roxy.descriptors.composition._utils import clean_sequence
-from roxy.descriptors.registry import register
-
-from ._utils import (
+from roxy.descriptors._utils import (
+    clean_sequence,
     fraction_above_threshold,
     fraction_from_group,
     profile_stats,
@@ -18,6 +15,8 @@ from ._utils import (
     terminal_segment,
     windows,
 )
+from roxy.descriptors.base import BaseDescriptor
+from roxy.descriptors.registry import register
 
 _NAN = math.nan
 

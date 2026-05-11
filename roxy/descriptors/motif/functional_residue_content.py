@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import math
 
+from roxy.descriptors._utils import clean_sequence, safe_ratio
 from roxy.descriptors.base import BaseDescriptor
-from roxy.descriptors.composition._utils import clean_sequence
 from roxy.descriptors.registry import register
 
 _NAN = math.nan
@@ -65,10 +65,6 @@ def _frac(seq: str, group: frozenset[str], n: int) -> float:
     return _count(seq, group) / n
 
 
-def _ratio(a: int, b: int) -> float:
-    return a / b if b != 0 else _NAN
-
-
 @register("functional_residue_content", family="motif")
 class FunctionalResidueContentDescriptor(BaseDescriptor):
     """Functional residue content and proxy descriptors.
@@ -126,10 +122,16 @@ class FunctionalResidueContentDescriptor(BaseDescriptor):
         for name, group in _COMPOSITES.items():
             feats[name] = _count(seq, group) / n
 
-        feats["basic_acidic_ratio"] = _ratio(_count(seq, frozenset("KRH")), _count(seq, frozenset("DE")))
-        feats["aromatic_sulfur_ratio"] = _ratio(_count(seq, frozenset("FWYH")), _count(seq, frozenset("CM")))
-        feats["hydroxyl_amide_ratio"] = _ratio(_count(seq, frozenset("STY")), _count(seq, frozenset("NQ")))
-        feats["cys_met_ratio"] = _ratio(seq.count("C"), seq.count("M"))
+        feats["basic_acidic_ratio"] = safe_ratio(
+            _count(seq, frozenset("KRH")), _count(seq, frozenset("DE"))
+        )
+        feats["aromatic_sulfur_ratio"] = safe_ratio(
+            _count(seq, frozenset("FWYH")), _count(seq, frozenset("CM"))
+        )
+        feats["hydroxyl_amide_ratio"] = safe_ratio(
+            _count(seq, frozenset("STY")), _count(seq, frozenset("NQ"))
+        )
+        feats["cys_met_ratio"] = safe_ratio(seq.count("C"), seq.count("M"))
 
         donors = sum(_HBOND_DONORS[aa] for aa in seq) / n
         acceptors = sum(_HBOND_ACCEPTORS[aa] for aa in seq) / n

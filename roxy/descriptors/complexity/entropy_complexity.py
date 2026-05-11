@@ -9,30 +9,13 @@ from itertools import groupby
 import numpy as np
 
 from roxy.core.constants import AA20
+from roxy.descriptors._utils import clean_sequence, linguistic_complexity, shannon_entropy
 from roxy.descriptors.base import BaseDescriptor
-from roxy.descriptors.composition._utils import clean_sequence
 from roxy.descriptors.registry import register
 
 _NAN = math.nan
 _AA20_LIST: list[str] = sorted(AA20)
 _N_AA = len(_AA20_LIST)
-
-
-def _shannon_entropy(seq: str) -> float:
-    counts = Counter(seq)
-    total = sum(counts.values())
-    if total == 0:
-        return _NAN
-    probs = np.array([c / total for c in counts.values()], dtype=float)
-    return float(-(probs * np.log2(probs)).sum())
-
-
-def _linguistic_complexity(seq: str, k: int) -> float:
-    if len(seq) < k or k < 1:
-        return _NAN
-    observed = len({seq[i : i + k] for i in range(len(seq) - k + 1)})
-    possible = min(len(seq) - k + 1, 20**k)
-    return observed / possible if possible > 0 else _NAN
 
 
 def _homopolymer_burden(seq: str, min_run: int) -> float:
@@ -120,14 +103,14 @@ class EntropyComplexityDescriptor(BaseDescriptor):
         if n == 0:
             return self._nan_schema(feats)
 
-        feats["shannon_entropy"] = _shannon_entropy(seq)
+        feats["shannon_entropy"] = shannon_entropy(seq)
         max_h = math.log2(min(n, _N_AA))
         feats["shannon_entropy_norm"] = (
             feats["shannon_entropy"] / max_h if max_h > 0 else _NAN
         )
 
         for k in (1, 2, 3):
-            feats[f"linguistic_complexity_k{k}"] = _linguistic_complexity(seq, k)
+            feats[f"linguistic_complexity_k{k}"] = linguistic_complexity(seq, k)
 
         for k in (2, 3):
             words = [seq[i : i + k] for i in range(n - k + 1)] if n >= k else []
@@ -152,7 +135,7 @@ class EntropyComplexityDescriptor(BaseDescriptor):
             feats[f"window_entropy_mean_w{w}"] = _NAN
             feats[f"window_entropy_std_w{w}"] = _NAN
         else:
-            entropies = [_shannon_entropy(ww) for ww in win_list]
+            entropies = [shannon_entropy(ww) for ww in win_list]
             feats[f"low_complexity_window_fraction_w{w}"] = (
                 sum(e <= self.entropy_threshold for e in entropies) / len(entropies)
             )

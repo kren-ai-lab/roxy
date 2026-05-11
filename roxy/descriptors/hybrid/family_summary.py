@@ -3,14 +3,20 @@
 from __future__ import annotations
 
 import math
-from collections import Counter
-from itertools import groupby
 
 import numpy as np
 
 from roxy.core.constants import AA_GROUPS, CF_HELIX, CF_SHEET, CF_TURN, KD, POLARITY
+from roxy.descriptors._utils import (
+    clean_sequence,
+    fraction_from_group,
+    longest_homopolymer_run,
+    scale_mean,
+    scale_std,
+    shannon_entropy,
+    windows,
+)
 from roxy.descriptors.base import BaseDescriptor
-from roxy.descriptors.composition._utils import clean_sequence
 from roxy.descriptors.registry import register
 
 _NAN = math.nan
@@ -45,37 +51,15 @@ _NAN_KEYS = (
 )
 
 
-def _scale_mean(seq: str, scale: dict[str, float]) -> float:
-    return float(np.mean([scale[aa] for aa in seq]))
-
-
-def _scale_std(seq: str, scale: dict[str, float]) -> float:
-    return float(np.std([scale[aa] for aa in seq], ddof=0))
-
-
-def _group_frac(seq: str, group: frozenset[str]) -> float:
-    return sum(aa in group for aa in seq) / len(seq)
-
-
-def _shannon_entropy(seq: str) -> float:
-    counts = Counter(seq)
-    probs = np.array([c / len(seq) for c in counts.values()], dtype=float)
-    return float(-(probs * np.log2(probs)).sum())
-
-
-def _longest_homo(seq: str) -> int:
-    return max(len(list(g)) for _, g in groupby(seq))
-
-
 def _local_charge_profile(seq: str, window: int) -> list[float]:
-    ws = [seq[i : i + window] for i in range(len(seq) - window + 1)]
-    return [_group_frac(w, _POS) - _group_frac(w, _NEG) for w in ws]
+    ws = windows(seq, window)
+    return [fraction_from_group(w, _POS) - fraction_from_group(w, _NEG) for w in ws]
 
 
 def _charge_feats(seq: str, n: int) -> tuple[float, dict[str, float]]:
-    pos_frac = _group_frac(seq, _POS)
-    neg_frac = _group_frac(seq, _NEG)
-    charged_frac = _group_frac(seq, _CHARGED)
+    pos_frac = fraction_from_group(seq, _POS)
+    neg_frac = fraction_from_group(seq, _NEG)
+    charged_frac = fraction_from_group(seq, _CHARGED)
     charge_mean = float(np.mean([pos_frac, neg_frac, charged_frac]))
 
     if n >= _LOCAL_CHARGE_WINDOW:
@@ -94,20 +78,23 @@ def _charge_feats(seq: str, n: int) -> tuple[float, dict[str, float]]:
 
 
 def _physchem_feats(seq: str) -> dict[str, float]:
-    hydropathy_mean = _scale_mean(seq, KD)
-    polarity_mean = _scale_mean(seq, POLARITY)
+    hydropathy_mean = scale_mean(seq, KD)
+    polarity_mean = scale_mean(seq, POLARITY)
+    hydrophobic_balance = (
+        fraction_from_group(seq, _HYDROPHOBIC) - fraction_from_group(seq, _HYDROPHILIC)
+    )
     return {
         "physchem_family_mean": float(np.mean([hydropathy_mean, polarity_mean])),
-        "physchem_family_dispersion": float(np.mean([_scale_std(seq, KD), _scale_std(seq, POLARITY)])),
-        "physchem_hydrophobic_balance": _group_frac(seq, _HYDROPHOBIC) - _group_frac(seq, _HYDROPHILIC),
-        "physchem_polar_balance": _group_frac(seq, _POLAR) - _group_frac(seq, _NONPOLAR),
+        "physchem_family_dispersion": float(np.mean([scale_std(seq, KD), scale_std(seq, POLARITY)])),
+        "physchem_hydrophobic_balance": hydrophobic_balance,
+        "physchem_polar_balance": fraction_from_group(seq, _POLAR) - fraction_from_group(seq, _NONPOLAR),
     }
 
 
 def _struct_feats(seq: str) -> dict[str, float]:
-    helix = _scale_mean(seq, CF_HELIX)
-    sheet = _scale_mean(seq, CF_SHEET)
-    turn = _scale_mean(seq, CF_TURN)
+    helix = scale_mean(seq, CF_HELIX)
+    sheet = scale_mean(seq, CF_SHEET)
+    turn = scale_mean(seq, CF_TURN)
     return {
         "struct_family_mean": float(np.mean([helix, sheet, turn])),
         "struct_helix_sheet_balance": helix - sheet,
@@ -116,8 +103,8 @@ def _struct_feats(seq: str) -> dict[str, float]:
 
 
 def _orderdis_feats(seq: str) -> dict[str, float]:
-    dis = _group_frac(seq, _DISORDER)
-    ord_ = _group_frac(seq, _ORDER)
+    dis = fraction_from_group(seq, _DISORDER)
+    ord_ = fraction_from_group(seq, _ORDER)
     return {
         "orderdis_family_mean": float(np.mean([dis, ord_])),
         "orderdis_balance": dis - ord_,
@@ -125,10 +112,10 @@ def _orderdis_feats(seq: str) -> dict[str, float]:
 
 
 def _functional_feats(seq: str, pos_frac: float, neg_frac: float) -> dict[str, float]:
-    sulfur = _group_frac(seq, _SULFUR)
-    hydroxyl = _group_frac(seq, _HYDROXYL)
-    amide = _group_frac(seq, _AMIDE)
-    aromatic = _group_frac(seq, _AROMATIC)
+    sulfur = fraction_from_group(seq, _SULFUR)
+    hydroxyl = fraction_from_group(seq, _HYDROXYL)
+    amide = fraction_from_group(seq, _AMIDE)
+    aromatic = fraction_from_group(seq, _AROMATIC)
     return {
         "functional_family_mean": float(np.mean([sulfur, hydroxyl, amide, aromatic])),
         "functional_reactivity_proxy": float(np.mean([sulfur, hydroxyl, pos_frac, neg_frac])),
@@ -136,8 +123,8 @@ def _functional_feats(seq: str, pos_frac: float, neg_frac: float) -> dict[str, f
 
 
 def _complexity_feats(seq: str, n: int) -> dict[str, float]:
-    entropy = _shannon_entropy(seq)
-    burden = _longest_homo(seq) / n
+    entropy = shannon_entropy(seq)
+    burden = longest_homopolymer_run(seq) / n
     return {
         "complexity_family_mean": float(np.mean([entropy, burden])),
         "complexity_entropy": entropy,

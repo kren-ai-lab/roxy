@@ -20,36 +20,20 @@ from roxy.core.constants import (
     KD,
     POLARITY,
 )
-from roxy.descriptors.base import BaseDescriptor
-from roxy.descriptors.composition._utils import clean_sequence
-from roxy.descriptors.registry import register
-
-from ._utils import (
+from roxy.descriptors._utils import (
+    clean_sequence,
     fraction_from_group,
+    linguistic_complexity,
     longest_homopolymer_run,
     net_charge_at_ph,
     scale_values,
+    shannon_entropy,
 )
+from roxy.descriptors.base import BaseDescriptor
+from roxy.descriptors.registry import register
 
 _NAN = math.nan
 _WATER_MW = 18.015
-
-
-def _linguistic_complexity(seq: str, k: int) -> float:
-    if not seq or len(seq) < k or k < 1:
-        return _NAN
-    observed = len({seq[i : i + k] for i in range(len(seq) - k + 1)})
-    possible = min(20**k, len(seq) - k + 1)
-    return observed / possible if possible > 0 else _NAN
-
-
-def _shannon_entropy(seq: str) -> float:
-    counts = Counter(seq)
-    total = sum(counts.values())
-    if total == 0:
-        return _NAN
-    probs = np.array([c / total for c in counts.values()], dtype=float)
-    return float(-(probs * np.log2(probs)).sum())
 
 
 def _aliphatic_index(seq: str, n: int) -> float:
@@ -163,10 +147,10 @@ class GlobalBasicDescriptor(BaseDescriptor):
         feats["acceptors_per_residue"] = sum(ACCEPTORS.get(aa, 0) for aa in seq) / n
 
         # Complexity
-        feats["shannon_entropy"] = _shannon_entropy(seq)
-        feats["linguistic_complexity_k1"] = _linguistic_complexity(seq, 1)
-        feats["linguistic_complexity_k2"] = _linguistic_complexity(seq, 2)
-        feats["linguistic_complexity_k3"] = _linguistic_complexity(seq, 3)
+        feats["shannon_entropy"] = shannon_entropy(seq)
+        feats["linguistic_complexity_k1"] = linguistic_complexity(seq, 1)
+        feats["linguistic_complexity_k2"] = linguistic_complexity(seq, 2)
+        feats["linguistic_complexity_k3"] = linguistic_complexity(seq, 3)
         feats["longest_homopolymer_run"] = float(longest_homopolymer_run(seq))
         feats["repeated_dipeptide_fraction"] = _repeated_dipeptide_fraction(seq)
 
