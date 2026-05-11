@@ -7,7 +7,6 @@ import csv
 import math
 import statistics
 from importlib import resources
-from pathlib import Path
 
 from roxy.descriptors._utils import clean_sequence
 from roxy.descriptors.base import BaseDescriptor
@@ -20,13 +19,7 @@ _DEFAULT_CODES = ("ANDN920101", "ARGP820101", "KYTJ820101", "FAUJ880104")
 
 def _load_aaindex() -> dict[str, dict[str, float]]:
     """Load AAIndex data from the bundled CSV."""
-    try:
-        pkg = resources.files("roxy.data")
-        csv_path = pkg.joinpath("aaindex.csv")
-        text = csv_path.read_text()
-    except (AttributeError, FileNotFoundError):
-        csv_path = Path(__file__).parent.parent.parent / "data" / "aaindex.csv"
-        text = csv_path.read_text()
+    text = resources.files("roxy.data").joinpath("aaindex.csv").read_text(encoding="utf-8")
 
     reader = csv.DictReader(text.splitlines())
     result: dict[str, dict[str, float]] = {}
