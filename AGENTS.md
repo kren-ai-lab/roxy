@@ -6,7 +6,6 @@ This file provides guidance to AI agents when working with code in this reposito
 
 **Roxy** is a Python library for computing classical protein sequence descriptors for machine learning workflows. It sits between:
 
-- **PRISM** (data curation) — upstream
 - **Sylphy** (sequence encoders and embeddings) — parallel; Roxy does NOT duplicate Sylphy's one-hot/ordinal/k-mers/FFT encoders
 
 **Roxy scope**: classical descriptors only. Input: amino-acid sequences (strings). Output: `polars.DataFrame` of numerical features.
@@ -89,21 +88,6 @@ class AACDescriptor(BaseDescriptor):
 - `compute_one` returns unprefixed feature names (`{"A": 0.05, "C": 0.02, ...}`).
 - `compute(sequences, ids=...)` calls `compute_one` per sequence and returns a DataFrame with columns prefixed by `{name}_`.
 - Register families by importing the module in `descriptors/__init__.py`.
-
-## Source of Truth for Descriptor Families
-
-Notebooks in `dev_notebooks/` define the 29 descriptor families to implement. Reference order:
-
-1. **composition/**: `aac`, `dpc`, `grouped`, `kmer_full_alphabet`, `reduced_kmer`, `compositional_bias`
-2. **physicochemical/**: `global_basic`, `hydrophobicity`, `charge`, `structural_propensity`, `order_disorder`
-3. **autocorrelation/**: `moran`, `geary`, `normalized_moreau_broto`
-4. **ctd/**: `ctd`, `distribution`
-5. **pseudo/**: `pseaac`, `qso`, `sequence_order`
-6. **complexity/**: `entropy`, `complexity`, `local_repetition`, `run_blockiness`
-7. **motif/**: `pattern`, `user_regex`, `spacing`, `functional_residue_content`
-8. **positional/**: `normalized`, `sliding_window`, `terminal`
-9. **hybrid/**: `hybrid_family`
-10. **aaindex/**: `aaindex` (backed by `core/aaindex.py`)
 
 ## Key Invariants
 
