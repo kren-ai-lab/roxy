@@ -46,18 +46,22 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "pyrefly>=0.64",
     "ruff>=0.15",
     "taskipy>=1.14",
+    "ty>=0.0.30"
 ]
 tests = [
     "pytest>=9.0",
     "pytest-cov>=7.1",
 ]
 all = [
+    "pyrefly>=0.64",
     "pytest>=9.0",
     "pytest-cov>=7.0",
     "ruff>=0.15",
     "taskipy>=1.14",
+    "ty>=0.0.30"
 ]
 
 [project.scripts]
@@ -121,6 +125,8 @@ sort-imports = "ruff check --fix --select I,F401 roxy/ tests/ examples/"
 format = "task sort-imports && ruff format roxy/ tests/ examples/"
 lint = "ruff check roxy/ tests/ examples/"
 lint-fix = "ruff check --fix roxy/ tests/ examples/"
+ty = "ty check roxy/ tests/ examples/"
+pyrefly = "pyrefly check roxy/ tests/ examples/"
 test = "pytest -q"
 test-v = "pytest -v"
 test-cov = "pytest --cov=roxy --cov-report=html"

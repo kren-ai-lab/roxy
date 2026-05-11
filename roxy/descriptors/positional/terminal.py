@@ -24,9 +24,7 @@ def _feats_for_window(tsq: str, prefix: str) -> dict[str, float]:
     out[f"{prefix}_entropy"] = shannon_entropy(tsq)
 
     for name, group in AA_GROUPS.items():
-        out[f"{prefix}_{name}_frac"] = (
-            sum(aa in group for aa in tsq) / n if n else _NAN
-        )
+        out[f"{prefix}_{name}_frac"] = sum(aa in group for aa in tsq) / n if n else _NAN
 
     pos_frac = out[f"{prefix}_positive_frac"]
     neg_frac = out[f"{prefix}_negative_frac"]
@@ -34,14 +32,10 @@ def _feats_for_window(tsq: str, prefix: str) -> dict[str, float]:
     hl_frac = out[f"{prefix}_hydrophilic_frac"]
 
     out[f"{prefix}_positive_negative_balance"] = (
-        pos_frac - neg_frac
-        if not (math.isnan(pos_frac) or math.isnan(neg_frac))
-        else _NAN
+        pos_frac - neg_frac if not (math.isnan(pos_frac) or math.isnan(neg_frac)) else _NAN
     )
     out[f"{prefix}_hydrophobic_hydrophilic_balance"] = (
-        hb_frac - hl_frac
-        if not (math.isnan(hb_frac) or math.isnan(hl_frac))
-        else _NAN
+        hb_frac - hl_frac if not (math.isnan(hb_frac) or math.isnan(hl_frac)) else _NAN
     )
 
     if n:

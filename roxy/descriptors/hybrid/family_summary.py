@@ -37,17 +37,29 @@ _AMIDE = frozenset(AA_GROUPS["amide"])
 _AROMATIC = frozenset(AA_GROUPS["aromatic"])
 
 _NAN_KEYS = (
-    "charge_family_mean", "charge_family_balance",
-    "charge_family_local_mean", "charge_family_local_amplitude",
-    "physchem_family_mean", "physchem_family_dispersion",
-    "physchem_hydrophobic_balance", "physchem_polar_balance",
-    "struct_family_mean", "struct_helix_sheet_balance",
+    "charge_family_mean",
+    "charge_family_balance",
+    "charge_family_local_mean",
+    "charge_family_local_amplitude",
+    "physchem_family_mean",
+    "physchem_family_dispersion",
+    "physchem_hydrophobic_balance",
+    "physchem_polar_balance",
+    "struct_family_mean",
+    "struct_helix_sheet_balance",
     "struct_turn_secondary_balance",
-    "orderdis_family_mean", "orderdis_balance",
-    "functional_family_mean", "functional_reactivity_proxy",
-    "complexity_family_mean", "complexity_entropy", "complexity_repeat_burden",
-    "global_family_mean", "global_family_std",
-    "global_family_max", "global_family_min", "global_family_amplitude",
+    "orderdis_family_mean",
+    "orderdis_balance",
+    "functional_family_mean",
+    "functional_reactivity_proxy",
+    "complexity_family_mean",
+    "complexity_entropy",
+    "complexity_repeat_burden",
+    "global_family_mean",
+    "global_family_std",
+    "global_family_max",
+    "global_family_min",
+    "global_family_amplitude",
 )
 
 
@@ -56,7 +68,7 @@ def _local_charge_profile(seq: str, window: int) -> list[float]:
     return [fraction_from_group(w, _POS) - fraction_from_group(w, _NEG) for w in ws]
 
 
-def _charge_feats(seq: str, n: int) -> tuple[float, dict[str, float]]:
+def _charge_feats(seq: str, n: int) -> tuple[float, float, dict[str, float]]:
     pos_frac = fraction_from_group(seq, _POS)
     neg_frac = fraction_from_group(seq, _NEG)
     charged_frac = fraction_from_group(seq, _CHARGED)
@@ -69,20 +81,22 @@ def _charge_feats(seq: str, n: int) -> tuple[float, dict[str, float]]:
     else:
         local_mean, local_amp = _NAN, _NAN
 
-    return pos_frac, neg_frac, {
-        "charge_family_mean": charge_mean,
-        "charge_family_balance": pos_frac - neg_frac,
-        "charge_family_local_mean": local_mean,
-        "charge_family_local_amplitude": local_amp,
-    }
+    return (
+        pos_frac,
+        neg_frac,
+        {
+            "charge_family_mean": charge_mean,
+            "charge_family_balance": pos_frac - neg_frac,
+            "charge_family_local_mean": local_mean,
+            "charge_family_local_amplitude": local_amp,
+        },
+    )
 
 
 def _physchem_feats(seq: str) -> dict[str, float]:
     hydropathy_mean = scale_mean(seq, KD)
     polarity_mean = scale_mean(seq, POLARITY)
-    hydrophobic_balance = (
-        fraction_from_group(seq, _HYDROPHOBIC) - fraction_from_group(seq, _HYDROPHILIC)
-    )
+    hydrophobic_balance = fraction_from_group(seq, _HYDROPHOBIC) - fraction_from_group(seq, _HYDROPHILIC)
     return {
         "physchem_family_mean": float(np.mean([hydropathy_mean, polarity_mean])),
         "physchem_family_dispersion": float(np.mean([scale_std(seq, KD), scale_std(seq, POLARITY)])),

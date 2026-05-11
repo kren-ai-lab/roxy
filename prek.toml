@@ -16,10 +16,33 @@ hooks = [
 repo = "local"
 hooks = [
   {
+    id = "format",
+    name = "ruff-format",
+    entry = "uv run task format",
+    language = "system",
+    pass_filenames = false
+  },
+  {
     id = "lint",
-    name = "lint-check",
+    name = "ruff-lint",
     entry = "uv run task lint",
     language = "system",
+    pass_filenames = false
+  },
+  {
+    id = "ty",
+    name = "ty-check",
+    entry = "uv run ty check",
+    language = "python",
+    types = ["python"],
+    pass_filenames = false
+  },
+  {
+    id = "pyrefly",
+    name = "pyrefly-check",
+    entry = "uv run pyrefly check",
+    language = "python",
+    types = ["python"],
     pass_filenames = false
   }
 ]

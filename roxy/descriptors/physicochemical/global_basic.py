@@ -83,16 +83,30 @@ class GlobalBasicDescriptor(BaseDescriptor):
 
         if empty:
             for key in (
-                "molecular_weight", "aliphatic_index",
-                "hydropathy_mean", "hydropathy_std",
-                "polarity_mean", "polarity_std",
-                "flexibility_mean", "flexibility_std",
-                "helix_propensity_mean", "sheet_propensity_mean", "turn_propensity_mean",
-                "boman_index_mean", "net_charge_ph7",
-                "fcr", "ncpr", "acidic_basic_ratio", "basic_acidic_ratio",
-                "donors_per_residue", "acceptors_per_residue",
-                "shannon_entropy", "linguistic_complexity_k1", "linguistic_complexity_k2",
-                "linguistic_complexity_k3", "repeated_dipeptide_fraction",
+                "molecular_weight",
+                "aliphatic_index",
+                "hydropathy_mean",
+                "hydropathy_std",
+                "polarity_mean",
+                "polarity_std",
+                "flexibility_mean",
+                "flexibility_std",
+                "helix_propensity_mean",
+                "sheet_propensity_mean",
+                "turn_propensity_mean",
+                "boman_index_mean",
+                "net_charge_ph7",
+                "fcr",
+                "ncpr",
+                "acidic_basic_ratio",
+                "basic_acidic_ratio",
+                "donors_per_residue",
+                "acceptors_per_residue",
+                "shannon_entropy",
+                "linguistic_complexity_k1",
+                "linguistic_complexity_k2",
+                "linguistic_complexity_k3",
+                "repeated_dipeptide_fraction",
                 "local_hydropathy_amplitude_w5",
             ):
                 feats[key] = _NAN
@@ -102,9 +116,7 @@ class GlobalBasicDescriptor(BaseDescriptor):
             return feats
 
         # MW: sum of residue weights minus water per peptide bond
-        feats["molecular_weight"] = (
-            sum(AA_MOLECULAR_WEIGHT[aa] for aa in seq) - (n - 1) * _WATER_MW
-        )
+        feats["molecular_weight"] = sum(AA_MOLECULAR_WEIGHT[aa] for aa in seq) - (n - 1) * _WATER_MW
 
         # Group fractions
         for group, members in AA_GROUPS.items():

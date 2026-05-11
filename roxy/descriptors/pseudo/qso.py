@@ -101,8 +101,8 @@ class QSODescriptor(BaseDescriptor):
         for i, cf in enumerate(couplings, start=1):
             feats[f"tau_{i}"] = (self.w * cf) / denom
 
-        feats["feature_sum"] = (
-            sum(feats[aa] for aa in _AA20) + sum(feats[f"tau_{i}"] for i in range(1, self.lam + 1))
+        feats["feature_sum"] = sum(feats[aa] for aa in _AA20) + sum(
+            feats[f"tau_{i}"] for i in range(1, self.lam + 1)
         )
 
         return feats

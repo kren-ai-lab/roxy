@@ -59,9 +59,11 @@ def _transition(labels: list[str], prefix: str) -> dict[str, float]:
     total = len(labels) - 1
     counts: dict[tuple[str, str], int] = dict.fromkeys(_TRANSITION_PAIRS, 0)
     for i in range(total):
-        pair = tuple(sorted((labels[i], labels[i + 1])))
+        left = labels[i]
+        right = labels[i + 1]
+        pair = (left, right) if left <= right else (right, left)
         if pair in counts:
-            counts[pair] += 1  # type: ignore[index]
+            counts[pair] += 1
     return {f"{prefix}_trans_{a}{b}": counts[(a, b)] / total for a, b in _TRANSITION_PAIRS}
 
 

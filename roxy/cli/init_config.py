@@ -46,9 +46,7 @@ def init_config(
         "#   roxy compute sequences.fasta --config <this-file> -o results.parquet\n"
         "# Use 'roxy describe <name>' for parameter documentation.\n"
     )
-    config_map = {
-        name: _default_params(DESCRIPTOR_REGISTRY[name]) for name in names
-    }
+    config_map = {name: _default_params(DESCRIPTOR_REGISTRY[name]) for name in names}
     body = yaml.safe_dump(
         config_map,
         sort_keys=False,

@@ -16,23 +16,17 @@ _NEGATIVE_GROUP = frozenset("DE")
 _ACIDIC_GROUP = frozenset("DE")
 _BASIC_GROUP = frozenset("KRH")
 _IONIZABLE_GROUP = frozenset("CDEHKRY")
+
+
 def _protonated_basic_fraction(seq: str, ph: float) -> float:
     """Mean protonation degree of basic residues (KRH)."""
-    vals = [
-        1.0 / (1.0 + 10 ** (ph - PKA_SIDE[aa]))
-        for aa in seq
-        if aa in _BASIC_GROUP and aa in PKA_SIDE
-    ]
+    vals = [1.0 / (1.0 + 10 ** (ph - PKA_SIDE[aa])) for aa in seq if aa in _BASIC_GROUP and aa in PKA_SIDE]
     return float(sum(vals) / len(vals)) if vals else _NAN
 
 
 def _deprotonated_acidic_fraction(seq: str, ph: float) -> float:
     """Mean deprotonation degree of acidic residues (DE)."""
-    vals = [
-        1.0 / (1.0 + 10 ** (PKA_SIDE[aa] - ph))
-        for aa in seq
-        if aa in _ACIDIC_GROUP and aa in PKA_SIDE
-    ]
+    vals = [1.0 / (1.0 + 10 ** (PKA_SIDE[aa] - ph)) for aa in seq if aa in _ACIDIC_GROUP and aa in PKA_SIDE]
     return float(sum(vals) / len(vals)) if vals else _NAN
 
 
@@ -76,21 +70,32 @@ class ChargeDescriptor(BaseDescriptor):
 
     def _nan_schema(self, feats: dict[str, float]) -> dict[str, float]:
         for key in (
-            "positive_fraction", "negative_fraction", "ionizable_fraction",
-            "fcr", "ncpr", "basic_acidic_ratio", "acidic_basic_ratio",
+            "positive_fraction",
+            "negative_fraction",
+            "ionizable_fraction",
+            "fcr",
+            "ncpr",
+            "basic_acidic_ratio",
+            "acidic_basic_ratio",
         ):
             feats[key] = _NAN
         for ph in self.ph_values:
             tag = self._ph_tag(ph)
             for key in (
-                f"net_charge_ph{tag}", f"density_ph{tag}",
+                f"net_charge_ph{tag}",
+                f"density_ph{tag}",
                 f"protonated_basic_fraction_ph{tag}",
                 f"deprotonated_acidic_fraction_ph{tag}",
-                f"local_mean_ph{tag}", f"local_std_ph{tag}",
-                f"local_min_ph{tag}", f"local_max_ph{tag}",
-                f"local_amplitude_ph{tag}", f"local_start_end_diff_ph{tag}",
-                f"nterm_net_ph{tag}", f"cterm_net_ph{tag}",
-                f"nterm_density_ph{tag}", f"cterm_density_ph{tag}",
+                f"local_mean_ph{tag}",
+                f"local_std_ph{tag}",
+                f"local_min_ph{tag}",
+                f"local_max_ph{tag}",
+                f"local_amplitude_ph{tag}",
+                f"local_start_end_diff_ph{tag}",
+                f"nterm_net_ph{tag}",
+                f"cterm_net_ph{tag}",
+                f"nterm_density_ph{tag}",
+                f"cterm_density_ph{tag}",
                 f"terminal_asymmetry_ph{tag}",
             ):
                 feats[key] = _NAN
@@ -134,8 +139,7 @@ class ChargeDescriptor(BaseDescriptor):
             feats[f"deprotonated_acidic_fraction_ph{tag}"] = _deprotonated_acidic_fraction(seq, ph)
 
             local_profile = [
-                net_charge_at_ph(w, ph) / self.local_window
-                for w in windows(seq, self.local_window)
+                net_charge_at_ph(w, ph) / self.local_window for w in windows(seq, self.local_window)
             ]
             stats = profile_stats(local_profile)
             feats[f"local_mean_ph{tag}"] = stats["mean"]

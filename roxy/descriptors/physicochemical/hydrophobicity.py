@@ -34,10 +34,7 @@ _AMPHIPATHICITY_THRESHOLD = 1.0
 def _local_contrast_profile(seq: str, window: int) -> list[float]:
     """Return per-window |hydrophobic_frac - polar_frac| contrast."""
     return [
-        abs(
-            sum(aa in _HYDROPHOBIC for aa in w) / window
-            - sum(aa in _POLAR for aa in w) / window
-        )
+        abs(sum(aa in _HYDROPHOBIC for aa in w) / window - sum(aa in _POLAR for aa in w) / window)
         for w in windows(seq, window)
     ]
 
@@ -89,20 +86,35 @@ class HydrophobicityDescriptor(BaseDescriptor):
 
     def _nan_schema(self, feats: dict[str, float]) -> dict[str, float]:
         for key in (
-            "hydropathy_mean", "hydropathy_std",
-            "polarity_mean", "polarity_std",
-            "hydrophobic_fraction", "hydrophilic_fraction",
-            "polar_fraction", "nonpolar_fraction", "aromatic_fraction",
-            "hydrophobic_hydrophilic_balance", "polar_nonpolar_balance",
+            "hydropathy_mean",
+            "hydropathy_std",
+            "polarity_mean",
+            "polarity_std",
+            "hydrophobic_fraction",
+            "hydrophilic_fraction",
+            "polar_fraction",
+            "nonpolar_fraction",
+            "aromatic_fraction",
+            "hydrophobic_hydrophilic_balance",
+            "polar_nonpolar_balance",
             "global_amphipathicity_proxy",
-            "nterm_hydropathy_mean", "cterm_hydropathy_mean",
-            "nterm_polarity_mean", "cterm_polarity_mean",
-            "terminal_hydropathy_asymmetry", "terminal_polarity_asymmetry",
+            "nterm_hydropathy_mean",
+            "cterm_hydropathy_mean",
+            "nterm_polarity_mean",
+            "cterm_polarity_mean",
+            "terminal_hydropathy_asymmetry",
+            "terminal_polarity_asymmetry",
         ):
             feats[key] = _NAN
         for ws in self.window_sizes:
-            for profile in ("hydropathy", "polarity", "hydrophobic_frac",
-                            "polar_frac", "contrast", "amphipathicity"):
+            for profile in (
+                "hydropathy",
+                "polarity",
+                "hydrophobic_frac",
+                "polar_frac",
+                "contrast",
+                "amphipathicity",
+            ):
                 for stat in ("mean", "std", "min", "max", "amplitude", "start_end_diff"):
                     feats[f"w{ws}_{profile}_{stat}"] = _NAN
             feats[f"w{ws}_hydrophobic_patch_fraction"] = _NAN
@@ -137,9 +149,7 @@ class HydrophobicityDescriptor(BaseDescriptor):
         feats["hydrophobic_hydrophilic_balance"] = (
             feats["hydrophobic_fraction"] - feats["hydrophilic_fraction"]
         )
-        feats["polar_nonpolar_balance"] = (
-            feats["polar_fraction"] - feats["nonpolar_fraction"]
-        )
+        feats["polar_nonpolar_balance"] = feats["polar_fraction"] - feats["nonpolar_fraction"]
         feats["global_amphipathicity_proxy"] = abs(
             feats["hydrophobic_fraction"] - feats["polar_fraction"]
         ) * abs(feats["hydropathy_mean"] - feats["polarity_mean"])
@@ -153,20 +163,14 @@ class HydrophobicityDescriptor(BaseDescriptor):
         feats["terminal_hydropathy_asymmetry"] = (
             feats["nterm_hydropathy_mean"] - feats["cterm_hydropathy_mean"]
         )
-        feats["terminal_polarity_asymmetry"] = (
-            feats["nterm_polarity_mean"] - feats["cterm_polarity_mean"]
-        )
+        feats["terminal_polarity_asymmetry"] = feats["nterm_polarity_mean"] - feats["cterm_polarity_mean"]
 
         for ws in self.window_sizes:
             ws_list = windows(seq, ws)
             hydro_profile = [scale_mean(w, KD) for w in ws_list]
             polarity_profile = [scale_mean(w, POLARITY) for w in ws_list]
-            hydrophobic_frac_profile = [
-                sum(aa in _HYDROPHOBIC for aa in w) / ws for w in ws_list
-            ]
-            polar_frac_profile = [
-                sum(aa in _POLAR for aa in w) / ws for w in ws_list
-            ]
+            hydrophobic_frac_profile = [sum(aa in _HYDROPHOBIC for aa in w) / ws for w in ws_list]
+            polar_frac_profile = [sum(aa in _POLAR for aa in w) / ws for w in ws_list]
             contrast_profile = _local_contrast_profile(seq, ws)
             amphi_profile = _local_amphipathicity_profile(seq, ws)
 

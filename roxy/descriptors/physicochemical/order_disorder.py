@@ -67,17 +67,26 @@ class OrderDisorderDescriptor(BaseDescriptor):
 
     def _nan_schema(self, feats: dict[str, float]) -> dict[str, float]:
         for key in (
-            "disorder_fraction", "order_fraction",
-            "disorder_order_balance", "order_disorder_balance",
-            "disorder_order_ratio", "order_disorder_ratio",
-            "flexibility_fraction", "rigidity_fraction",
-            "pro_gly_fraction", "aromatic_aliphatic_order_fraction",
+            "disorder_fraction",
+            "order_fraction",
+            "disorder_order_balance",
+            "order_disorder_balance",
+            "disorder_order_ratio",
+            "order_disorder_ratio",
+            "flexibility_fraction",
+            "rigidity_fraction",
+            "pro_gly_fraction",
+            "aromatic_aliphatic_order_fraction",
             "polar_disorder_support_fraction",
-            "longest_disorder_run", "longest_order_run",
+            "longest_disorder_run",
+            "longest_order_run",
             "order_disorder_transition_fraction",
-            "nterm_disorder_fraction", "cterm_disorder_fraction",
-            "nterm_order_fraction", "cterm_order_fraction",
-            "terminal_disorder_asymmetry", "terminal_order_asymmetry",
+            "nterm_disorder_fraction",
+            "cterm_disorder_fraction",
+            "nterm_order_fraction",
+            "cterm_order_fraction",
+            "terminal_disorder_asymmetry",
+            "terminal_order_asymmetry",
         ):
             feats[key] = _NAN
         for ws in self.window_sizes:
@@ -138,24 +147,14 @@ class OrderDisorderDescriptor(BaseDescriptor):
 
         for ws in self.window_sizes:
             ws_list = windows(seq, ws)
-            disorder_profile = [
-                sum(aa in _DISORDER_PROMOTING for aa in w) / ws for w in ws_list
-            ]
-            order_profile = [
-                sum(aa in _ORDER_PROMOTING for aa in w) / ws for w in ws_list
-            ]
+            disorder_profile = [sum(aa in _DISORDER_PROMOTING for aa in w) / ws for w in ws_list]
+            order_profile = [sum(aa in _ORDER_PROMOTING for aa in w) / ws for w in ws_list]
 
             feats[f"w{ws}_disorder_patch_fraction"] = fraction_above_threshold(
                 disorder_profile, _PATCH_THRESHOLD
             )
-            feats[f"w{ws}_order_patch_fraction"] = fraction_above_threshold(
-                order_profile, _PATCH_THRESHOLD
-            )
-            feats[f"w{ws}_disorder_mean"] = (
-                float(np.mean(disorder_profile)) if disorder_profile else _NAN
-            )
-            feats[f"w{ws}_order_mean"] = (
-                float(np.mean(order_profile)) if order_profile else _NAN
-            )
+            feats[f"w{ws}_order_patch_fraction"] = fraction_above_threshold(order_profile, _PATCH_THRESHOLD)
+            feats[f"w{ws}_disorder_mean"] = float(np.mean(disorder_profile)) if disorder_profile else _NAN
+            feats[f"w{ws}_order_mean"] = float(np.mean(order_profile)) if order_profile else _NAN
 
         return feats

@@ -12,14 +12,14 @@ from roxy.descriptors.registry import register
 _NAN = math.nan
 
 DEFAULT_PATTERNS: dict[str, str] = {
-    "basic_pair":     r"KR|RK|KK|RR",
-    "acidic_pair":    r"DE|ED|DD|EE",
-    "gly_run_2plus":  r"G{2,}",
-    "pro_run_2plus":  r"P{2,}",
-    "ser_thr_patch":  r"[ST]{3,}",
+    "basic_pair": r"KR|RK|KK|RR",
+    "acidic_pair": r"DE|ED|DD|EE",
+    "gly_run_2plus": r"G{2,}",
+    "pro_run_2plus": r"P{2,}",
+    "ser_thr_patch": r"[ST]{3,}",
     "charged_triplet": r"[KRHDE]{3,}",
-    "aromatic_pair":  r"[FWYH]{2,}",
-    "amide_pair":     r"[NQ]{2,}",
+    "aromatic_pair": r"[FWYH]{2,}",
+    "amide_pair": r"[NQ]{2,}",
 }
 
 _MIN_PAIR = 2

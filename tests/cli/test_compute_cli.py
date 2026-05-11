@@ -41,9 +41,7 @@ def test_compute_happy_path_csv(tmp_path):
     fasta = tmp_path / "seqs.fasta"
     fasta.write_text(FASTA)
     out = tmp_path / "out.csv"
-    result = runner.invoke(
-        app, ["compute", str(fasta), "-d", "aac", "-o", str(out), "--no-progress"]
-    )
+    result = runner.invoke(app, ["compute", str(fasta), "-d", "aac", "-o", str(out), "--no-progress"])
     assert result.exit_code == 0, result.output
     df = pl.read_csv(out)
     assert df.shape[0] == 2

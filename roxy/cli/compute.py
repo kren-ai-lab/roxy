@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import polars as pl
 import typer
@@ -13,6 +14,9 @@ from roxy.cli._utils import _resolve_names
 from roxy.core.exceptions import RoxyIOError
 from roxy.core.io import read_sequences, write_table
 from roxy.descriptors import DESCRIPTOR_REGISTRY
+
+if TYPE_CHECKING:
+    from roxy.descriptors.base import BaseDescriptor
 
 _BASE_COLS = {"length", "valid_residue_count"}
 
@@ -54,14 +58,14 @@ def _load_config(path: Path) -> dict[str, dict[str, object]]:
 def _build_instances(
     config: dict[str, dict[str, object]] | None,
     names: list[str],
-) -> list[tuple[str, object]]:
+) -> list[tuple[str, BaseDescriptor]]:
     if config is not None:
         return [(n, DESCRIPTOR_REGISTRY[n](**p)) for n, p in config.items()]
     return [(n, DESCRIPTOR_REGISTRY[n]()) for n in names]
 
 
 def _run_descriptors(
-    instances: list[tuple[str, object]],
+    instances: list[tuple[str, BaseDescriptor]],
     seqs: list[str],
     ids: list[str],
     *,
@@ -108,9 +112,7 @@ def compute(
         None, "--config", "-c", help="YAML config file with descriptor params."
     ),
     all_: bool = typer.Option(False, "--all", help="Run all registered descriptors."),
-    descriptors: list[str] = typer.Option(
-        [], "--descriptor", "-d", help="Descriptor name (repeatable)."
-    ),
+    descriptors: list[str] = typer.Option([], "--descriptor", "-d", help="Descriptor name (repeatable)."),
     family: list[str] = typer.Option(
         [], "--family", "-f", help="Family name — runs all descriptors in it (repeatable)."
     ),

@@ -73,11 +73,19 @@ class CompositionalBiasDescriptor(BaseDescriptor):
 
         if empty:
             for key in (
-                "usage_mean", "usage_std", "usage_var", "usage_cv",
-                "max_residue_fraction", "min_residue_fraction",
-                "top2_burden", "top3_burden", "top5_burden",
-                "dominance_gap", "gini_like_inequality",
-                "kl_div_uniform", "l1_dev_uniform",
+                "usage_mean",
+                "usage_std",
+                "usage_var",
+                "usage_cv",
+                "max_residue_fraction",
+                "min_residue_fraction",
+                "top2_burden",
+                "top3_burden",
+                "top5_burden",
+                "dominance_gap",
+                "gini_like_inequality",
+                "kl_div_uniform",
+                "l1_dev_uniform",
             ):
                 feats[key] = _NAN
             for a, b in _GROUP_PAIRS:

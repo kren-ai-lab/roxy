@@ -14,33 +14,47 @@ from roxy.descriptors.registry import register
 _NAN = math.nan
 
 _TRACKED_GROUPS: dict[str, frozenset[str]] = {
-    "charged":    frozenset(AA_GROUPS["charged"]),
+    "charged": frozenset(AA_GROUPS["charged"]),
     "hydrophobic": frozenset(AA_GROUPS["hydrophobic"]),
-    "aromatic":   frozenset(AA_GROUPS["aromatic"]),
-    "polar":      frozenset(AA_GROUPS["polar"]),
-    "positive":   frozenset(AA_GROUPS["positive"]),
-    "negative":   frozenset(AA_GROUPS["negative"]),
-    "gly":        frozenset("G"),
-    "pro":        frozenset("P"),
-    "trp":        frozenset("W"),
-    "tyr":        frozenset("Y"),
+    "aromatic": frozenset(AA_GROUPS["aromatic"]),
+    "polar": frozenset(AA_GROUPS["polar"]),
+    "positive": frozenset(AA_GROUPS["positive"]),
+    "negative": frozenset(AA_GROUPS["negative"]),
+    "gly": frozenset("G"),
+    "pro": frozenset("P"),
+    "trp": frozenset("W"),
+    "tyr": frozenset("Y"),
 }
 
 _N_BIAS_CUTOFF = 0.33
 _C_BIAS_CUTOFF = 0.67
 
 _STAT_KEYS = (
-    "count", "first_norm", "last_norm", "mean_norm", "median_norm",
-    "std_norm", "span_norm", "n_bias", "c_bias", "center_mass_norm",
+    "count",
+    "first_norm",
+    "last_norm",
+    "mean_norm",
+    "median_norm",
+    "std_norm",
+    "span_norm",
+    "n_bias",
+    "c_bias",
+    "center_mass_norm",
 )
 
 
 def _positional_summary(positions: list[int], seq_len: int) -> dict[str, float]:
     if not positions:
         return {
-            "count": 0.0, "first_norm": _NAN, "last_norm": _NAN,
-            "mean_norm": _NAN, "median_norm": _NAN, "std_norm": _NAN,
-            "span_norm": _NAN, "n_bias": _NAN, "c_bias": _NAN,
+            "count": 0.0,
+            "first_norm": _NAN,
+            "last_norm": _NAN,
+            "mean_norm": _NAN,
+            "median_norm": _NAN,
+            "std_norm": _NAN,
+            "span_norm": _NAN,
+            "n_bias": _NAN,
+            "c_bias": _NAN,
             "center_mass_norm": _NAN,
         }
     norm = np.array(positions, dtype=float) / seq_len

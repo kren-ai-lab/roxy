@@ -79,8 +79,7 @@ def _cluster_frac(seq: str, group: frozenset[str]) -> float:
         return _NAN
     total = n - _CLUSTER_WINDOW + 1
     hits = sum(
-        sum(aa in group for aa in seq[i : i + _CLUSTER_WINDOW]) >= _CLUSTER_MIN_HITS
-        for i in range(total)
+        sum(aa in group for aa in seq[i : i + _CLUSTER_WINDOW]) >= _CLUSTER_MIN_HITS for i in range(total)
     )
     return hits / total
 

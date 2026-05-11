@@ -109,9 +109,8 @@ class PseAACDescriptor(BaseDescriptor):
         for i, theta in enumerate(thetas, start=1):
             feats[f"theta_{i}"] = (self.w * theta) / denom
 
-        feats["feature_sum"] = (
-            sum(feats[aa] for aa in _AA20_LIST)
-            + sum(feats[f"theta_{i}"] for i in range(1, self.lam + 1))
+        feats["feature_sum"] = sum(feats[aa] for aa in _AA20_LIST) + sum(
+            feats[f"theta_{i}"] for i in range(1, self.lam + 1)
         )
 
         return feats

@@ -11,49 +11,81 @@ from roxy.descriptors.registry import register
 _NAN = math.nan
 
 _FUNCTIONAL_GROUPS: dict[str, frozenset[str]] = {
-    "catalytic_core_like":           frozenset("HSCDEKRY"),
-    "catalytic_nucleophilic":        frozenset("SCYTK"),
-    "acid_base_active":              frozenset("HDEKRY"),
-    "redox_sensitive":               frozenset("CMYH"),
-    "sulfur_containing":             frozenset("CM"),
-    "aromatic_pi":                   frozenset("FWYH"),
-    "hydroxyl_bearing":              frozenset("STY"),
-    "amide_containing":              frozenset("NQ"),
-    "flexibility_related":           frozenset("GP"),
-    "basic_functional":              frozenset("KRH"),
-    "acidic_functional":             frozenset("DE"),
-    "phosphorylation_prone_proxy":   frozenset("STY"),
-    "metal_binding_like":            frozenset("HCDE"),
-    "nucleic_acid_binding_like":     frozenset("KRH"),
+    "catalytic_core_like": frozenset("HSCDEKRY"),
+    "catalytic_nucleophilic": frozenset("SCYTK"),
+    "acid_base_active": frozenset("HDEKRY"),
+    "redox_sensitive": frozenset("CMYH"),
+    "sulfur_containing": frozenset("CM"),
+    "aromatic_pi": frozenset("FWYH"),
+    "hydroxyl_bearing": frozenset("STY"),
+    "amide_containing": frozenset("NQ"),
+    "flexibility_related": frozenset("GP"),
+    "basic_functional": frozenset("KRH"),
+    "acidic_functional": frozenset("DE"),
+    "phosphorylation_prone_proxy": frozenset("STY"),
+    "metal_binding_like": frozenset("HCDE"),
+    "nucleic_acid_binding_like": frozenset("KRH"),
     "interface_like_aromatic_basic": frozenset("FWYHKR"),
-    "small_reactive":                frozenset("GACS"),
+    "small_reactive": frozenset("GACS"),
 }
 
 _AA_SINGLETS = tuple("HCSDEKRYWGTPNQM")
 
 _HBOND_DONORS: dict[str, int] = {
-    "A": 0, "C": 0, "D": 0, "E": 0, "F": 0,
-    "G": 0, "H": 1, "I": 0, "K": 1, "L": 0,
-    "M": 0, "N": 1, "P": 0, "Q": 1, "R": 1,
-    "S": 1, "T": 1, "V": 0, "W": 1, "Y": 1,
+    "A": 0,
+    "C": 0,
+    "D": 0,
+    "E": 0,
+    "F": 0,
+    "G": 0,
+    "H": 1,
+    "I": 0,
+    "K": 1,
+    "L": 0,
+    "M": 0,
+    "N": 1,
+    "P": 0,
+    "Q": 1,
+    "R": 1,
+    "S": 1,
+    "T": 1,
+    "V": 0,
+    "W": 1,
+    "Y": 1,
 }
 
 _HBOND_ACCEPTORS: dict[str, int] = {
-    "A": 0, "C": 1, "D": 2, "E": 2, "F": 0,
-    "G": 0, "H": 1, "I": 0, "K": 0, "L": 0,
-    "M": 1, "N": 1, "P": 0, "Q": 1, "R": 0,
-    "S": 1, "T": 1, "V": 0, "W": 0, "Y": 1,
+    "A": 0,
+    "C": 1,
+    "D": 2,
+    "E": 2,
+    "F": 0,
+    "G": 0,
+    "H": 1,
+    "I": 0,
+    "K": 0,
+    "L": 0,
+    "M": 1,
+    "N": 1,
+    "P": 0,
+    "Q": 1,
+    "R": 0,
+    "S": 1,
+    "T": 1,
+    "V": 0,
+    "W": 0,
+    "Y": 1,
 }
 
 # composite fractions
 _COMPOSITES: dict[str, frozenset[str]] = {
-    "his_cys_ser_fraction":               frozenset("HCS"),
-    "asp_glu_his_fraction":               frozenset("DEH"),
-    "lys_arg_his_fraction":               frozenset("KRH"),
-    "triad_like_fraction":                frozenset("HSD"),
-    "redox_phospho_overlap_fraction":     frozenset("CYT"),
-    "aromatic_basic_fraction":            frozenset("FWYHKR"),
-    "gly_pro_fraction":                   frozenset("GP"),
+    "his_cys_ser_fraction": frozenset("HCS"),
+    "asp_glu_his_fraction": frozenset("DEH"),
+    "lys_arg_his_fraction": frozenset("KRH"),
+    "triad_like_fraction": frozenset("HSD"),
+    "redox_phospho_overlap_fraction": frozenset("CYT"),
+    "aromatic_basic_fraction": frozenset("FWYHKR"),
+    "gly_pro_fraction": frozenset("GP"),
 }
 
 
@@ -122,9 +154,7 @@ class FunctionalResidueContentDescriptor(BaseDescriptor):
         for name, group in _COMPOSITES.items():
             feats[name] = _count(seq, group) / n
 
-        feats["basic_acidic_ratio"] = safe_ratio(
-            _count(seq, frozenset("KRH")), _count(seq, frozenset("DE"))
-        )
+        feats["basic_acidic_ratio"] = safe_ratio(_count(seq, frozenset("KRH")), _count(seq, frozenset("DE")))
         feats["aromatic_sulfur_ratio"] = safe_ratio(
             _count(seq, frozenset("FWYH")), _count(seq, frozenset("CM"))
         )

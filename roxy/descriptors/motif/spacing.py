@@ -14,14 +14,14 @@ from roxy.descriptors.registry import register
 _NAN = math.nan
 
 _TRACKED_GROUPS: dict[str, frozenset[str]] = {
-    "charged":    frozenset(AA_GROUPS["charged"]),
+    "charged": frozenset(AA_GROUPS["charged"]),
     "hydrophobic": frozenset(AA_GROUPS["hydrophobic"]),
-    "aromatic":   frozenset(AA_GROUPS["aromatic"]),
-    "polar":      frozenset(AA_GROUPS["polar"]),
-    "positive":   frozenset(AA_GROUPS["positive"]),
-    "negative":   frozenset(AA_GROUPS["negative"]),
-    "gly":        frozenset("G"),
-    "pro":        frozenset("P"),
+    "aromatic": frozenset(AA_GROUPS["aromatic"]),
+    "polar": frozenset(AA_GROUPS["polar"]),
+    "positive": frozenset(AA_GROUPS["positive"]),
+    "negative": frozenset(AA_GROUPS["negative"]),
+    "gly": frozenset("G"),
+    "pro": frozenset("P"),
 }
 
 _CROSS_PAIRS: tuple[tuple[str, str, str], ...] = (
@@ -90,10 +90,22 @@ def _cross_mean(seq: str, group_a: frozenset[str], group_b: frozenset[str]) -> f
 
 
 _GROUP_STAT_KEYS = (
-    "count", "density", "span", "span_norm",
-    "mean", "median", "min", "max", "std",
-    "mean_norm", "median_norm", "max_norm",
-    "nn_mean", "nn_median", "nn_min", "nn_max",
+    "count",
+    "density",
+    "span",
+    "span_norm",
+    "mean",
+    "median",
+    "min",
+    "max",
+    "std",
+    "mean_norm",
+    "median_norm",
+    "max_norm",
+    "nn_mean",
+    "nn_median",
+    "nn_min",
+    "nn_max",
 )
 _CROSS_KEYS = tuple(t[0] for t in _CROSS_PAIRS)
 
@@ -164,12 +176,12 @@ class SpacingDescriptor(BaseDescriptor):
         _group_sets: dict[str, frozenset[str]] = {
             "positive": frozenset(AA_GROUPS["positive"]),
             "negative": frozenset(AA_GROUPS["negative"]),
-            "charged":  frozenset(AA_GROUPS["charged"]),
+            "charged": frozenset(AA_GROUPS["charged"]),
             "hydrophobic": frozenset(AA_GROUPS["hydrophobic"]),
             "aromatic": frozenset(AA_GROUPS["aromatic"]),
-            "polar":    frozenset(AA_GROUPS["polar"]),
+            "polar": frozenset(AA_GROUPS["polar"]),
             "disorder_promoting": _DISORDER,
-            "order_promoting":    _ORDER,
+            "order_promoting": _ORDER,
         }
         for key, a_name, b_name in _CROSS_PAIRS:
             feats[key] = _cross_mean(seq, _group_sets[a_name], _group_sets[b_name])

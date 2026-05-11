@@ -12,15 +12,15 @@ from roxy.descriptors.registry import register
 _NAN = math.nan
 
 PREDEFINED_PATTERNS: dict[str, str] = {
-    "CxxC":             r"C.{2}C",
-    "PxxP":             r"P.{2}P",
-    "polyK_3plus":      r"K{3,}",
-    "polyR_3plus":      r"R{3,}",
-    "acidic_patch_3plus":  r"[DE]{3,}",
-    "basic_patch_3plus":   r"[KRH]{3,}",
-    "gly_rich_4plus":      r"(?:G.*){4,}",
-    "proline_rich_4plus":  r"(?:P.*){4,}",
-    "ser_thr_rich_4plus":  r"(?:[ST].*){4,}",
+    "CxxC": r"C.{2}C",
+    "PxxP": r"P.{2}P",
+    "polyK_3plus": r"K{3,}",
+    "polyR_3plus": r"R{3,}",
+    "acidic_patch_3plus": r"[DE]{3,}",
+    "basic_patch_3plus": r"[KRH]{3,}",
+    "gly_rich_4plus": r"(?:G.*){4,}",
+    "proline_rich_4plus": r"(?:P.*){4,}",
+    "ser_thr_rich_4plus": r"(?:[ST].*){4,}",
 }
 
 

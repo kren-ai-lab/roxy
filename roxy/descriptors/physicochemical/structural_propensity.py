@@ -59,11 +59,17 @@ class StructuralPropensityDescriptor(BaseDescriptor):
 
     def _nan_schema(self, feats: dict[str, float]) -> dict[str, float]:
         for key in (
-            "helix_mean", "helix_std",
-            "sheet_mean", "sheet_std",
-            "turn_mean", "turn_std",
-            "helix_favoring_fraction", "sheet_favoring_fraction", "turn_favoring_fraction",
-            "helix_sheet_balance", "turn_vs_secondary_balance",
+            "helix_mean",
+            "helix_std",
+            "sheet_mean",
+            "sheet_std",
+            "turn_mean",
+            "turn_std",
+            "helix_favoring_fraction",
+            "sheet_favoring_fraction",
+            "turn_favoring_fraction",
+            "helix_sheet_balance",
+            "turn_vs_secondary_balance",
         ):
             feats[key] = _NAN
         for ws in self.window_sizes:
@@ -122,9 +128,7 @@ class StructuralPropensityDescriptor(BaseDescriptor):
                 stats = profile_stats(values)
                 for stat in ("mean", "std", "min", "max", "amplitude"):
                     feats[f"w{ws}_{ss_name}_{stat}"] = stats[stat]
-                feats[f"w{ws}_{ss_name}_high_fraction"] = fraction_above_threshold(
-                    values, self.threshold
-                )
+                feats[f"w{ws}_{ss_name}_high_fraction"] = fraction_above_threshold(values, self.threshold)
 
             if helix_profile:
                 balance = np.array(helix_profile) - np.array(sheet_profile)

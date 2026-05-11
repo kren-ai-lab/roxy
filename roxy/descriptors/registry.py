@@ -21,6 +21,7 @@ def register(name: str, *, family: str = "misc") -> Callable[[type[BaseDescripto
         class AACDescriptor(BaseDescriptor):
             ...
     """
+
     def decorator(cls: type[BaseDescriptor]) -> type[BaseDescriptor]:
         cls.name = name
         cls.family = family

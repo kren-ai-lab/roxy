@@ -51,7 +51,7 @@ class ReducedKmerDescriptor(BaseDescriptor):
         if k >= _LARGE_K_THRESHOLD:
             warnings.warn(
                 f"ReducedKmerDescriptor with k={k} and alphabet size {len(self._alphabet)}"
-                f" will produce {len(self._alphabet)**k} columns.",
+                f" will produce {len(self._alphabet) ** k} columns.",
                 UserWarning,
                 stacklevel=2,
             )

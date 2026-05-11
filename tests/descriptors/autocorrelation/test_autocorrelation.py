@@ -47,6 +47,7 @@ def test_all_scales_all_lags_present(desc):
 
 def test_custom_scales_and_lags():
     from roxy.core.constants import KD
+
     desc = AutocorrelationDescriptor(scales={"kd": KD}, lags=(1, 2))
     out = desc.compute_one(SEQ)
     assert "mb_kd_lag1" in out

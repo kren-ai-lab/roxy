@@ -14,14 +14,14 @@ from roxy.descriptors.registry import register
 _NAN = math.nan
 
 _TRACKED_GROUPS: dict[str, frozenset[str]] = {
-    "charged":    frozenset(AA_GROUPS["charged"]),
+    "charged": frozenset(AA_GROUPS["charged"]),
     "hydrophobic": frozenset(AA_GROUPS["hydrophobic"]),
-    "aromatic":   frozenset(AA_GROUPS["aromatic"]),
-    "polar":      frozenset(AA_GROUPS["polar"]),
-    "positive":   frozenset(AA_GROUPS["positive"]),
-    "negative":   frozenset(AA_GROUPS["negative"]),
-    "gly":        frozenset("G"),
-    "pro":        frozenset("P"),
+    "aromatic": frozenset(AA_GROUPS["aromatic"]),
+    "polar": frozenset(AA_GROUPS["polar"]),
+    "positive": frozenset(AA_GROUPS["positive"]),
+    "negative": frozenset(AA_GROUPS["negative"]),
+    "gly": frozenset("G"),
+    "pro": frozenset("P"),
 }
 
 
