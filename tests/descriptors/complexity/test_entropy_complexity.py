@@ -5,9 +5,9 @@ import math
 import pytest
 
 from roxy.descriptors.complexity.entropy_complexity import EntropyComplexityDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
-EMPTY = ""
+SEQ = SEQ_ALL20
 UNIFORM = "AAAAAAAAAA"
 
 

@@ -5,9 +5,9 @@ import math
 import pytest
 
 from roxy.descriptors.physicochemical.hydrophobicity import HydrophobicityDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
-EMPTY = ""
+SEQ = SEQ_ALL20
 HYDROPHOBIC_SEQ = "AVLIMFWCY"
 HYDROPHILIC_SEQ = "RNDQEHKST"
 

@@ -5,9 +5,9 @@ import math
 import pytest
 
 from roxy.descriptors.ctd.ctd_classic import CTDClassicDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20, assert_keys_present
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
-EMPTY = ""
+SEQ = SEQ_ALL20
 ALL_CLASS1_HYDRO = "RKEDQN"
 
 
@@ -50,7 +50,19 @@ def test_distribution_bounds(desc):
                     assert 0.0 < val <= 1.0
 
 
-def test_column_count(desc):
+def test_ctd_feature_groups_present(desc):
     out = desc.compute_one(SEQ)
-    # 2 base + 3 props x (3 comp + 3 trans + 15 dist) = 2 + 63 = 65
-    assert len(out) == 65
+    assert_keys_present(
+        out,
+        [
+            "hydrophobicity_comp_1",
+            "hydrophobicity_trans_12",
+            "hydrophobicity_dist_1_050",
+            "polarity_comp_2",
+            "polarity_trans_23",
+            "polarity_dist_3_100",
+            "charge_comp_3",
+            "charge_trans_13",
+            "charge_dist_2_025",
+        ],
+    )

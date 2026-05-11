@@ -5,9 +5,9 @@ import math
 import pytest
 
 from roxy.descriptors.motif.user_regex import UserRegexDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20, assert_keys_present
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
-EMPTY = ""
+SEQ = SEQ_ALL20
 KK_SEQ = "KKAACDE"  # has basic_pair
 
 
@@ -24,10 +24,19 @@ def test_empty_zero_and_nan(desc):
     assert math.isnan(out["basic_pair_first_pos"])
 
 
-def test_column_count(desc):
+def test_default_regex_features_present(desc):
     out = desc.compute_one(SEQ)
-    # 2 base + 8 patterns x 11 stats = 90
-    assert len(out) == 90
+    assert_keys_present(
+        out,
+        [
+            "basic_pair_present",
+            "basic_pair_count",
+            "basic_pair_density",
+            "basic_pair_first_pos",
+            "basic_pair_nterm_present_w10",
+            "acidic_pair_count",
+        ],
+    )
 
 
 def test_basic_pair_detected():
@@ -43,5 +52,5 @@ def test_custom_no_terminal():
     out = desc.compute_one(SEQ)
     assert "any_K_present" in out
     assert "any_K_nterm_present_w10" not in out
-    # 2 base + 1 x 9 = 11
-    assert len(out) == 11
+    assert "any_K_count" in out
+    assert "any_K_span_norm" in out

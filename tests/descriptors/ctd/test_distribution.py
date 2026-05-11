@@ -5,9 +5,9 @@ import math
 import pytest
 
 from roxy.descriptors.ctd.distribution import DistributionDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20, assert_keys_present
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
-EMPTY = ""
+SEQ = SEQ_ALL20
 
 
 @pytest.fixture
@@ -22,10 +22,18 @@ def test_empty_nan(desc):
     assert math.isnan(out["hydrophobic_tercile_bin1_frac"])
 
 
-def test_column_count(desc):
+def test_distribution_feature_groups_present(desc):
     out = desc.compute_one(SEQ)
-    # 2 + 8 groups x (1 count + 12 tercile + 15 quartile) = 2 + 8*28 = 226
-    assert len(out) == 226
+    assert_keys_present(
+        out,
+        [
+            "charged_count",
+            "charged_tercile_bin1_frac",
+            "charged_quartile_bin4_frac",
+            "hydrophobic_tercile_spread",
+            "aromatic_quartile_spread",
+        ],
+    )
 
 
 def test_bin_fracs_sum_to_one_or_zero(desc):

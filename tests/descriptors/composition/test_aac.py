@@ -7,8 +7,8 @@ import math
 import pytest
 
 from roxy.descriptors.composition.aac import AACDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20
 
-SEQ_ALL20 = "ACDEFGHIKLMNPQRSTVWY"
 SEQ_BIASED = "AAACCCDDDD"
 
 
@@ -29,7 +29,7 @@ def test_count_freq_consistency():
 
 def test_empty_sequence():
     d = AACDescriptor()
-    out = d.compute_one("")
+    out = d.compute_one(EMPTY)
     assert out["length"] == 0
     assert out["valid_residue_count"] == 0
     assert math.isnan(out["freq_A"])
@@ -38,9 +38,9 @@ def test_empty_sequence():
 
 def test_consistent_schema_across_seqs():
     d = AACDescriptor()
-    df = d.compute([SEQ_ALL20, SEQ_BIASED, ""])
+    df = d.compute([SEQ_ALL20, SEQ_BIASED, EMPTY])
     assert df.shape[0] == 3
-    assert len(df.columns) == len(d.compute_one(SEQ_ALL20))
+    assert set(df.columns) == {f"aac_{key}" for key in d.compute_one(SEQ_ALL20)}
 
 
 @pytest.mark.parametrize("seq", ["*ACDEF*", "acdef", "  ACDEF  "])

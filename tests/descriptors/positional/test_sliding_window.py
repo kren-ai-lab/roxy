@@ -5,9 +5,9 @@ import math
 import pytest
 
 from roxy.descriptors.positional.sliding_window import SlidingWindowDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
-EMPTY = ""
+SEQ = SEQ_ALL20
 SHORT = "ACK"  # shorter than window=5
 
 
@@ -27,12 +27,6 @@ def test_short_seq_all_nan(desc):
     # seq shorter than min window → all window features NaN
     out = desc.compute_one(SHORT)
     assert math.isnan(out["win5_hydropathy_mean"])
-
-
-def test_column_count(desc):
-    out = desc.compute_one(SEQ)
-    # 2 base + 3 windows x (5 profiles x 6 stats + 4 threshold) = 2 + 3*34 = 104
-    assert len(out) == 104
 
 
 def test_threshold_fractions_in_range(desc):

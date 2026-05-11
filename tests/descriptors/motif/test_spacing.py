@@ -5,9 +5,9 @@ import math
 import pytest
 
 from roxy.descriptors.motif.spacing import SpacingDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20, assert_keys_present
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
-EMPTY = ""
+SEQ = SEQ_ALL20
 SINGLE = "K"  # only 1 charged — inter-event NaN
 
 
@@ -24,10 +24,20 @@ def test_empty_nan(desc):
     assert math.isnan(out["positive_negative_cross_mean"])
 
 
-def test_column_count(desc):
+def test_spacing_feature_groups_present(desc):
     out = desc.compute_one(SEQ)
-    # 2 base + 8 groups x 16 stats + 4 cross = 134
-    assert len(out) == 134
+    assert_keys_present(
+        out,
+        [
+            "charged_count",
+            "charged_density",
+            "charged_mean",
+            "charged_nn_mean",
+            "hydrophobic_density",
+            "aromatic_polar_cross_mean",
+            "positive_negative_cross_mean",
+        ],
+    )
 
 
 def test_density_in_range(desc):

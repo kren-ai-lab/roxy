@@ -5,10 +5,10 @@ import math
 import pytest
 
 from roxy.descriptors.physicochemical.global_basic import GlobalBasicDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
+SEQ = SEQ_ALL20
 SEQ_REPEATED = "AAACCCDDDEEE"
-EMPTY = ""
 
 
 @pytest.fixture

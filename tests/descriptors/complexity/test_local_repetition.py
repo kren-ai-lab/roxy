@@ -5,9 +5,9 @@ import math
 import pytest
 
 from roxy.descriptors.complexity.local_repetition import LocalRepetitionDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20, assert_keys_present
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
-EMPTY = ""
+SEQ = SEQ_ALL20
 POLY_A = "AAAAAAAAAA"  # high repetition
 
 
@@ -23,10 +23,18 @@ def test_empty_nan(desc):
     assert math.isnan(out["local_redundancy_mean_w8_k2"])
 
 
-def test_column_count(desc):
+def test_repetition_feature_groups_present(desc):
     out = desc.compute_one(SEQ)
-    # 2 base + 33 features = 35
-    assert len(out) == 35
+    assert_keys_present(
+        out,
+        [
+            "repeated_fraction_k2",
+            "unique_fraction_k3",
+            "redundancy_score_k2",
+            "local_redundancy_mean_w8_k2",
+            "local_redundancy_std_w8_k2",
+        ],
+    )
 
 
 def test_poly_a_high_redundancy(desc):

@@ -5,8 +5,9 @@ from __future__ import annotations
 import math
 
 from roxy.descriptors.composition.dpc import DPCDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
+SEQ = SEQ_ALL20
 SEQ_SHORT = "A"
 
 
@@ -25,7 +26,7 @@ def test_total_dipeptides():
 
 def test_empty_sequence():
     d = DPCDescriptor()
-    out = d.compute_one("")
+    out = d.compute_one(EMPTY)
     assert out["length"] == 0
     assert out["total_dipeptides"] == 0
     assert math.isnan(out["freq_AC"])
@@ -41,6 +42,6 @@ def test_short_sequence():
 
 def test_consistent_schema():
     d = DPCDescriptor()
-    df = d.compute([SEQ, SEQ * 5, ""])
+    df = d.compute([SEQ, SEQ * 5, EMPTY])
     assert df.shape[0] == 3
-    assert len(df.columns) == len(d.compute_one(SEQ))
+    assert set(df.columns) == {f"dpc_{key}" for key in d.compute_one(SEQ)}

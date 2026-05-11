@@ -5,14 +5,15 @@ from __future__ import annotations
 import math
 
 from roxy.descriptors.composition.compositional_bias import CompositionalBiasDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
+SEQ = SEQ_ALL20
 SEQ_ALL_K = "KKKKKKKKKK"
 
 
 def test_empty_sequence_full_schema():
     d = CompositionalBiasDescriptor()
-    out_empty = d.compute_one("")
+    out_empty = d.compute_one(EMPTY)
     out_seq = d.compute_one(SEQ)
     assert set(out_empty.keys()) == set(out_seq.keys())
     assert out_empty["length"] == 0
@@ -44,6 +45,6 @@ def test_kl_div_uniform_for_uniform_seq():
 
 def test_consistent_schema():
     d = CompositionalBiasDescriptor()
-    df = d.compute([SEQ, SEQ_ALL_K, ""])
+    df = d.compute([SEQ, SEQ_ALL_K, EMPTY])
     assert df.shape[0] == 3
-    assert len(df.columns) == len(d.compute_one(SEQ))
+    assert set(df.columns) == {f"compositional_bias_{key}" for key in d.compute_one(SEQ)}

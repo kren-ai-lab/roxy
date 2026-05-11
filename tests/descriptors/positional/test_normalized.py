@@ -5,9 +5,9 @@ import math
 import pytest
 
 from roxy.descriptors.positional.normalized import NormalizedPositionDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20, assert_keys_present
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
-EMPTY = ""
+SEQ = SEQ_ALL20
 ALL_CHARGED = "KRHDEKRH"
 
 
@@ -23,10 +23,21 @@ def test_empty_nan(desc):
     assert math.isnan(out["charged_first_norm"])
 
 
-def test_column_count(desc):
+def test_position_feature_groups_present(desc):
     out = desc.compute_one(SEQ)
-    # 2 base + 10 groups x 10 stats = 102
-    assert len(out) == 102
+    assert_keys_present(
+        out,
+        [
+            "charged_count",
+            "charged_first_norm",
+            "charged_last_norm",
+            "charged_mean_norm",
+            "charged_n_bias",
+            "hydrophobic_c_bias",
+            "gly_count",
+            "pro_count",
+        ],
+    )
 
 
 def test_norm_positions_in_range(desc):

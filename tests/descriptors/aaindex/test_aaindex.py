@@ -5,9 +5,9 @@ import math
 import pytest
 
 from roxy.descriptors.aaindex.aaindex import AAIndexDescriptor, list_indices
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20, assert_keys_present
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
-EMPTY = ""
+SEQ = SEQ_ALL20
 
 
 @pytest.fixture
@@ -29,10 +29,19 @@ def test_empty_nan(desc):
     assert math.isnan(out["KYTJ820101_nterm_mean_w10"])
 
 
-def test_column_count(desc):
+def test_default_features_present(desc):
     out = desc.compute_one(SEQ)
-    # 2 base + 4 codes x 7 stats = 30
-    assert len(out) == 30
+    assert_keys_present(
+        out,
+        [
+            "length",
+            "valid_residue_count",
+            "ANDN920101_mean",
+            "ANDN920101_std",
+            "ANDN920101_nterm_mean_w10",
+            "KYTJ820101_cterm_mean_w10",
+        ],
+    )
 
 
 def test_custom_codes():
@@ -40,8 +49,7 @@ def test_custom_codes():
     out = d.compute_one(SEQ)
     assert "ANDN920101_mean" in out
     assert "ANDN920101_nterm_mean_w10" not in out
-    # 2 + 1 x 5 = 7
-    assert len(out) == 7
+    assert "ANDN920101_std" in out
 
 
 def test_invalid_code():

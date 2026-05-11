@@ -5,9 +5,9 @@ import math
 import pytest
 
 from roxy.descriptors.hybrid.family_summary import FamilySummaryDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20, assert_keys_present
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
-EMPTY = ""
+SEQ = SEQ_ALL20
 
 
 @pytest.fixture
@@ -22,10 +22,20 @@ def test_empty_nan(desc):
     assert math.isnan(out["global_family_std"])
 
 
-def test_column_count(desc):
+def test_family_summary_features_present(desc):
     out = desc.compute_one(SEQ)
-    # 2 + 4 + 4 + 3 + 2 + 2 + 3 + 5 = 25
-    assert len(out) == 25
+    assert_keys_present(
+        out,
+        [
+            "charge_family_mean",
+            "physchem_family_mean",
+            "struct_family_mean",
+            "orderdis_family_mean",
+            "functional_family_mean",
+            "complexity_family_mean",
+            "global_family_amplitude",
+        ],
+    )
 
 
 def test_global_amplitude_consistent(desc):

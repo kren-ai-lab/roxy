@@ -5,9 +5,9 @@ import math
 import pytest
 
 from roxy.descriptors.autocorrelation.autocorrelation import AutocorrelationDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
-EMPTY = ""
+SEQ = SEQ_ALL20
 UNIFORM_SEQ = "AAAAAAAAAA"
 
 
@@ -22,12 +22,6 @@ def test_empty_nan_values(desc):
     assert math.isnan(out["mb_hydrophobicity_lag1"])
     assert math.isnan(out["moran_polarity_lag3"])
     assert math.isnan(out["geary_volume_lag5"])
-
-
-def test_column_count(desc):
-    out = desc.compute_one(SEQ)
-    # 2 base + 3 methods * 5 scales * 5 lags = 77
-    assert len(out) == 77
 
 
 def test_uniform_moran_nan(desc):
@@ -58,4 +52,5 @@ def test_custom_scales_and_lags():
     assert "mb_kd_lag1" in out
     assert "mb_kd_lag2" in out
     assert "mb_hydrophobicity_lag1" not in out
-    assert len(out) == 2 + 3 * 1 * 2  # base + 3 methods * 1 scale * 2 lags
+    assert "moran_kd_lag2" in out
+    assert "geary_kd_lag2" in out

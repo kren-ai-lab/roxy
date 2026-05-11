@@ -5,9 +5,9 @@ import math
 import pytest
 
 from roxy.descriptors.physicochemical.structural_propensity import StructuralPropensityDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
-EMPTY = ""
+SEQ = SEQ_ALL20
 HELIX_SEQ = "AAEEEAAEEE"
 SHEET_SEQ = "VIVIVIVIVI"
 

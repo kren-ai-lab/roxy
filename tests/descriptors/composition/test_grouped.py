@@ -5,8 +5,9 @@ from __future__ import annotations
 import math
 
 from roxy.descriptors.composition.grouped import GroupedCompositionDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
+SEQ = SEQ_ALL20
 SEQ_ALL_K = "KKKKKK"
 
 
@@ -19,7 +20,7 @@ def test_positive_count():
 
 def test_empty_sequence():
     d = GroupedCompositionDescriptor()
-    out = d.compute_one("")
+    out = d.compute_one(EMPTY)
     assert out["length"] == 0
     assert math.isnan(out["positive_frac"])
     assert math.isnan(out["ratio_acidic_basic"])
@@ -36,6 +37,6 @@ def test_ratio_zero_denominator():
 
 def test_consistent_schema():
     d = GroupedCompositionDescriptor()
-    df = d.compute([SEQ, SEQ_ALL_K, ""])
+    df = d.compute([SEQ, SEQ_ALL_K, EMPTY])
     assert df.shape[0] == 3
-    assert len(df.columns) == len(d.compute_one(SEQ))
+    assert set(df.columns) == {f"grouped_{key}" for key in d.compute_one(SEQ)}

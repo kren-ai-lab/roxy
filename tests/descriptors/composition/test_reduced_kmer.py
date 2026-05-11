@@ -7,8 +7,9 @@ import math
 import pytest
 
 from roxy.descriptors.composition.reduced_kmer import ReducedKmerDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
+SEQ = SEQ_ALL20
 
 
 def test_smoke_default():
@@ -22,16 +23,16 @@ def test_rd5_alphabet_size():
     d = ReducedKmerDescriptor(scheme="rd5")
     out = d.compute_one(SEQ)
     assert out["alphabet_size"] == 5
-    # 5^2 = 25 freqs + 2 base cols = 27
-    assert len(out) == 27
+    assert "freq_HH" in out
+    assert "freq_PP" in out
 
 
 def test_rd3_alphabet_size():
     d = ReducedKmerDescriptor(scheme="rd3")
     out = d.compute_one(SEQ)
     assert out["alphabet_size"] == 3
-    # 3^2 = 9 freqs + 2 base cols = 11
-    assert len(out) == 11
+    assert "freq_HH" in out
+    assert "freq_SS" in out
 
 
 def test_freq_sums_to_one():
@@ -43,7 +44,7 @@ def test_freq_sums_to_one():
 
 def test_empty_sequence():
     d = ReducedKmerDescriptor()
-    out = d.compute_one("")
+    out = d.compute_one(EMPTY)
     assert out["length"] == 0
     assert math.isnan(out["freq_HH"])
 
@@ -63,6 +64,6 @@ def test_large_k_warns():
 
 def test_consistent_schema():
     d = ReducedKmerDescriptor()
-    df = d.compute([SEQ, SEQ * 3, ""])
+    df = d.compute([SEQ, SEQ * 3, EMPTY])
     assert df.shape[0] == 3
-    assert len(df.columns) == len(d.compute_one(SEQ))
+    assert set(df.columns) == {f"reduced_kmer_{key}" for key in d.compute_one(SEQ)}

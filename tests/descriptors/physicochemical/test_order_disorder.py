@@ -5,9 +5,9 @@ import math
 import pytest
 
 from roxy.descriptors.physicochemical.order_disorder import OrderDisorderDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
-EMPTY = ""
+SEQ = SEQ_ALL20
 DISORDER_SEQ = "ARGQSEPKARGQSEPK"
 ORDER_SEQ = "CWYFILNVCWYFILNV"
 

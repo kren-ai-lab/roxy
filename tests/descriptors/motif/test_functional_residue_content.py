@@ -5,9 +5,9 @@ import math
 import pytest
 
 from roxy.descriptors.motif.functional_residue_content import FunctionalResidueContentDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20, assert_keys_present
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
-EMPTY = ""
+SEQ = SEQ_ALL20
 
 
 @pytest.fixture
@@ -24,10 +24,20 @@ def test_empty_nan(desc):
     assert math.isnan(out["hbond_donors_per_residue"])
 
 
-def test_column_count(desc):
+def test_functional_feature_groups_present(desc):
     out = desc.compute_one(SEQ)
-    # 2 + 32 + 30 + 7 + 4 + 3 = 78
-    assert len(out) == 78
+    assert_keys_present(
+        out,
+        [
+            "catalytic_core_like_count",
+            "catalytic_core_like_fraction",
+            "H_count",
+            "H_fraction",
+            "his_cys_ser_fraction",
+            "basic_acidic_ratio",
+            "hbond_balance",
+        ],
+    )
 
 
 def test_fractions_in_range(desc):

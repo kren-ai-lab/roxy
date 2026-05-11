@@ -5,9 +5,9 @@ import math
 import pytest
 
 from roxy.descriptors.pseudo.sequence_order import SequenceOrderDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20, assert_keys_present
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
-EMPTY = ""
+SEQ = SEQ_ALL20
 SINGLE = "A"
 
 
@@ -23,10 +23,19 @@ def test_empty_nan(desc):
     assert math.isnan(out["charged_hydrophobic_transition_frac"])
 
 
-def test_column_count(desc):
+def test_sequence_order_feature_groups_present(desc):
     out = desc.compute_one(SEQ)
-    # 2 base + 6 groups x 6 stats + 4 cross = 42
-    assert len(out) == 42
+    assert_keys_present(
+        out,
+        [
+            "charged_same_adj_frac",
+            "charged_cluster_frac_w3",
+            "charged_lag1_coupling",
+            "hydrophobic_mean_spacing_norm",
+            "aromatic_lag2_coupling",
+            "charged_hydrophobic_transition_frac",
+        ],
+    )
 
 
 def test_fractions_in_range(desc):

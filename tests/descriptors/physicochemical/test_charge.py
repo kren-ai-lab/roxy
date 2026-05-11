@@ -5,9 +5,9 @@ import math
 import pytest
 
 from roxy.descriptors.physicochemical.charge import ChargeDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
-EMPTY = ""
+SEQ = SEQ_ALL20
 BASIC_SEQ = "KRKRKR"
 ACIDIC_SEQ = "DEDEDE"
 

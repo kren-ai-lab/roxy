@@ -58,3 +58,8 @@ def test_descriptor_families_match_plan():
 
     for name, family in expected_families.items():
         assert DESCRIPTOR_REGISTRY[name].family == family
+
+
+def test_descriptor_module_paths_match_families():
+    for cls in DESCRIPTOR_REGISTRY.values():
+        assert cls.__module__.split(".")[2] == cls.family

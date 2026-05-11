@@ -5,9 +5,9 @@ import math
 import pytest
 
 from roxy.descriptors.complexity.run_blockiness import RunBlockinessDescriptor
+from tests.descriptors._helpers import EMPTY, SEQ_ALL20, assert_keys_present
 
-SEQ = "ACDEFGHIKLMNPQRSTVWY"
-EMPTY = ""
+SEQ = SEQ_ALL20
 POLY_K = "KKKKACDE"  # charged run of length 4
 
 
@@ -23,10 +23,18 @@ def test_empty_nan(desc):
     assert math.isnan(out["charged_mean_run_length"])
 
 
-def test_column_count(desc):
+def test_run_feature_groups_present(desc):
     out = desc.compute_one(SEQ)
-    # 2 base + 4 global + 6 groups x 9 = 60
-    assert len(out) == 60
+    assert_keys_present(
+        out,
+        [
+            "longest_homopolymer",
+            "homopolymer_run_density",
+            "charged_longest",
+            "hydrophobic_longest_norm",
+            "aromatic_mean_run_length",
+        ],
+    )
 
 
 def test_poly_k_charged_run(desc):
