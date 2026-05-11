@@ -40,11 +40,12 @@ roxy list                          # show registered descriptor families
 | composition     | AAC, DPC, grouped, k-mers, compositional bias                            |
 | physicochemical | global basic, hydrophobicity, charge, structural propensity              |
 | autocorrelation | Moran, Geary, normalized Moreau-Broto                                    |
-| CTD             | composition/transition/distribution                                      |
+| CTD             | classic composition/transition/distribution, residue distribution        |
 | pseudo          | PseAAC, QSO, sequence order                                              |
-| complexity      | Shannon entropy, linguistic complexity, local repetition, run blockiness |
+| complexity      | entropy complexity, local repetition, run blockiness                     |
 | motif           | pattern matching, user regex, spacing, functional residue content        |
 | positional      | normalized positional, sliding window, terminal                          |
+| hybrid          | family summary                                                           |
 | aaindex         | AAIndex-based mean properties                                            |
 
 ## Related Projects

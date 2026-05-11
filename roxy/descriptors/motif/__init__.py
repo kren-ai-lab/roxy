@@ -1,5 +1,13 @@
 """Motif/pattern descriptor family."""
 
-from .motif import MotifDescriptor
+from .functional_residue_content import FunctionalResidueContentDescriptor
+from .pattern import PatternDescriptor
+from .spacing import SpacingDescriptor
+from .user_regex import UserRegexDescriptor
 
-__all__ = ["MotifDescriptor"]
+__all__ = [
+    "FunctionalResidueContentDescriptor",
+    "PatternDescriptor",
+    "SpacingDescriptor",
+    "UserRegexDescriptor",
+]

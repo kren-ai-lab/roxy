@@ -1,5 +1,11 @@
 """Positional descriptor family."""
 
-from .positional import PositionalDescriptor
+from .normalized import NormalizedPositionDescriptor
+from .sliding_window import SlidingWindowDescriptor
+from .terminal import TerminalDescriptor
 
-__all__ = ["PositionalDescriptor"]
+__all__ = [
+    "NormalizedPositionDescriptor",
+    "SlidingWindowDescriptor",
+    "TerminalDescriptor",
+]

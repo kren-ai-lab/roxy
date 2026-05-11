@@ -13,7 +13,7 @@ from ._utils import clean_sequence, safe_ratio
 _NAN = math.nan
 
 
-@register("grouped_composition", family="composition")
+@register("grouped", family="composition")
 class GroupedCompositionDescriptor(BaseDescriptor):
     """Per-group residue counts and fractions plus four compositional ratios.
 
@@ -22,7 +22,7 @@ class GroupedCompositionDescriptor(BaseDescriptor):
     tiny, small, branched, sulfur, hydroxyl, amide, hydrophobic,
     hydrophilic, disorder_promoting, order_promoting.
 
-    Output columns (prefix ``grouped_composition_``):
+    Output columns (prefix ``grouped_``):
         ``length``, ``<group>_count`` x 17, ``<group>_frac`` x 17,
         ``ratio_acidic_basic``, ``ratio_basic_acidic``,
         ``ratio_polar_nonpolar``, ``ratio_charged_uncharged``.

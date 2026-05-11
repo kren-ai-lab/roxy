@@ -1,5 +1,11 @@
 """Complexity descriptor family."""
 
-from .complexity import ComplexityDescriptor
+from .entropy_complexity import EntropyComplexityDescriptor
+from .local_repetition import LocalRepetitionDescriptor
+from .run_blockiness import RunBlockinessDescriptor
 
-__all__ = ["ComplexityDescriptor"]
+__all__ = [
+    "EntropyComplexityDescriptor",
+    "LocalRepetitionDescriptor",
+    "RunBlockinessDescriptor",
+]

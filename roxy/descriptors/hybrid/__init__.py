@@ -1,5 +1,5 @@
-"""Hybrid family descriptor."""
+"""Hybrid descriptor family."""
 
-from .hybrid import HybridDescriptor
+from .family_summary import FamilySummaryDescriptor
 
-__all__ = ["HybridDescriptor"]
+__all__ = ["FamilySummaryDescriptor"]
