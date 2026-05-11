@@ -16,7 +16,7 @@ _LARGE_K_THRESHOLD = 4
 
 
 @register("kmer_full_alphabet", family="composition")
-class KmerDescriptor(BaseDescriptor):
+class KmerFullAlphabetDescriptor(BaseDescriptor):
     """K-mer counts and frequencies over the full 20-AA alphabet.
 
     Args:
@@ -38,10 +38,10 @@ class KmerDescriptor(BaseDescriptor):
         include_counts: bool = True,
         include_frequencies: bool = True,
     ) -> None:
-        """Initialize KmerDescriptor."""
+        """Initialize KmerFullAlphabetDescriptor."""
         if k >= _LARGE_K_THRESHOLD:
             warnings.warn(
-                f"KmerDescriptor with k={k} will produce {20**k} feature columns"
+                f"KmerFullAlphabetDescriptor with k={k} will produce {20**k} feature columns"
                 f" (x2 with counts+frequencies). Consider k <= 3.",
                 UserWarning,
                 stacklevel=2,

@@ -13,7 +13,7 @@ _NAN = math.nan
 
 
 @register("grouped", family="composition")
-class GroupedCompositionDescriptor(BaseDescriptor):
+class GroupedDescriptor(BaseDescriptor):
     """Per-group residue counts and fractions plus four compositional ratios.
 
     Groups (17 total, defined in ``roxy.core.constants.AA_GROUPS``):

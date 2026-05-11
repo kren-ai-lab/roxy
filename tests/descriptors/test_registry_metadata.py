@@ -1,8 +1,14 @@
-"""Tests for descriptor registry names and families."""
+"""Tests for descriptor registry names, families, and exports."""
 
 from __future__ import annotations
 
-from roxy.descriptors import DESCRIPTOR_REGISTRY
+from roxy.descriptors import (
+    DESCRIPTOR_REGISTRY,
+    AACDescriptor,
+    CTDClassicDescriptor,
+    GroupedDescriptor,
+    KmerFullAlphabetDescriptor,
+)
 
 
 def test_documented_descriptor_names_are_registered():
@@ -63,3 +69,10 @@ def test_descriptor_families_match_plan():
 def test_descriptor_module_paths_match_families():
     for cls in DESCRIPTOR_REGISTRY.values():
         assert cls.__module__.split(".")[2] == cls.family
+
+
+def test_top_level_descriptor_exports_match_family_exports():
+    assert AACDescriptor.__module__.split(".")[2] == "composition"
+    assert CTDClassicDescriptor.__module__.split(".")[2] == "ctd"
+    assert GroupedDescriptor.__module__.split(".")[2] == "composition"
+    assert KmerFullAlphabetDescriptor.__module__.split(".")[2] == "composition"
