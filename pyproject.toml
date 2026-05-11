@@ -108,12 +108,19 @@ ignore = [
     "S101",
     "TRY003"
 ]
+"examples/*" = [
+    "INP001",  # example scripts are intentionally standalone modules
+    "PLR2004", # small referential scripts can compare against literal sizes
+    "S101",    # lightweight runtime checks are fine in examples
+    "S603",    # subprocess usage is explicit in CLI examples
+    "T201",    # examples print result snippets by design
+]
 
 [tool.taskipy.tasks]
-sort-imports = "ruff check --fix --select I,F401 roxy/ tests/"
-format = "task sort-imports && ruff format roxy/ tests/"
-lint = "ruff check roxy/ tests/"
-lint-fix = "ruff check --fix roxy/ tests/"
+sort-imports = "ruff check --fix --select I,F401 roxy/ tests/ examples/"
+format = "task sort-imports && ruff format roxy/ tests/ examples/"
+lint = "ruff check roxy/ tests/ examples/"
+lint-fix = "ruff check --fix roxy/ tests/ examples/"
 test = "pytest -q"
 test-v = "pytest -v"
 test-cov = "pytest --cov=roxy --cov-report=html"

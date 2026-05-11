@@ -69,6 +69,20 @@ roxy compute sequences.fasta --config roxy.yaml -o configured_features.csv
 `--descriptor/-d`, or `--family/-f`. CSV and Parquet inputs use `sequence` as
 the default sequence column; pass `--seq-col` and `--id-col` when needed.
 
+## Examples
+
+The repository ships a few plain Python scripts under [`examples/`](examples):
+
+- `examples/basic_api.py` for direct descriptor use from Python
+- `examples/configured_descriptors.py` for parameterized descriptor instances
+- `examples/cli_roundtrip.py` for an end-to-end CLI config and compute flow
+
+Run them with:
+
+```bash
+bash examples/run_ci_examples.sh
+```
+
 ## Descriptor Families
 
 Registry keys are the names used by `roxy compute -d`, config files, and output
