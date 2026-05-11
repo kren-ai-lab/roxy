@@ -6,6 +6,9 @@ import typer
 
 from roxy import __version__
 from roxy.cli._shared import HELP_CONTEXT_SETTINGS
+from roxy.cli.compute import compute
+from roxy.cli.describe_descriptor import describe_descriptor
+from roxy.cli.init_config import init_config
 from roxy.cli.list_descriptors import list_descriptors
 
 app = typer.Typer(
@@ -16,7 +19,7 @@ app = typer.Typer(
 )
 
 
-def _version_callback(value: bool | None) -> None:  # noqa: FBT001
+def _version_callback(value: bool | None) -> None:
     if value:
         typer.echo(f"roxy {__version__}")
         raise typer.Exit
@@ -24,7 +27,7 @@ def _version_callback(value: bool | None) -> None:  # noqa: FBT001
 
 @app.callback()
 def main(
-    _version: bool | None = typer.Option(  # noqa: FBT001
+    _version: bool | None = typer.Option(
         None,
         "--version",
         "-v",
@@ -38,8 +41,23 @@ def main(
 
 app.command(
     name="list",
-    help="List all registered descriptor families.",
+    help="List all registered descriptors grouped by family.",
 )(list_descriptors)
+
+app.command(
+    name="describe",
+    help="Show full details for a descriptor.",
+)(describe_descriptor)
+
+app.command(
+    name="compute",
+    help="Compute descriptors for sequences in a file.",
+)(compute)
+
+app.command(
+    name="init-config",
+    help="Generate a YAML config file populated with descriptor defaults.",
+)(init_config)
 
 
 if __name__ == "__main__":
