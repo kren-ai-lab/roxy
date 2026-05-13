@@ -8,7 +8,6 @@ import numpy as np
 
 from roxy.core.constants import AA_GROUPS, CF_HELIX, CF_SHEET, CF_TURN, KD, POLARITY
 from roxy.descriptors._utils import (
-    clean_sequence,
     fraction_from_group,
     longest_homopolymer_run,
     scale_mean,
@@ -163,10 +162,7 @@ class FamilySummaryDescriptor(BaseDescriptor):
 
     def compute_one(self, sequence: str) -> dict[str, float]:
         """Compute family summary features for a single sequence."""
-        seq = clean_sequence(sequence)
-        n = len(seq)
-
-        feats: dict[str, float] = {"length": float(n), "valid_residue_count": float(n)}
+        seq, n, feats = self._prepare_sequence(sequence)
 
         if n == 0:
             feats.update(dict.fromkeys(_NAN_KEYS, _NAN))

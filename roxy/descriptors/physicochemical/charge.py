@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 
 from roxy.core.constants import PKA_SIDE
-from roxy.descriptors._utils import clean_sequence, net_charge_at_ph, profile_stats, terminal_segment, windows
+from roxy.descriptors._utils import net_charge_at_ph, profile_stats, terminal_segment, windows
 from roxy.descriptors.base import BaseDescriptor
 from roxy.descriptors.registry import register
 
@@ -103,13 +103,7 @@ class ChargeDescriptor(BaseDescriptor):
 
     def compute_one(self, sequence: str) -> dict[str, float]:
         """Compute charge features for a single sequence."""
-        seq = clean_sequence(sequence)
-        n = len(seq)
-
-        feats: dict[str, float] = {
-            "length": float(n),
-            "valid_residue_count": float(n),
-        }
+        seq, n, feats = self._prepare_sequence(sequence)
 
         if n == 0:
             return self._nan_schema(feats)

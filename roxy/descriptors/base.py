@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 
 import polars as pl
 
+from roxy.descriptors._utils import clean_sequence
+
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
@@ -22,6 +24,20 @@ class BaseDescriptor(ABC):
 
     name: str = "base"
     family: str = "misc"
+
+    @staticmethod
+    def _prepare_sequence(sequence: str) -> tuple[str, int, dict[str, float]]:
+        """Clean a sequence and initialize standard length features."""
+        seq = clean_sequence(sequence)
+        n = len(seq)
+        return (
+            seq,
+            n,
+            {
+                "length": float(n),
+                "valid_residue_count": float(n),
+            },
+        )
 
     @abstractmethod
     def compute_one(self, sequence: str) -> dict[str, float]:

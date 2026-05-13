@@ -8,7 +8,6 @@ from itertools import groupby
 import numpy as np
 
 from roxy.core.constants import AA_GROUPS
-from roxy.descriptors._utils import clean_sequence
 from roxy.descriptors.base import BaseDescriptor
 from roxy.descriptors.registry import register
 
@@ -90,8 +89,7 @@ class RunBlockinessDescriptor(BaseDescriptor):
 
     def compute_one(self, sequence: str) -> dict[str, float]:
         """Compute run-blockiness features for a single sequence."""
-        seq = clean_sequence(sequence)
-        n = len(seq)
+        seq, n, feats = self._prepare_sequence(sequence)
 
         # global homopolymer features
         homo_runs = [len(list(g)) for _, g in groupby(seq)] if seq else []
@@ -100,14 +98,10 @@ class RunBlockinessDescriptor(BaseDescriptor):
         rbf2 = sum(r for r in homo_runs if r >= _MIN_RUN_2) / n if n > 0 else _NAN
         rbf3 = sum(r for r in homo_runs if r >= _MIN_RUN_3) / n if n > 0 else _NAN
 
-        feats: dict[str, float] = {
-            "length": float(n),
-            "valid_residue_count": float(n),
-            "longest_homopolymer": float(longest_homo),
-            "homopolymer_run_density": homo_density,
-            "repeated_block_fraction_len2": rbf2,
-            "repeated_block_fraction_len3": rbf3,
-        }
+        feats["longest_homopolymer"] = float(longest_homo)
+        feats["homopolymer_run_density"] = homo_density
+        feats["repeated_block_fraction_len2"] = rbf2
+        feats["repeated_block_fraction_len3"] = rbf3
 
         for name in _TRACKED_GROUPS:
             group = frozenset(AA_GROUPS[name])

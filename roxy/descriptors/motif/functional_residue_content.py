@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 
-from roxy.descriptors._utils import clean_sequence, safe_ratio
+from roxy.descriptors._utils import safe_ratio
 from roxy.descriptors.base import BaseDescriptor
 from roxy.descriptors.registry import register
 
@@ -115,13 +115,7 @@ class FunctionalResidueContentDescriptor(BaseDescriptor):
 
     def compute_one(self, sequence: str) -> dict[str, float]:
         """Compute functional residue content features for a single sequence."""
-        seq = clean_sequence(sequence)
-        n = len(seq)
-
-        feats: dict[str, float] = {
-            "length": float(n),
-            "valid_residue_count": float(n),
-        }
+        seq, n, feats = self._prepare_sequence(sequence)
 
         if n == 0:
             for name in _FUNCTIONAL_GROUPS:

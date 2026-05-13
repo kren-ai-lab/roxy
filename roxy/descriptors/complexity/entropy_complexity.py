@@ -9,7 +9,7 @@ from itertools import groupby
 import numpy as np
 
 from roxy.core.constants import AA20
-from roxy.descriptors._utils import clean_sequence, linguistic_complexity, shannon_entropy
+from roxy.descriptors._utils import linguistic_complexity, shannon_entropy
 from roxy.descriptors.base import BaseDescriptor
 from roxy.descriptors.registry import register
 
@@ -97,14 +97,8 @@ class EntropyComplexityDescriptor(BaseDescriptor):
 
     def compute_one(self, sequence: str) -> dict[str, float]:
         """Compute complexity features for a single sequence."""
-        seq = clean_sequence(sequence)
-        n = len(seq)
+        seq, n, feats = self._prepare_sequence(sequence)
         w = self.low_complexity_window
-
-        feats: dict[str, float] = {
-            "length": float(n),
-            "valid_residue_count": float(n),
-        }
 
         if n == 0:
             return self._nan_schema(feats)

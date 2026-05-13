@@ -8,7 +8,7 @@ from itertools import groupby
 
 import numpy as np
 
-from roxy.descriptors._utils import clean_sequence, windows
+from roxy.descriptors._utils import windows
 from roxy.descriptors.base import BaseDescriptor
 from roxy.descriptors.registry import register
 
@@ -154,8 +154,7 @@ class LocalRepetitionDescriptor(BaseDescriptor):
 
     def compute_one(self, sequence: str) -> dict[str, float]:
         """Compute local repetition features for a single sequence."""
-        seq = clean_sequence(sequence)
-        n = len(seq)
+        seq, n, feats = self._prepare_sequence(sequence)
 
         w2 = windows(seq, 2)
         w3 = windows(seq, 3)
@@ -165,40 +164,41 @@ class LocalRepetitionDescriptor(BaseDescriptor):
             span = _repeated_span(seq, k)
             return span / n if n > 0 and not math.isnan(span) else _NAN
 
-        return {
-            "length": float(n),
-            "valid_residue_count": float(n),
-            "repeated_fraction_k2": _repeated_fraction(w2),
-            "repeated_fraction_k3": _repeated_fraction(w3),
-            "repeated_fraction_k4": _repeated_fraction(w4),
-            "unique_fraction_k2": _unique_fraction(w2),
-            "unique_fraction_k3": _unique_fraction(w3),
-            "unique_fraction_k4": _unique_fraction(w4),
-            "redundancy_score_k2": _redundancy_score(w2),
-            "redundancy_score_k3": _redundancy_score(w3),
-            "redundancy_score_k4": _redundancy_score(w4),
-            "top_count_k2": _top_count(w2),
-            "top_count_k3": _top_count(w3),
-            "top_freq_k2": _top_freq(w2),
-            "top_freq_k3": _top_freq(w3),
-            "duplicate_window_fraction_w5": _dup_window_frac(seq, 5),
-            "duplicate_window_fraction_w6": _dup_window_frac(seq, 6),
-            "repeated_word_burden_k2": _repeated_burden(seq, 2),
-            "repeated_word_burden_k3": _repeated_burden(seq, 3),
-            "recurrence_entropy_k2": _recurrence_entropy(w2),
-            "recurrence_entropy_k3": _recurrence_entropy(w3),
-            "repeated_span_k2": _repeated_span(seq, 2),
-            "repeated_span_k3": _repeated_span(seq, 3),
-            "repeated_span_norm_k2": _span_norm(seq, 2),
-            "repeated_span_norm_k3": _span_norm(seq, 3),
-            "repeated_block_density_k2": _repeated_block_density(seq, 2),
-            "repeated_block_density_k3": _repeated_block_density(seq, 3),
-            "longest_redundant_block_k2": _longest_redundant_block(seq, 2),
-            "longest_redundant_block_k3": _longest_redundant_block(seq, 3),
-            "recurrence_concentration_k2": _recurrence_concentration(w2),
-            "recurrence_concentration_k3": _recurrence_concentration(w3),
-            "local_redundancy_mean_w8_k2": _local_redundancy_mean(seq, 8, 2),
-            "local_redundancy_std_w8_k2": _local_redundancy_std(seq, 8, 2),
-            "local_redundancy_mean_w10_k2": _local_redundancy_mean(seq, 10, 2),
-            "local_redundancy_std_w10_k2": _local_redundancy_std(seq, 10, 2),
-        }
+        feats.update(
+            {
+                "repeated_fraction_k2": _repeated_fraction(w2),
+                "repeated_fraction_k3": _repeated_fraction(w3),
+                "repeated_fraction_k4": _repeated_fraction(w4),
+                "unique_fraction_k2": _unique_fraction(w2),
+                "unique_fraction_k3": _unique_fraction(w3),
+                "unique_fraction_k4": _unique_fraction(w4),
+                "redundancy_score_k2": _redundancy_score(w2),
+                "redundancy_score_k3": _redundancy_score(w3),
+                "redundancy_score_k4": _redundancy_score(w4),
+                "top_count_k2": _top_count(w2),
+                "top_count_k3": _top_count(w3),
+                "top_freq_k2": _top_freq(w2),
+                "top_freq_k3": _top_freq(w3),
+                "duplicate_window_fraction_w5": _dup_window_frac(seq, 5),
+                "duplicate_window_fraction_w6": _dup_window_frac(seq, 6),
+                "repeated_word_burden_k2": _repeated_burden(seq, 2),
+                "repeated_word_burden_k3": _repeated_burden(seq, 3),
+                "recurrence_entropy_k2": _recurrence_entropy(w2),
+                "recurrence_entropy_k3": _recurrence_entropy(w3),
+                "repeated_span_k2": _repeated_span(seq, 2),
+                "repeated_span_k3": _repeated_span(seq, 3),
+                "repeated_span_norm_k2": _span_norm(seq, 2),
+                "repeated_span_norm_k3": _span_norm(seq, 3),
+                "repeated_block_density_k2": _repeated_block_density(seq, 2),
+                "repeated_block_density_k3": _repeated_block_density(seq, 3),
+                "longest_redundant_block_k2": _longest_redundant_block(seq, 2),
+                "longest_redundant_block_k3": _longest_redundant_block(seq, 3),
+                "recurrence_concentration_k2": _recurrence_concentration(w2),
+                "recurrence_concentration_k3": _recurrence_concentration(w3),
+                "local_redundancy_mean_w8_k2": _local_redundancy_mean(seq, 8, 2),
+                "local_redundancy_std_w8_k2": _local_redundancy_std(seq, 8, 2),
+                "local_redundancy_mean_w10_k2": _local_redundancy_mean(seq, 10, 2),
+                "local_redundancy_std_w10_k2": _local_redundancy_std(seq, 10, 2),
+            }
+        )
+        return feats
