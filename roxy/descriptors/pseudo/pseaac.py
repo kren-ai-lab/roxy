@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import math
 
+import numpy as np
+
 from roxy.core.constants import AA20, EISENBERG, HYDROPHILICITY, SIDECHAIN_MASS
 from roxy.descriptors._utils import zscore_scale
 from roxy.descriptors.base import BaseDescriptor
@@ -20,20 +22,15 @@ _DEFAULT_PROPERTIES: dict[str, dict[str, float]] = {
 
 
 def _correlation_theta(
-    seq: str,
+    values: np.ndarray,
     lag: int,
-    norm_scales: dict[str, dict[str, float]],
 ) -> float:
     """Average squared-difference correlation factor across all properties."""
-    n = len(seq)
+    n = values.shape[0]
     if n <= lag or lag < 1:
         return _NAN
-    total = 0.0
-    for i in range(n - lag):
-        aa1, aa2 = seq[i], seq[i + lag]
-        diffs_sq = [(s[aa1] - s[aa2]) ** 2 for s in norm_scales.values()]
-        total += sum(diffs_sq) / len(diffs_sq)
-    return total / (n - lag)
+    diffs = values[:-lag] - values[lag:]
+    return float(np.mean(np.mean(diffs * diffs, axis=1)))
 
 
 @register("pseaac", family="pseudo")
@@ -87,11 +84,12 @@ class PseAACDescriptor(BaseDescriptor):
         if n == 0:
             return self._nan_schema(feats)
 
-        norm_scales = {name: zscore_scale(scale, _AA20_LIST) for name, scale in self.properties.items()}
+        norm_scales = [zscore_scale(scale, _AA20_LIST) for scale in self.properties.values()]
+        prop_values = np.array([[scale[aa] for scale in norm_scales] for aa in seq], dtype=float)
 
         thetas = []
         for lag in range(1, self.lam + 1):
-            theta = _correlation_theta(seq, lag, norm_scales)
+            theta = _correlation_theta(prop_values, lag)
             thetas.append(0.0 if math.isnan(theta) else theta)
 
         denom = 1.0 + self.w * sum(thetas)

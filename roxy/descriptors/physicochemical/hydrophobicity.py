@@ -4,15 +4,19 @@ from __future__ import annotations
 
 import math
 
+import numpy as np
+
 from roxy.core.constants import AA_GROUPS, KD, POLARITY
 from roxy.descriptors._utils import (
     fraction_above_threshold,
     fraction_from_group,
+    membership_array,
     profile_stats,
+    rolling_mean,
+    scale_array,
     scale_mean,
     scale_std,
     terminal_segment,
-    windows,
 )
 from roxy.descriptors.base import BaseDescriptor
 from roxy.descriptors.registry import register
@@ -32,22 +36,18 @@ _AMPHIPATHICITY_THRESHOLD = 1.0
 
 def _local_contrast_profile(seq: str, window: int) -> list[float]:
     """Return per-window |hydrophobic_frac - polar_frac| contrast."""
-    return [
-        abs(sum(aa in _HYDROPHOBIC for aa in w) / window - sum(aa in _POLAR for aa in w) / window)
-        for w in windows(seq, window)
-    ]
+    hydrophobic = rolling_mean(membership_array(seq, _HYDROPHOBIC), window)
+    polar = rolling_mean(membership_array(seq, _POLAR), window)
+    return list(np.abs(hydrophobic - polar))
 
 
 def _local_amphipathicity_profile(seq: str, window: int) -> list[float]:
     """Return per-window amphipathicity proxy: |hf-pf| * |hydro_mean - polarity_mean|."""
-    result = []
-    for w in windows(seq, window):
-        hf = sum(aa in _HYDROPHOBIC for aa in w) / window
-        pf = sum(aa in _POLAR for aa in w) / window
-        hm = scale_mean(w, KD)
-        pm = scale_mean(w, POLARITY)
-        result.append(abs(hf - pf) * abs(hm - pm))
-    return result
+    hydrophobic = rolling_mean(membership_array(seq, _HYDROPHOBIC), window)
+    polar = rolling_mean(membership_array(seq, _POLAR), window)
+    hydropathy = rolling_mean(scale_array(seq, KD), window)
+    polarity = rolling_mean(scale_array(seq, POLARITY), window)
+    return list(np.abs(hydrophobic - polar) * np.abs(hydropathy - polarity))
 
 
 @register("hydrophobicity", family="physicochemical")
@@ -158,14 +158,18 @@ class HydrophobicityDescriptor(BaseDescriptor):
         )
         feats["terminal_polarity_asymmetry"] = feats["nterm_polarity_mean"] - feats["cterm_polarity_mean"]
 
+        hydropathy_values = scale_array(seq, KD)
+        polarity_values = scale_array(seq, POLARITY)
+        hydrophobic_mask = membership_array(seq, _HYDROPHOBIC)
+        polar_mask = membership_array(seq, _POLAR)
+
         for ws in self.window_sizes:
-            ws_list = windows(seq, ws)
-            hydro_profile = [scale_mean(w, KD) for w in ws_list]
-            polarity_profile = [scale_mean(w, POLARITY) for w in ws_list]
-            hydrophobic_frac_profile = [sum(aa in _HYDROPHOBIC for aa in w) / ws for w in ws_list]
-            polar_frac_profile = [sum(aa in _POLAR for aa in w) / ws for w in ws_list]
-            contrast_profile = _local_contrast_profile(seq, ws)
-            amphi_profile = _local_amphipathicity_profile(seq, ws)
+            hydro_profile = rolling_mean(hydropathy_values, ws)
+            polarity_profile = rolling_mean(polarity_values, ws)
+            hydrophobic_frac_profile = rolling_mean(hydrophobic_mask, ws)
+            polar_frac_profile = rolling_mean(polar_mask, ws)
+            contrast_profile = np.abs(hydrophobic_frac_profile - polar_frac_profile)
+            amphi_profile = contrast_profile * np.abs(hydro_profile - polarity_profile)
 
             for profile_name, values in (
                 ("hydropathy", hydro_profile),

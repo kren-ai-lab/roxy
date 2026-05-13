@@ -49,15 +49,11 @@ def _inter_event(positions: list[int]) -> list[int]:
 def _nearest_neighbor(positions: list[int]) -> list[int]:
     if len(positions) < _MIN_PAIR:
         return []
-    dists = []
-    for i, pos in enumerate(positions):
-        neighbors = []
-        if i > 0:
-            neighbors.append(pos - positions[i - 1])
-        if i < len(positions) - 1:
-            neighbors.append(positions[i + 1] - pos)
-        dists.append(min(neighbors))
-    return dists
+    diffs = np.diff(np.array(positions, dtype=int))
+    if diffs.size == 1:
+        return [int(diffs[0]), int(diffs[0])]
+    interior = np.minimum(diffs[:-1], diffs[1:])
+    return [int(diffs[0]), *[int(v) for v in interior], int(diffs[-1])]
 
 
 def _safe_stats(values: list) -> dict[str, float]:
@@ -84,8 +80,13 @@ def _cross_mean(seq: str, group_a: frozenset[str], group_b: frozenset[str]) -> f
     pos_b = _positions(seq, group_b)
     if not pos_a or not pos_b:
         return _NAN
-    distances = [min(abs(a - b) for b in pos_b) for a in pos_a]
-    return float(np.mean(distances))
+    a = np.array(pos_a, dtype=int)
+    b = np.array(pos_b, dtype=int)
+    idx = np.searchsorted(b, a)
+    right = np.where(idx < b.size, np.abs(b[np.clip(idx, 0, b.size - 1)] - a), np.inf)
+    left_idx = idx - 1
+    left = np.where(left_idx >= 0, np.abs(b[np.clip(left_idx, 0, b.size - 1)] - a), np.inf)
+    return float(np.minimum(left, right).mean())
 
 
 _GROUP_STAT_KEYS = (

@@ -26,16 +26,10 @@ _TRACKED_GROUPS: dict[str, frozenset[str]] = {
 
 def _bin_occupancy(norm_positions: list[float], n_bins: int) -> np.ndarray:
     """Fraction of positions per equal-width bin over [0, 1]."""
-    occ = np.zeros(n_bins, dtype=float)
     if not norm_positions:
-        return occ
-    edges = np.linspace(0.0, 1.0, n_bins + 1)
-    for pos in norm_positions:
-        idx = min(int(np.searchsorted(edges, pos, side="right")) - 1, n_bins - 1)
-        idx = max(idx, 0)
-        occ[idx] += 1
-    occ /= len(norm_positions)
-    return occ
+        return np.zeros(n_bins, dtype=float)
+    counts, _ = np.histogram(norm_positions, bins=n_bins, range=(0.0, 1.0))
+    return counts.astype(float) / len(norm_positions)
 
 
 def _summarize(norm_positions: list[float], prefix: str, n_bins: int) -> dict[str, float]:

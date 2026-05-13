@@ -50,6 +50,24 @@ def scale_values(seq: str, scale: dict[str, float]) -> list[float]:
     return [scale[aa] for aa in seq if aa in scale]
 
 
+def scale_array(seq: str, scale: dict[str, float]) -> np.ndarray:
+    """Map each residue in seq through scale as a numeric array."""
+    return np.array(scale_values(seq, scale), dtype=float)
+
+
+def membership_array(seq: str, group: AbstractSet[str]) -> np.ndarray:
+    """Return a 0/1 array indicating whether each residue is in group."""
+    return np.fromiter((aa in group for aa in seq), dtype=float, count=len(seq))
+
+
+def rolling_mean(values: np.ndarray, window: int) -> np.ndarray:
+    """Return valid-window rolling means for a numeric vector."""
+    if window < 1 or values.size < window:
+        return np.array([], dtype=float)
+    kernel = np.ones(window, dtype=float) / window
+    return np.convolve(values, kernel, mode="valid")
+
+
 def scale_mean(seq: str, scale: dict[str, float]) -> float:
     """Mean of scale values over seq; NaN if seq is empty."""
     vals = scale_values(seq, scale)
@@ -80,9 +98,10 @@ def fraction_from_group(seq: str, group: AbstractSet[str]) -> float:
     return sum(aa in group for aa in seq) / n
 
 
-def profile_stats(values: list[float]) -> dict[str, float]:
+def profile_stats(values: list[float] | np.ndarray) -> dict[str, float]:
     """Compute summary statistics over a profile vector."""
-    if not values:
+    arr = np.asarray(values, dtype=float)
+    if arr.size == 0:
         return {
             "mean": _NAN,
             "std": _NAN,
@@ -91,7 +110,6 @@ def profile_stats(values: list[float]) -> dict[str, float]:
             "amplitude": _NAN,
             "start_end_diff": _NAN,
         }
-    arr = np.array(values, dtype=float)
     return {
         "mean": float(arr.mean()),
         "std": float(arr.std(ddof=0)),
@@ -102,11 +120,12 @@ def profile_stats(values: list[float]) -> dict[str, float]:
     }
 
 
-def fraction_above_threshold(values: list[float], threshold: float) -> float:
+def fraction_above_threshold(values: list[float] | np.ndarray, threshold: float) -> float:
     """Fraction of values strictly above threshold; NaN if empty."""
-    if not values:
+    arr = np.asarray(values, dtype=float)
+    if arr.size == 0:
         return _NAN
-    return float(np.mean(np.array(values) > threshold))
+    return float(np.mean(arr > threshold))
 
 
 def terminal_segment(seq: str, side: str, window: int) -> str:
@@ -197,9 +216,12 @@ __all__ = [
     "linguistic_complexity",
     "longest_homopolymer_run",
     "longest_run",
+    "membership_array",
     "net_charge_at_ph",
     "profile_stats",
+    "rolling_mean",
     "safe_ratio",
+    "scale_array",
     "scale_mean",
     "scale_std",
     "scale_values",
