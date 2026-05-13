@@ -34,22 +34,6 @@ _POLAR_THRESHOLD = 0.6
 _AMPHIPATHICITY_THRESHOLD = 1.0
 
 
-def _local_contrast_profile(seq: str, window: int) -> list[float]:
-    """Return per-window |hydrophobic_frac - polar_frac| contrast."""
-    hydrophobic = rolling_mean(membership_array(seq, _HYDROPHOBIC), window)
-    polar = rolling_mean(membership_array(seq, _POLAR), window)
-    return list(np.abs(hydrophobic - polar))
-
-
-def _local_amphipathicity_profile(seq: str, window: int) -> list[float]:
-    """Return per-window amphipathicity proxy: |hf-pf| * |hydro_mean - polarity_mean|."""
-    hydrophobic = rolling_mean(membership_array(seq, _HYDROPHOBIC), window)
-    polar = rolling_mean(membership_array(seq, _POLAR), window)
-    hydropathy = rolling_mean(scale_array(seq, KD), window)
-    polarity = rolling_mean(scale_array(seq, POLARITY), window)
-    return list(np.abs(hydrophobic - polar) * np.abs(hydropathy - polarity))
-
-
 @register("hydrophobicity", family="physicochemical")
 class HydrophobicityDescriptor(BaseDescriptor):
     """Hydrophobicity, polarity, and amphipathicity features.

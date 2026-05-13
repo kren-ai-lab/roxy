@@ -51,8 +51,8 @@ def scale_values(seq: str, scale: dict[str, float]) -> list[float]:
 
 
 def scale_array(seq: str, scale: dict[str, float]) -> np.ndarray:
-    """Map each residue in seq through scale as a numeric array."""
-    return np.array(scale_values(seq, scale), dtype=float)
+    """Map each residue in seq through scale; missing scale values become NaN."""
+    return np.array([scale.get(aa, np.nan) for aa in seq], dtype=float)
 
 
 def membership_array(seq: str, group: AbstractSet[str]) -> np.ndarray:
