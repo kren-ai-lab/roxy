@@ -11,8 +11,8 @@ from roxy.descriptors._utils import (
     fraction_above_threshold,
     fraction_from_group,
     profile_stats,
-    scale_mean,
-    windows,
+    rolling_mean,
+    scale_array,
 )
 from roxy.descriptors.base import BaseDescriptor
 from roxy.descriptors.registry import register
@@ -107,11 +107,14 @@ class StructuralPropensityDescriptor(BaseDescriptor):
             feats["turn_mean"] - (feats["helix_mean"] + feats["sheet_mean"]) / 2.0
         )
 
+        helix_arr = scale_array(seq, CF_HELIX)
+        sheet_arr = scale_array(seq, CF_SHEET)
+        turn_arr = scale_array(seq, CF_TURN)
+
         for ws in self.window_sizes:
-            ws_list = windows(seq, ws)
-            helix_profile = [scale_mean(w, CF_HELIX) for w in ws_list]
-            sheet_profile = [scale_mean(w, CF_SHEET) for w in ws_list]
-            turn_profile = [scale_mean(w, CF_TURN) for w in ws_list]
+            helix_profile = rolling_mean(helix_arr, ws)
+            sheet_profile = rolling_mean(sheet_arr, ws)
+            turn_profile = rolling_mean(turn_arr, ws)
 
             for ss_name, values in (
                 ("helix", helix_profile),
@@ -123,8 +126,8 @@ class StructuralPropensityDescriptor(BaseDescriptor):
                     feats[f"w{ws}_{ss_name}_{stat}"] = stats[stat]
                 feats[f"w{ws}_{ss_name}_high_fraction"] = fraction_above_threshold(values, self.threshold)
 
-            if helix_profile:
-                balance = np.array(helix_profile) - np.array(sheet_profile)
+            if helix_profile.size:
+                balance = helix_profile - sheet_profile
                 feats[f"w{ws}_helix_sheet_balance_mean"] = float(np.mean(balance))
                 feats[f"w{ws}_helix_sheet_balance_max"] = float(np.max(balance))
                 feats[f"w{ws}_helix_sheet_balance_min"] = float(np.min(balance))

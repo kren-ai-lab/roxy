@@ -22,8 +22,9 @@ _DEFAULT_PROPERTIES = {
 }
 
 
-def _residue_dist(aa1: str, aa2: str, norm_scales: list[dict[str, float]]) -> float:
-    return float(np.mean([(s[aa1] - s[aa2]) ** 2 for s in norm_scales]))
+def _lagged_coupling(values: np.ndarray, lag: int) -> float:
+    diffs = values[:-lag] - values[lag:]
+    return float(np.mean(np.mean(diffs * diffs, axis=1)))
 
 
 @register("qso", family="pseudo")
@@ -80,12 +81,12 @@ class QSODescriptor(BaseDescriptor):
         aac = {aa: seq.count(aa) / n for aa in _AA20}
 
         couplings: list[float] = []
+        prop_values = np.array([[scale[aa] for scale in norm_scales] for aa in seq], dtype=float)
         for lag in range(1, self.lam + 1):
             if n <= lag:
                 couplings.append(0.0)
             else:
-                vals = [_residue_dist(seq[i], seq[i + lag], norm_scales) for i in range(n - lag)]
-                couplings.append(float(np.mean(vals)))
+                couplings.append(_lagged_coupling(prop_values, lag))
 
         denom = 1.0 + self.w * sum(couplings)
 

@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import math
 
+import numpy as np
+
 from roxy.core.constants import AA_GROUPS, KD, POLARITY
 from roxy.descriptors._utils import (
     fraction_above_threshold,
-    fraction_from_group,
+    membership_array,
     profile_stats,
-    scale_mean,
+    rolling_mean,
+    scale_array,
     shannon_entropy,
     windows,
 )
@@ -77,13 +80,18 @@ class SlidingWindowDescriptor(BaseDescriptor):
         if n == 0:
             return self._nan_schema(feats)
 
+        hydropathy_values = scale_array(seq, KD)
+        polarity_values = scale_array(seq, POLARITY)
+        charged_mask = membership_array(seq, _CHARGED)
+        aromatic_mask = membership_array(seq, _AROMATIC)
+
         for w in self.window_sizes:
             ws = windows(seq, w)
 
-            hydro = [scale_mean(win, KD) for win in ws]
-            polarity = [scale_mean(win, POLARITY) for win in ws]
-            charged = [fraction_from_group(win, _CHARGED) for win in ws]
-            aromatic = [fraction_from_group(win, _AROMATIC) for win in ws]
+            hydro = rolling_mean(hydropathy_values, w)
+            polarity = rolling_mean(polarity_values, w)
+            charged = rolling_mean(charged_mask, w)
+            aromatic = rolling_mean(aromatic_mask, w)
             entropy = [shannon_entropy(win) for win in ws]
 
             profiles = {
@@ -108,7 +116,7 @@ class SlidingWindowDescriptor(BaseDescriptor):
                 aromatic, _AROMATIC_HIGH_THRESHOLD
             )
             feats[f"win{w}_low_entropy_fraction"] = fraction_above_threshold(
-                [-v for v in entropy], -_LOW_ENTROPY_THRESHOLD
+                -np.asarray(entropy, dtype=float), -_LOW_ENTROPY_THRESHOLD
             )
 
         return feats

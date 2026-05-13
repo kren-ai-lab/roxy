@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import csv
 import math
-import statistics
 from importlib import resources
+
+import numpy as np
 
 from roxy.descriptors.base import BaseDescriptor
 from roxy.descriptors.registry import register
@@ -47,12 +48,13 @@ def _seq_values(seq: str, scale: dict[str, float]) -> list[float]:
 def _seq_summary(values: list[float]) -> dict[str, float]:
     if not values:
         return {"mean": _NAN, "std": _NAN, "min": _NAN, "max": _NAN, "median": _NAN}
+    arr = np.asarray(values, dtype=float)
     return {
-        "mean": float(statistics.fmean(values)),
-        "std": float(statistics.pstdev(values)) if len(values) > 1 else 0.0,
-        "min": float(min(values)),
-        "max": float(max(values)),
-        "median": float(statistics.median(values)),
+        "mean": float(arr.mean()),
+        "std": float(arr.std(ddof=0)),
+        "min": float(arr.min()),
+        "max": float(arr.max()),
+        "median": float(np.median(arr)),
     }
 
 
@@ -129,7 +131,7 @@ class AAIndexDescriptor(BaseDescriptor):
             if self.include_terminal:
                 n_vals = _seq_values(seq[:w], scale)
                 c_vals = _seq_values(seq[-w:], scale)
-                feats[f"{code}_nterm_mean_w{w}"] = float(statistics.fmean(n_vals)) if n_vals else _NAN
-                feats[f"{code}_cterm_mean_w{w}"] = float(statistics.fmean(c_vals)) if c_vals else _NAN
+                feats[f"{code}_nterm_mean_w{w}"] = float(np.mean(n_vals)) if n_vals else _NAN
+                feats[f"{code}_cterm_mean_w{w}"] = float(np.mean(c_vals)) if c_vals else _NAN
 
         return feats
