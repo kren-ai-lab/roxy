@@ -52,29 +52,38 @@ def _moreau_broto(values: np.ndarray, lag: int) -> float:
     return float(np.sum(values[:-lag] * values[lag:]) / (n - lag))
 
 
-def _moran(values: np.ndarray, lag: int) -> float:
-    """Moran autocorrelation at given lag."""
+def _lagged_centered(
+    values: np.ndarray,
+    lag: int,
+) -> tuple[np.ndarray, np.ndarray, float] | None:
+    """Return centered lagged value pairs and their variance denominator."""
     n = len(values)
     if n <= lag or lag < 1:
-        return _NAN
+        return None
     mean_val = np.mean(values)
     denom = np.mean((values - mean_val) ** 2)
     if denom == 0:
+        return None
+    return values[:-lag] - mean_val, values[lag:] - mean_val, float(denom)
+
+
+def _moran(values: np.ndarray, lag: int) -> float:
+    """Moran autocorrelation at given lag."""
+    centered = _lagged_centered(values, lag)
+    if centered is None:
         return _NAN
-    numer = np.sum((values[:-lag] - mean_val) * (values[lag:] - mean_val)) / (n - lag)
+    left, right, denom = centered
+    numer = np.mean(left * right)
     return float(numer / denom)
 
 
 def _geary(values: np.ndarray, lag: int) -> float:
     """Geary autocorrelation at given lag."""
-    n = len(values)
-    if n <= lag or lag < 1:
+    centered = _lagged_centered(values, lag)
+    if centered is None:
         return _NAN
-    mean_val = np.mean(values)
-    denom = np.mean((values - mean_val) ** 2)
-    if denom == 0:
-        return _NAN
-    numer = np.sum((values[:-lag] - values[lag:]) ** 2) / (2 * (n - lag))
+    left, right, denom = centered
+    numer = np.mean((left - right) ** 2) / 2
     return float(numer / denom)
 
 
