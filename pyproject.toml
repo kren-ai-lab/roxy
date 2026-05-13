@@ -56,7 +56,7 @@ tests = [
     "pytest-cov>=7.1",
 ]
 all = [
-    "pyrefly>=0.64",
+    "pyrefly>=1.0.0",
     "pytest>=9.0",
     "pytest-cov>=7.0",
     "ruff>=0.15",
