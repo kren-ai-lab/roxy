@@ -195,7 +195,7 @@ VOLUME: dict[str, float] = {
     "Y": 193.6,
 }
 
-#: Residue monoisotopic molecular weights (Da), water subtracted per peptide bond.
+#: Residue average molecular weights (Da).
 AA_MOLECULAR_WEIGHT: dict[str, float] = {
     "A": 89.09,
     "C": 121.15,

@@ -45,7 +45,7 @@ _DEFAULT_SCALES: dict[str, dict[str, float]] = {
 
 
 def _moreau_broto(values: np.ndarray, lag: int) -> float:
-    """Unnormalized Moreau-Broto autocorrelation at given lag."""
+    """Normalized (averaged) Moreau-Broto autocorrelation at given lag."""
     n = len(values)
     if n <= lag or lag < 1:
         return _NAN
@@ -55,16 +55,18 @@ def _moreau_broto(values: np.ndarray, lag: int) -> float:
 def _lagged_centered(
     values: np.ndarray,
     lag: int,
+    *,
+    ddof: int = 0,
 ) -> tuple[np.ndarray, np.ndarray, float] | None:
     """Return centered lagged value pairs and their variance denominator."""
     n = len(values)
     if n <= lag or lag < 1:
         return None
     mean_val = np.mean(values)
-    denom = np.mean((values - mean_val) ** 2)
+    denom = float(np.sum((values - mean_val) ** 2) / (n - ddof))
     if denom == 0:
         return None
-    return values[:-lag] - mean_val, values[lag:] - mean_val, float(denom)
+    return values[:-lag] - mean_val, values[lag:] - mean_val, denom
 
 
 def _moran(values: np.ndarray, lag: int) -> float:
@@ -79,7 +81,7 @@ def _moran(values: np.ndarray, lag: int) -> float:
 
 def _geary(values: np.ndarray, lag: int) -> float:
     """Geary autocorrelation at given lag."""
-    centered = _lagged_centered(values, lag)
+    centered = _lagged_centered(values, lag, ddof=1)
     if centered is None:
         return _NAN
     left, right, denom = centered
