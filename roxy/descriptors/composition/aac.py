@@ -14,13 +14,22 @@ _NAN = math.nan
 
 @register("aac", family="composition")
 class AACDescriptor(BaseDescriptor):
-    """Amino acid counts and frequencies over the 20 standard residues.
+    r"""Amino acid counts and frequencies over the 20 standard residues.
+
+    Each frequency is computed as:
+
+    .. math::
+
+        f_{aa} = \frac{\text{count}(aa)}{N}
+
+    where *N* is the cleaned sequence length.
 
     Args:
         include_counts: Include per-residue raw counts.
         include_frequencies: Include per-residue relative frequencies.
 
-    Output columns (prefix ``aac_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``aac_``.
         ``length``, ``valid_residue_count``, ``unique_residue_count``,
         optionally ``count_<AA>`` x 20 and ``freq_<AA>`` x 20,
         ``frequency_sum``.

@@ -45,7 +45,12 @@ _DEFAULT_SCALES: dict[str, dict[str, float]] = {
 
 
 def _moreau_broto(values: np.ndarray, lag: int) -> float:
-    """Normalized (averaged) Moreau-Broto autocorrelation at given lag."""
+    r"""Compute normalized Moreau-Broto autocorrelation at a given lag.
+
+    .. math::
+
+        \text{NMB}(d) = \frac{1}{N - d} \sum_{i=1}^{N-d} P_i \cdot P_{i+d}
+    """
     n = len(values)
     if n <= lag or lag < 1:
         return _NAN
@@ -58,7 +63,19 @@ def _lagged_centered(
     *,
     ddof: int = 0,
 ) -> tuple[np.ndarray, np.ndarray, float] | None:
-    """Return centered lagged value pairs and their variance denominator."""
+    """Return centered lagged value pairs and their variance denominator.
+
+    Args:
+        values: Property value vector of length *N*.
+        lag: Sequence lag (number of positions apart).
+        ddof: Delta degrees of freedom for the variance denominator
+            (0 for Moran, 1 for Geary).
+
+    Returns:
+        Tuple ``(left, right, denom)`` or ``None`` if the lag exceeds
+        the sequence length or variance is zero.
+
+    """
     n = len(values)
     if n <= lag or lag < 1:
         return None
@@ -70,7 +87,16 @@ def _lagged_centered(
 
 
 def _moran(values: np.ndarray, lag: int) -> float:
-    """Moran autocorrelation at given lag."""
+    r"""Moran autocorrelation at a given lag.
+
+    .. math::
+
+        M(d) = \frac{
+            \frac{1}{N-d} \sum_{i=1}^{N-d} (P_i - \bar{P})(P_{i+d} - \bar{P})
+        }{
+            \frac{1}{N} \sum_{i=1}^{N} (P_i - \bar{P})^2
+        }
+    """
     centered = _lagged_centered(values, lag)
     if centered is None:
         return _NAN
@@ -80,7 +106,16 @@ def _moran(values: np.ndarray, lag: int) -> float:
 
 
 def _geary(values: np.ndarray, lag: int) -> float:
-    """Geary autocorrelation at given lag."""
+    r"""Geary autocorrelation at a given lag.
+
+    .. math::
+
+        C(d) = \frac{
+            \frac{1}{2(N-d)} \sum_{i=1}^{N-d} (P_i - P_{i+d})^2
+        }{
+            \frac{1}{N-1} \sum_{i=1}^{N} (P_i - \bar{P})^2
+        }
+    """
     centered = _lagged_centered(values, lag, ddof=1)
     if centered is None:
         return _NAN
@@ -91,21 +126,37 @@ def _geary(values: np.ndarray, lag: int) -> float:
 
 @register("autocorrelation", family="autocorrelation")
 class AutocorrelationDescriptor(BaseDescriptor):
-    """Moreau-Broto, Moran, and Geary autocorrelation over physicochemical scales.
+    r"""Moreau-Broto, Moran, and Geary autocorrelation over physicochemical scales.
 
     Computes three types of sequence autocorrelation at multiple lags
-    for each configured physicochemical scale.
+    for each configured physicochemical scale:
+
+    * **Moreau-Broto** (normalized):
+
+      .. math:: \text{NMB}(d) = \frac{1}{N-d} \sum_{i} P_i \cdot P_{i+d}
+
+    * **Moran**:
+
+      .. math:: M(d) = \frac{\sum (P_i - \bar P)(P_{i+d} - \bar P) / (N-d)}{\sum (P_i - \bar P)^2 / N}
+
+    * **Geary**:
+
+      .. math:: C(d) = \frac{\sum (P_i - P_{i+d})^2 / [2(N-d)]}{\sum (P_i - \bar P)^2 / (N-1)}
+
+    where :math:`P_i` is the physicochemical property value at position
+    *i*, :math:`\bar P` is the sequence mean, and *d* is the lag.
 
     Args:
-        scales: Mapping of scale name → per-residue value dict. Defaults to
-            5 built-in scales (hydrophobicity, polarity, flexibility, volume,
-            charge_proxy).
-        lags: Sequence of lag values to compute.
+        scales: Mapping of scale name to per-residue value dict. Defaults
+            to 5 built-in scales (hydrophobicity, polarity, flexibility,
+            volume, charge_proxy).
+        lags: Lag values to compute.
 
-    Output columns (prefix ``autocorrelation_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``autocorrelation_``.
         ``length``, ``valid_residue_count``,
-        ``mb_{scale}_lag{k}``, ``moran_{scale}_lag{k}``, ``geary_{scale}_lag{k}``
-        for each scale and lag.
+        ``mb_{scale}_lag{k}``, ``moran_{scale}_lag{k}``,
+        ``geary_{scale}_lag{k}`` for each scale and lag.
 
     """
 

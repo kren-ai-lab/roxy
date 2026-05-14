@@ -54,7 +54,8 @@ class UserRegexDescriptor(BaseDescriptor):
         include_terminal: If True, add N-/C-terminal window presence. Default True.
         terminal_window: Size of terminal window in residues. Default 10.
 
-    Output columns (prefix ``user_regex_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``user_regex_``.
         ``length``, ``valid_residue_count``,
         per pattern: 9 stats + (2 terminal if include_terminal=True).
         Total (defaults): 2 + 8*11 = 90 columns.

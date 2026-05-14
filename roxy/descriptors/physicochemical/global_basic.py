@@ -36,11 +36,20 @@ _WATER_MW = 18.015
 
 
 def _aliphatic_index(seq: str, n: int) -> float:
+    r"""Aliphatic index (Ikai, 1980).
+
+    .. math::
+
+        AI = 100 \times (x_A + 2.9 \cdot x_V + 3.9 \cdot (x_I + x_L))
+
+    where :math:`x` are mole fractions.
+    """
     c = Counter(seq)
     return 100 * (c["A"] / n + 2.9 * c["V"] / n + 3.9 * (c["I"] + c["L"]) / n)
 
 
 def _repeated_dipeptide_fraction(seq: str) -> float:
+    """Fraction of dipeptide occurrences that belong to repeated dipeptides."""
     if len(seq) < 2:  # noqa: PLR2004
         return _NAN
     kmers = [seq[i : i + 2] for i in range(len(seq) - 1)]
@@ -51,12 +60,31 @@ def _repeated_dipeptide_fraction(seq: str) -> float:
 
 @register("global_basic", family="physicochemical")
 class GlobalBasicDescriptor(BaseDescriptor):
-    """46 global sequence properties: composition, scales, charge, complexity.
+    r"""46 global sequence properties: composition, scales, charge, complexity.
 
-    Output columns (prefix ``global_basic_``):
+    Includes:
+
+    * **Molecular weight**:
+
+      .. math:: MW = \sum MW_i - (N - 1) \times 18.015
+
+    * **Aliphatic index** (Ikai, 1980):
+
+      .. math:: AI = 100 \times (x_A + 2.9 x_V + 3.9 (x_I + x_L))
+    * **Scale statistics**: mean/std of Kyte-Doolittle, Zimmerman polarity,
+      and Bhaskaran-Ponnuswamy flexibility.
+    * **Chou-Fasman propensity means** (helix, sheet, turn) and
+      **Boman index** mean.
+    * **Charge**: net charge at pH 7 (Henderson-Hasselbalch), FCR, NCPR.
+    * **Complexity**: Shannon entropy, linguistic complexity (k=1,2,3),
+      longest homopolymer run.
+
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``global_basic_``.
         ``length``, ``valid_residue_count``, ``unique_residue_count``,
         ``molecular_weight``, 17 group fractions, ``aliphatic_index``,
-        ``hydropathy_mean/std``, ``polarity_mean/std``, ``flexibility_mean/std``,
+        ``hydropathy_mean/std``, ``polarity_mean/std``,
+        ``flexibility_mean/std``,
         ``helix/sheet/turn_propensity_mean``, ``boman_index_mean``,
         ``net_charge_ph7``, ``fcr``, ``ncpr``,
         ``acidic_basic_ratio``, ``basic_acidic_ratio``,

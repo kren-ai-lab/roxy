@@ -17,19 +17,23 @@ _LARGE_K_THRESHOLD = 4
 
 @register("reduced_kmer", family="composition")
 class ReducedKmerDescriptor(BaseDescriptor):
-    """K-mer frequencies over a reduced amino-acid alphabet.
+    r"""K-mer frequencies over a reduced amino-acid alphabet.
 
-    Residues not in the mapping are silently dropped before computing k-mers.
+    Each residue is mapped to a reduced symbol before k-mer extraction.
+    Residues not in the mapping are silently dropped. Frequencies are
+    ``count(kmer) / total_kmers``.
 
     Args:
-        mapping: Dict mapping one-letter AA codes to reduced-alphabet symbols.
-            Mutually exclusive with ``scheme``.
+        mapping: Dict mapping one-letter AA codes to reduced-alphabet
+            symbols. Mutually exclusive with ``scheme``.
         scheme: Name of a built-in scheme from ``REDUCED_ALPHABETS``
             (``"rd5"`` or ``"rd3"``). Default ``"rd5"``.
-        k: K-mer length (default 2). k >= 4 emits a warning.
+        k: K-mer length (default 2). ``k >= 4`` emits a warning.
 
-    Output columns (prefix ``reduced_kmer_``):
-        ``length``, ``alphabet_size``, ``freq_<kmer>`` x ``|alphabet|**k``.
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``reduced_kmer_``.
+        ``length``, ``alphabet_size``,
+        ``freq_<kmer>`` x :math:`|\text{alphabet}|^k`.
 
     """
 

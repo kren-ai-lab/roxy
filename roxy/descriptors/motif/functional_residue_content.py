@@ -105,12 +105,14 @@ class FunctionalResidueContentDescriptor(BaseDescriptor):
     types, 7 composite fractions, 4 biochemical ratios, and 3 hydrogen-bond
     proxy features.
 
-    Output columns (prefix ``functional_residue_content_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``functional_residue_content_``.
         ``length``, ``valid_residue_count``,
         per group (16): ``{name}_count``, ``{name}_fraction``,
         per singlet (15): ``{aa}_count``, ``{aa}_fraction``,
         7 composite fractions, 4 ratios, 3 hbond features.
         Total: 2 + 32 + 30 + 7 + 4 + 3 = 78 columns.
+
     """
 
     def compute_one(self, sequence: str) -> dict[str, float]:

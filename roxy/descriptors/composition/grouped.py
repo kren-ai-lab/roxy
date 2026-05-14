@@ -16,12 +16,16 @@ _NAN = math.nan
 class GroupedDescriptor(BaseDescriptor):
     """Per-group residue counts and fractions plus four compositional ratios.
 
+    Each fraction is ``count(group) / N``. Ratios are ``count(A) / count(B)``
+    (NaN when denominator is zero).
+
     Groups (17 total, defined in ``roxy.core.constants.AA_GROUPS``):
     positive, negative, charged, polar, nonpolar, aromatic, aliphatic,
     tiny, small, branched, sulfur, hydroxyl, amide, hydrophobic,
     hydrophilic, disorder_promoting, order_promoting.
 
-    Output columns (prefix ``grouped_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``grouped_``.
         ``length``, ``<group>_count`` x 17, ``<group>_frac`` x 17,
         ``ratio_acidic_basic``, ``ratio_basic_acidic``,
         ``ratio_polar_nonpolar``, ``ratio_charged_uncharged``.

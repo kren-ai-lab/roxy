@@ -119,11 +119,13 @@ class SpacingDescriptor(BaseDescriptor):
     nearest-neighbour distances.  Also computes 4 cross-group mean
     distances.
 
-    Output columns (prefix ``spacing_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``spacing_``.
         ``length``, ``valid_residue_count``,
         per group (8): 16 statistics each,
         4 cross-group ``{a}_{b}_cross_mean`` columns.
         Total: 2 + 8*16 + 4 = 134 columns.
+
     """
 
     def _nan_schema(self, feats: dict[str, float]) -> dict[str, float]:

@@ -74,17 +74,24 @@ def _switching_freq(binary: list[int]) -> float:
 
 @register("run_blockiness", family="complexity")
 class RunBlockinessDescriptor(BaseDescriptor):
-    """Run-length and blockiness statistics for residue groups.
+    r"""Run-length and blockiness statistics for residue groups.
 
     Computes homopolymer runs at the sequence level, then per-group:
-    longest/count/mean/normalised run, density, fraction in long runs
-    (min length 2 and 3), blockiness score, and switching frequency.
 
-    Output columns (prefix ``run_blockiness_``):
+    * **Blockiness**: ``mean_run_length / total_hits`` (1.0 = single
+      contiguous block, near 0 = maximally dispersed).
+    * **Switching frequency**: fraction of adjacent positions that change
+      membership.
+    * **Fraction in long runs**: residues in runs of length
+      :math:`\geq` *min_run*, divided by *N*.
+
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``run_blockiness_``.
         ``length``, ``valid_residue_count``,
         4 global homopolymer features,
         per group (6): 9 statistics each.
         Total: 2 + 4 + 6*9 = 60 columns.
+
     """
 
     def compute_one(self, sequence: str) -> dict[str, float]:

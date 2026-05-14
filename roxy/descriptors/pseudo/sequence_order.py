@@ -103,18 +103,26 @@ def _adj_enrichment(seq: str, group: frozenset[str]) -> float:
 
 @register("sequence_order", family="pseudo")
 class SequenceOrderDescriptor(BaseDescriptor):
-    """Sequence-order adjacency, clustering, and transition descriptors.
+    r"""Sequence-order adjacency, clustering, and transition descriptors.
 
-    Tracks 6 residue groups and computes same-group adjacency fraction,
-    mean spacing (normalised), local cluster fraction (window=3),
-    lag-1/lag-2 coupling, and adjacency enrichment.  Four cross-group
-    transition fractions are also computed.
+    Tracks 6 residue groups and computes:
 
-    Output columns (prefix ``sequence_order_``):
+    * **Same-group adjacency fraction**: pairs where both residues
+      belong to the same group, divided by total pairs.
+    * **Adjacency enrichment**: :math:`\text{observed} / p^2` where
+      :math:`p` is the group fraction (ratio vs. random expectation).
+    * **Lag-k coupling**: :math:`\frac{1}{N-k} \sum x_i \cdot x_{i+k}`
+      with :math:`x_i \in \{0, 1\}`.
+    * **Cross-group transition fraction**: fraction of adjacent pairs
+      switching between two different groups.
+
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``sequence_order_``.
         ``length``, ``valid_residue_count``,
         per group (6): 6 statistics each,
         4 cross-group ``{a}_{b}_transition_frac`` columns.
         Total: 2 + 6*6 + 4 = 42 columns.
+
     """
 
     def _nan_schema(self, feats: dict[str, float]) -> dict[str, float]:

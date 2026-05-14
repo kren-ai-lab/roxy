@@ -153,11 +153,14 @@ class FamilySummaryDescriptor(BaseDescriptor):
     propensity, order/disorder, functional residue, complexity) and 5 global
     meta-summaries across all families.
 
-    Output columns (prefix ``family_summary_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``family_summary_``.
         ``length``, ``valid_residue_count``,
-        4 charge family, 4 physicochemical family, 3 structural propensity,
-        2 order/disorder, 2 functional, 3 complexity, 5 global summaries.
+        4 charge family, 4 physicochemical family,
+        3 structural propensity, 2 order/disorder, 2 functional,
+        3 complexity, 5 global summaries.
         Total: 2 + 4 + 4 + 3 + 2 + 2 + 3 + 5 = 25 columns.
+
     """
 
     def compute_one(self, sequence: str) -> dict[str, float]:

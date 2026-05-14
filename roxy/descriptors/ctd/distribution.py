@@ -62,18 +62,25 @@ def _summarize(norm_positions: list[float], prefix: str, n_bins: int) -> dict[st
 
 @register("distribution", family="ctd")
 class DistributionDescriptor(BaseDescriptor):
-    """Positional distribution of residue groups across the sequence.
+    r"""Positional distribution of residue groups across the sequence.
 
-    For each tracked group, bins normalized residue positions into terciles
-    and quartiles and computes bin fractions, cumulative distributions,
-    entropy, concentration, spread, and per-bin enrichment over uniform.
+    For each tracked group, normalized positions (``pos / N``) are binned
+    into terciles and quartiles. Per bin-scheme the descriptor computes:
+
+    * **Bin fractions**: :math:`|\text{positions in bin}| / |\text{total positions}|`
+    * **Cumulative distribution**: running sum of bin fractions.
+    * **Entropy**: :math:`-\sum p_i \log_2(p_i)` over bin occupancy (bits).
+    * **Enrichment**: :math:`\text{bin\_frac} - 1/n_{\text{bins}}`
+      (deviation from uniform).
+    * **Spread**: fraction of bins with at least one residue.
 
     Args:
-        groups: Mapping of group name → residue set. Defaults to 8 built-in
-            groups (charged, hydrophobic, aromatic, polar, positive, negative,
-            gly, pro).
+        groups: Mapping of group name to residue set. Defaults to 8
+            built-in groups (charged, hydrophobic, aromatic, polar,
+            positive, negative, gly, pro).
 
-    Output columns (prefix ``distribution_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``distribution_``.
         ``length``, ``valid_residue_count``,
         per group: ``{name}_count``,
         ``{name}_tercile_bin{1/2/3}_{frac/enrichment}``,

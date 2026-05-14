@@ -35,25 +35,39 @@ def _correlation_theta(
 
 @register("pseaac", family="pseudo")
 class PseAACDescriptor(BaseDescriptor):
-    """Type I Pseudo-Amino Acid Composition (PseAAC).
+    r"""Type I Pseudo-Amino Acid Composition (PseAAC) (Chou, 2001).
 
     Augments standard AAC frequencies with sequence-order correlation
-    factors (theta) derived from physicochemical property differences
-    at multiple lags. All 20 AA features and lambda theta features
-    are normalized so that their sum equals 1.
+    factors derived from physicochemical property differences at
+    multiple lags. The correlation factor at lag :math:`\lambda` is:
+
+    .. math::
+
+        \theta_\lambda = \frac{1}{N - \lambda} \sum_{i=1}^{N-\lambda}
+        \frac{1}{P} \sum_{p=1}^{P} (H_p(R_i) - H_p(R_{i+\lambda}))^2
+
+    where :math:`H_p` are z-score normalized property values.
+    All features are normalized so their sum equals 1:
+
+    .. math::
+
+        x_i = \frac{f_i}{1 + w \sum_\lambda \theta_\lambda}, \quad
+        x_{20+\lambda} = \frac{w \cdot \theta_\lambda}{1 + w \sum_\lambda \theta_\lambda}
 
     Args:
         lam: Number of sequence-order correlation factors (lag 1..lam).
         w: Weight for correlation factors relative to AAC.
-        properties: Mapping of property name → per-residue scale dict.
-            Defaults to Eisenberg hydrophobicity, Hopp-Woods hydrophilicity,
-            and side-chain mass.
+        properties: Mapping of property name to per-residue scale dict.
+            Defaults to Eisenberg hydrophobicity, Hopp-Woods
+            hydrophilicity, and side-chain mass.
 
-    Output columns (prefix ``pseaac_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``pseaac_``.
         ``length``, ``valid_residue_count``,
         ``{AA}`` for each of the 20 standard AAs,
         ``theta_{1}``..``theta_{lam}``,
-        ``feature_sum`` (should be ≈ 1.0 for non-empty sequences).
+        ``feature_sum`` (should be :math:`\approx 1.0` for non-empty
+        sequences).
 
     """
 

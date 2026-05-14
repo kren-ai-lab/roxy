@@ -36,24 +36,34 @@ _AMPHIPATHICITY_THRESHOLD = 1.0
 
 @register("hydrophobicity", family="physicochemical")
 class HydrophobicityDescriptor(BaseDescriptor):
-    """Hydrophobicity, polarity, and amphipathicity features.
+    r"""Hydrophobicity, polarity, and amphipathicity features.
 
-    Computes global scale statistics, group fractions, terminal asymmetry,
-    and windowed local profiles at configurable window sizes.
+    Computes global scale statistics (Kyte-Doolittle hydropathy, Zimmerman
+    polarity), group fractions, terminal asymmetry, and windowed local
+    profiles at configurable window sizes.
+
+    * **Amphipathicity proxy**:
+
+      .. math:: A = |f_{\text{hydrophobic}} - f_{\text{polar}}| \times |\bar{H} - \bar{P}|
+    * **Windowed profiles**: rolling means over hydropathy, polarity,
+      hydrophobic/polar fraction, contrast, and amphipathicity.
 
     Args:
-        window_sizes: Tuple of window sizes for local profiles.
+        window_sizes: Window sizes for local profiles.
         terminal_window: Residue count for N/C-terminal segments.
 
-    Output columns (prefix ``hydrophobicity_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``hydrophobicity_``.
         ``length``, ``valid_residue_count``,
         ``hydropathy_mean/std``, ``polarity_mean/std``,
         ``hydrophobic/hydrophilic/polar/nonpolar/aromatic_fraction``,
-        ``hydrophobic_hydrophilic_balance``, ``polar_nonpolar_balance``,
+        ``hydrophobic_hydrophilic_balance``,
+        ``polar_nonpolar_balance``,
         ``global_amphipathicity_proxy``,
         ``nterm/cterm_hydropathy/polarity_mean``,
         ``terminal_hydropathy/polarity_asymmetry``,
-        per-window: ``w{N}_{profile}_{stat}`` and ``w{N}_{patch}_fraction``.
+        per-window: ``w{N}_{profile}_{stat}`` and
+        ``w{N}_{patch}_fraction``.
 
     """
 

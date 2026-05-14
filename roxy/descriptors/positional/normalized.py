@@ -83,9 +83,11 @@ class NormalizedPositionDescriptor(BaseDescriptor):
             groups (charged, hydrophobic, aromatic, polar, positive, negative,
             gly, pro, trp, tyr).
 
-    Output columns (prefix ``normalized_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``normalized_``.
         ``length``, ``valid_residue_count``,
-        per group: ``{name}_count``, ``{name}_{stat}`` for 9 position stats.
+        per group: ``{name}_count``, ``{name}_{stat}`` for 9 position
+        stats.
 
     """
 

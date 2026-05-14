@@ -140,16 +140,29 @@ def _local_redundancy_std(seq: str, outer_window: int, inner_k: int) -> float:
 
 @register("local_repetition", family="complexity")
 class LocalRepetitionDescriptor(BaseDescriptor):
-    """Local repetition and k-mer redundancy descriptors.
+    r"""Local repetition and k-mer redundancy descriptors.
 
-    Captures sequence-level repetitiveness using k-mer statistics (repeated
-    fraction, unique fraction, redundancy score, top word counts, recurrence
-    entropy/concentration, span, block density) for k=2,3,4, duplicate-window
-    fractions (w=5,6), and local redundancy profiles (outer_window=8,10).
+    Captures sequence-level repetitiveness via k-mer statistics for
+    k=2, 3, 4:
 
-    Output columns (prefix ``local_repetition_``):
+    * **Repeated fraction**:
+      :math:`\sum \text{count}(w) [\text{count}(w) > 1] / \text{total}`
+    * **Unique fraction**:
+      :math:`|\text{distinct words}| / \text{total}`
+    * **Redundancy score**: :math:`1 - \text{unique\_fraction}`
+    * **Recurrence entropy**: Shannon entropy over repeat-count
+      distribution.
+    * **Recurrence concentration**:
+      :math:`\max(\text{repeats}) / \sum \text{repeats}`
+
+    Also computes duplicate-window fractions (w=5, 6) and local
+    redundancy profiles (outer_window=8, 10).
+
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``local_repetition_``.
         ``length``, ``valid_residue_count``, 33 feature columns.
         Total: 35 columns.
+
     """
 
     def compute_one(self, sequence: str) -> dict[str, float]:

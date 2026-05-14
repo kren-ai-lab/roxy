@@ -19,37 +19,51 @@ _IONIZABLE_GROUP = frozenset("CDEHKRY")
 
 
 def _protonated_basic_fraction(seq: str, ph: float) -> float:
-    """Mean protonation degree of basic residues (KRH)."""
+    r"""Mean protonation degree of basic residues (K, R, H).
+
+    Each residue contributes :math:`1 / (1 + 10^{\text{pH} - \text{p}K_a})`.
+    """
     vals = [1.0 / (1.0 + 10 ** (ph - PKA_SIDE[aa])) for aa in seq if aa in _BASIC_GROUP and aa in PKA_SIDE]
     return float(sum(vals) / len(vals)) if vals else _NAN
 
 
 def _deprotonated_acidic_fraction(seq: str, ph: float) -> float:
-    """Mean deprotonation degree of acidic residues (DE)."""
+    r"""Mean deprotonation degree of acidic residues (D, E).
+
+    Each residue contributes :math:`1 / (1 + 10^{\text{p}K_a - \text{pH}})`.
+    """
     vals = [1.0 / (1.0 + 10 ** (PKA_SIDE[aa] - ph)) for aa in seq if aa in _ACIDIC_GROUP and aa in PKA_SIDE]
     return float(sum(vals) / len(vals)) if vals else _NAN
 
 
 @register("charge", family="physicochemical")
 class ChargeDescriptor(BaseDescriptor):
-    """Charge fractions, net charge, and local charge profiles.
+    r"""Charge fractions, net charge, and local charge profiles.
 
     Computes fraction-based global charge statistics and pH-dependent
-    properties at configurable pH values, including windowed local
-    charge density and terminal charge asymmetry.
+    properties via the Henderson-Hasselbalch equation:
+
+    * **FCR** (fraction of charged residues): :math:`f^+ + f^-`
+    * **NCPR** (net charge per residue): :math:`f^+ - f^-`
+    * **Net charge at pH**: :math:`\sum q^+ - \sum q^-`
+      (see ``net_charge_at_ph``)
+    * **Local charge density**: windowed net-charge / window-size profile.
 
     Args:
-        ph_values: Tuple of pH values for ionisation-state calculations.
+        ph_values: pH values for ionisation-state calculations.
         local_window: Window size for local charge density profile.
         terminal_window: Residue count for N/C-terminal segments.
 
-    Output columns (prefix ``charge_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``charge_``.
         ``length``, ``valid_residue_count``,
         ``positive/negative/ionizable_fraction``,
-        ``fcr``, ``ncpr``, ``basic_acidic_ratio``, ``acidic_basic_ratio``,
+        ``fcr``, ``ncpr``, ``basic_acidic_ratio``,
+        ``acidic_basic_ratio``,
         per-pH: ``net_charge/density/protonated_basic_fraction/
         deprotonated_acidic_fraction/local_{stat}/
-        nterm_net/cterm_net/nterm_density/cterm_density/terminal_asymmetry``.
+        nterm_net/cterm_net/nterm_density/cterm_density/
+        terminal_asymmetry``.
 
     """
 

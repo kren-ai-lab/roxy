@@ -42,10 +42,12 @@ class SlidingWindowDescriptor(BaseDescriptor):
     Args:
         window_sizes: Sizes of the sliding windows. Default ``(5, 7, 9)``.
 
-    Output columns (prefix ``sliding_window_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``sliding_window_``.
         ``length``, ``valid_residue_count``,
-        per window size: ``win{w}_{profile}_{stat}`` (5 profiles x 6 stats)
-        and ``win{w}_hydropathy_high_fraction``,
+        per window size: ``win{w}_{profile}_{stat}``
+        (5 profiles x 6 stats) and
+        ``win{w}_hydropathy_high_fraction``,
         ``win{w}_charged_high_fraction``,
         ``win{w}_aromatic_high_fraction``,
         ``win{w}_low_entropy_fraction``.

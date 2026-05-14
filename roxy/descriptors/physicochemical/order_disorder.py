@@ -33,20 +33,32 @@ _PATCH_THRESHOLD = 0.5
 
 @register("order_disorder", family="physicochemical")
 class OrderDisorderDescriptor(BaseDescriptor):
-    """Order/disorder propensity features.
+    r"""Order/disorder propensity features.
 
-    Computes global disorder/order fractions, structural group fractions,
-    longest runs, transitions, terminal asymmetry, and local patch profiles.
+    Residue groups follow the disorder/order classification from
+    ``AA_GROUPS`` (disorder-promoting: A, R, G, Q, S, E, P, K;
+    order-promoting: C, W, Y, F, I, L, N, V).
+
+    * **Balance**: :math:`f_{\text{disorder}} - f_{\text{order}}`
+    * **Transition fraction**: fraction of adjacent pairs switching
+      between order and disorder groups.
+    * **Patch fraction**: fraction of windows with group fraction
+      above threshold (0.5).
 
     Args:
-        window_sizes: Tuple of window sizes for local patch profiles.
+        window_sizes: Window sizes for local patch profiles.
         terminal_window: Residue count for N/C-terminal segments.
 
-    Output columns (prefix ``order_disorder_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``order_disorder_``.
         ``length``, ``valid_residue_count``,
-        ``disorder/order_fraction``, ``disorder_order/order_disorder_balance/ratio``,
-        ``flexibility/rigidity/pro_gly/aromatic_aliphatic_order/polar_disorder_support_fraction``,
-        ``longest_disorder/order_run``, ``order_disorder_transition_fraction``,
+        ``disorder/order_fraction``,
+        ``disorder_order/order_disorder_balance/ratio``,
+        ``flexibility/rigidity/pro_gly/
+        aromatic_aliphatic_order/
+        polar_disorder_support_fraction``,
+        ``longest_disorder/order_run``,
+        ``order_disorder_transition_fraction``,
         ``nterm/cterm_disorder/order_fraction``,
         ``terminal_disorder/order_asymmetry``,
         per-window: ``w{N}_disorder/order_patch_fraction``,

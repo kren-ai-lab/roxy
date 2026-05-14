@@ -19,12 +19,14 @@ _N_AA = len(_AA20_LIST)
 
 
 def _homopolymer_burden(seq: str, min_run: int) -> float:
+    """Fraction of residues in homopolymer runs of length >= ``min_run``."""
     runs = [len(list(g)) for _, g in groupby(seq)]
     burden = sum(r for r in runs if r >= min_run)
     return burden / len(seq)
 
 
 def _gini_like(seq: str) -> float:
+    """Gini-like inequality index over the 20-AA frequency vector."""
     n = len(seq)
     counts = Counter(seq)
     freqs = np.array(sorted(counts.get(aa, 0) / n for aa in _AA20_LIST), dtype=float)
@@ -37,21 +39,36 @@ def _gini_like(seq: str) -> float:
 
 @register("entropy_complexity", family="complexity")
 class EntropyComplexityDescriptor(BaseDescriptor):
-    """Sequence complexity and low-complexity region features.
+    r"""Sequence complexity and low-complexity region features.
 
-    Covers entropy measures, linguistic complexity, k-mer repetition,
-    homopolymer runs, windowed entropy profiles, and compositional inequality.
+    Key metrics:
+
+    * **Shannon entropy**:
+
+      .. math:: H = -\sum_{i} p_i \log_2(p_i)
+
+    * **Normalized entropy**: :math:`H / \log_2(\min(N, 20))`
+    * **Linguistic complexity**:
+
+      .. math:: LC(k) = \frac{|\text{observed}|}{\min(N - k + 1,\; 20^k)}
+
+    * **Homopolymer burden**: fraction of residues in runs :math:`\geq`
+      ``min_run``.
+    * **Gini-like inequality**: see ``CompositionalBiasDescriptor``.
 
     Args:
-        low_complexity_window: Window size for entropy-based low-complexity scan.
-        entropy_threshold: Shannon entropy threshold below which a window is
-            considered low-complexity.
+        low_complexity_window: Window size for entropy-based low-complexity
+            scan.
+        entropy_threshold: Shannon entropy threshold below which a window
+            is considered low-complexity.
 
-    Output columns (prefix ``entropy_complexity_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``entropy_complexity_``.
         ``length``, ``valid_residue_count``,
         ``shannon_entropy``, ``shannon_entropy_norm``,
         ``linguistic_complexity_k{1/2/3}``,
-        ``unique_kmer_fraction_k{2/3}``, ``repeated_kmer_fraction_k{2/3}``,
+        ``unique_kmer_fraction_k{2/3}``,
+        ``repeated_kmer_fraction_k{2/3}``,
         ``longest_homopolymer_run``, ``homopolymer_burden_len{2/3}``,
         ``low_complexity_window_fraction_w{N}``,
         ``window_entropy_mean_w{N}``, ``window_entropy_std_w{N}``,

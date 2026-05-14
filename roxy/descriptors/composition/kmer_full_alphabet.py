@@ -17,17 +17,27 @@ _LARGE_K_THRESHOLD = 4
 
 @register("kmer_full_alphabet", family="composition")
 class KmerFullAlphabetDescriptor(BaseDescriptor):
-    """K-mer counts and frequencies over the full 20-AA alphabet.
+    r"""K-mer counts and frequencies over the full 20-AA alphabet.
+
+    Each frequency is computed as:
+
+    .. math::
+
+        f_{\text{kmer}} = \frac{\text{count}(\text{kmer})}{N - k + 1}
+
+    Produces :math:`20^k` possible k-mers.
 
     Args:
-        k: K-mer length (default 2). k >= 4 emits a warning (16000+ columns).
+        k: K-mer length (default 2). ``k >= 4`` emits a warning
+            (16 000+ columns).
         include_counts: Include per-k-mer raw counts.
         include_frequencies: Include per-k-mer relative frequencies.
 
-    Output columns (prefix ``kmer_full_alphabet_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``kmer_full_alphabet_``.
         ``length``, ``total_kmers``, ``unique_kmers``,
-        optionally ``count_<kmer>`` x 20**k and ``freq_<kmer>`` x 20**k,
-        ``frequency_sum``.
+        optionally ``count_<kmer>`` x :math:`20^k` and
+        ``freq_<kmer>`` x :math:`20^k`, ``frequency_sum``.
 
     """
 

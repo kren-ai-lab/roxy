@@ -35,7 +35,8 @@ class StructuralPropensityDescriptor(BaseDescriptor):
         window_sizes: Tuple of window sizes for local propensity profiles.
         threshold: Propensity value above which a window is "high-propensity".
 
-    Output columns (prefix ``structural_propensity_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``structural_propensity_``.
         ``length``, ``valid_residue_count``,
         ``helix/sheet/turn_mean/std``,
         ``helix/sheet/turn_favoring_fraction``,

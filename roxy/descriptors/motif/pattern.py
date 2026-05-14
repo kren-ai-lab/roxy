@@ -59,9 +59,11 @@ class PatternDescriptor(BaseDescriptor):
         include_terminal: If True, add N- and C-terminal window presence. Default True.
         terminal_window: Size of terminal window in residues. Default 10.
 
-    Output columns (prefix ``pattern_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``pattern_``.
         ``length``, ``valid_residue_count``,
-        per pattern: ``{name}_present``, ``{name}_count``, ``{name}_density``,
+        per pattern: ``{name}_present``, ``{name}_count``,
+        ``{name}_density``,
         and if include_terminal: ``{name}_nterm_present_w{w}``,
         ``{name}_cterm_present_w{w}``.
         Total (defaults): 2 + 9*5 = 47 columns.

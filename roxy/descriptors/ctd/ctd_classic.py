@@ -89,18 +89,25 @@ def _distribution(labels: list[str], prefix: str, seq_len: int) -> dict[str, flo
 
 @register("ctd_classic", family="ctd")
 class CTDClassicDescriptor(BaseDescriptor):
-    """Classic Composition-Transition-Distribution (CTD) descriptors.
+    r"""Classic Composition-Transition-Distribution (CTD) descriptors.
 
-    For each physicochemical property, residues are assigned to one of three
-    classes. CTD then computes: (C) class fractions, (T) transition frequencies
-    between class pairs, and (D) normalized positions at 5 quantiles per class.
+    For each physicochemical property, residues are assigned to one of
+    three classes (Dubchak et al., 1995). CTD then computes:
+
+    * **(C) Composition**: class fractions :math:`|\text{class}| / N`.
+    * **(T) Transition**: fraction of adjacent pairs that switch between
+      two classes :math:`\text{transitions}(a,b) / (N - 1)`.
+    * **(D) Distribution**: normalized positions at 5 quantiles
+      (0%, 25%, 50%, 75%, 100%) for each class.
 
     Args:
         properties: Property names to use. Must be keys in ``ctd_groups``.
-        ctd_groups: Mapping of property → {class_id → residue set}. Defaults
-            to built-in hydrophobicity, polarity, and charge partitions.
+        ctd_groups: Mapping of property to ``{class_id: residue_set}``.
+            Defaults to built-in hydrophobicity, polarity, and charge
+            partitions.
 
-    Output columns (prefix ``ctd_classic_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``ctd_classic_``.
         ``length``, ``valid_residue_count``,
         per property: ``{prop}_comp_{1/2/3}``,
         ``{prop}_trans_{12/13/23}``,

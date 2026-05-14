@@ -62,7 +62,8 @@ class TerminalDescriptor(BaseDescriptor):
     Args:
         window_sizes: Tuple of residue counts defining terminal windows.
 
-    Output columns (prefix ``terminal_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``terminal_``.
         ``length``, ``valid_residue_count``,
         per window x side: ``{side}term{N}_length``,
         ``{side}term{N}_hydropathy/polarity_mean``,

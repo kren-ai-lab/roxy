@@ -26,7 +26,15 @@ _GROUP_PAIRS: list[tuple[str, str]] = [
 
 
 def _gini_like(freqs: np.ndarray) -> float:
-    """Compute modified Gini-like inequality index on a frequency vector."""
+    r"""Compute modified Gini-like inequality index on a frequency vector.
+
+    .. math::
+
+        G = \frac{2 \sum_{i=1}^{n} i \cdot f_i}{n \sum f_i} - \frac{n + 1}{n}
+
+    where :math:`f_i` are sorted frequencies and *n* is the number of
+    categories. Values range from 0 (uniform) to ~1 (maximal inequality).
+    """
     n = len(freqs)
     total = freqs.sum()
     if total == 0:
@@ -37,7 +45,14 @@ def _gini_like(freqs: np.ndarray) -> float:
 
 
 def _kl_div_uniform(freqs: np.ndarray) -> float:
-    """KL divergence from uniform distribution (bits)."""
+    r"""KL divergence from the uniform distribution (bits).
+
+    .. math::
+
+        D_{KL}(P \| U) = \sum_{i} p_i \log_2 \frac{p_i}{1/20}
+
+    Zero-frequency entries are skipped.
+    """
     kl = 0.0
     for p in freqs:
         if p > 0:
@@ -47,12 +62,30 @@ def _kl_div_uniform(freqs: np.ndarray) -> float:
 
 @register("compositional_bias", family="composition")
 class CompositionalBiasDescriptor(BaseDescriptor):
-    """Inequality and asymmetry measures of amino-acid usage.
+    r"""Inequality and asymmetry measures of amino-acid usage.
 
     Computes global statistics on the 20-AA frequency vector plus
     group-level skew/ratio pairs for 5 physicochemical contrasts.
 
-    Output columns (prefix ``compositional_bias_``):
+    Key metrics:
+
+    * **Gini-like inequality**:
+
+      .. math:: G = \frac{2 \sum i \cdot f_i}{n \sum f_i} - \frac{n+1}{n}
+
+    * **KL divergence from uniform**:
+
+      .. math:: D_{KL} = \sum p_i \log_2 \frac{p_i}{1/20}
+
+    * **L1 deviation from uniform**:
+
+      .. math:: L_1 = \sum |p_i - 1/20|
+
+    * **Group skew**: :math:`f_a - f_b` for each contrast pair.
+    * **Group ratio**: :math:`f_a / f_b` for each contrast pair.
+
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``compositional_bias_``.
         ``length``, ``valid_residue_count``, ``usage_mean/std/var/cv``,
         ``max/min_residue_fraction``, ``top2/3/5_burden``,
         ``dominance_gap``, ``gini_like_inequality``, ``kl_div_uniform``,

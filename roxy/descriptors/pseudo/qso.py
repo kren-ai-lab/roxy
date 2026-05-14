@@ -29,22 +29,33 @@ def _lagged_coupling(values: np.ndarray, lag: int) -> float:
 
 @register("qso", family="pseudo")
 class QSODescriptor(BaseDescriptor):
-    """Quasi-sequence-order descriptors (Chou 2001).
+    r"""Quasi-sequence-order descriptors (Chou, 2001).
 
-    Extends AAC with sequence-order coupling factors (tau) that capture
-    long-range residue correlations via physicochemical property distances.
+    Extends AAC with sequence-order coupling factors that capture
+    long-range residue correlations via physicochemical property
+    distances. The coupling factor at lag :math:`\lambda` is:
+
+    .. math::
+
+        \tau_\lambda = \frac{1}{N - \lambda} \sum_{i=1}^{N-\lambda}
+        \frac{1}{P} \sum_{p=1}^{P} (H_p(R_i) - H_p(R_{i+\lambda}))^2
+
+    Features are normalized as in PseAAC with weight *w*.
 
     Args:
         lam: Maximum lag (number of coupling factors). Default ``5``.
-        w: Weight of coupling factors relative to composition. Default ``0.1``.
-        properties: Mapping of property name → scale dict. Defaults to
-            Eisenberg hydrophobicity, Hopp-Woods hydrophilicity, side-chain mass.
+        w: Weight of coupling factors relative to composition.
+            Default ``0.1``.
+        properties: Mapping of property name to scale dict. Defaults to
+            Eisenberg hydrophobicity, Hopp-Woods hydrophilicity,
+            side-chain mass.
 
-    Output columns (prefix ``qso_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``qso_``.
         ``length``, ``valid_residue_count``,
         20 quasi-composition columns ``{AA}``,
-        ``lam`` coupling columns ``tau_1`` … ``tau_{lam}``,
-        ``feature_sum`` (≈ 1.0 for non-empty sequences).
+        ``lam`` coupling columns ``tau_1`` ... ``tau_{lam}``,
+        ``feature_sum`` (:math:`\approx 1.0` for non-empty sequences).
         Total: 2 + 20 + lam + 1 = 28 at default lam=5.
 
     """

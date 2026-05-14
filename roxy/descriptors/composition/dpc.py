@@ -16,13 +16,23 @@ _ALL_DIPEPTIDES: list[str] = generate_all_kmers(AA20, 2)
 
 @register("dpc", family="composition")
 class DPCDescriptor(BaseDescriptor):
-    """Dipeptide counts and frequencies (400 dipeptides over standard AAs).
+    r"""Dipeptide counts and frequencies (400 dipeptides over standard AAs).
+
+    Each frequency is computed as:
+
+    .. math::
+
+        f_{XY} = \frac{\text{count}(XY)}{N - 1}
+
+    where *N* is the cleaned sequence length and :math:`N - 1` is the
+    total number of overlapping dipeptides.
 
     Args:
         include_counts: Include per-dipeptide raw counts.
         include_frequencies: Include per-dipeptide relative frequencies.
 
-    Output columns (prefix ``dpc_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``dpc_``.
         ``length``, ``valid_residue_count``, ``total_dipeptides``,
         ``unique_dipeptides``, optionally ``count_<XY>`` x 400 and
         ``freq_<XY>`` x 400, ``frequency_sum``.

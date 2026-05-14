@@ -71,7 +71,8 @@ class AAIndexDescriptor(BaseDescriptor):
         include_terminal: If True, add N- and C-terminal mean columns. Default True.
         terminal_window: Terminal window size in residues. Default 10.
 
-    Output columns (prefix ``aaindex_``):
+    Returns:
+        ``compute()`` returns a DataFrame with columns prefixed ``aaindex_``.
         ``length``, ``valid_residue_count``,
         per code: ``{code}_mean``, ``{code}_std``, ``{code}_min``,
         ``{code}_max``, ``{code}_median``,

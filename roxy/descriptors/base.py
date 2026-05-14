@@ -59,7 +59,8 @@ class BaseDescriptor(ABC):
 
         Args:
             sequences: Iterable of amino-acid strings.
-            ids: Optional sequence identifiers stored in an ``id`` column.
+            ids: Optional sequence identifiers stored in an ``id``
+                column.
 
         Returns:
             One row per sequence; columns are ``{name}_{feature}``.
