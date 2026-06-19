@@ -7,10 +7,12 @@ returns tabular features as `polars.DataFrame` objects.
 
 ## Install
 
+Not yet published on PyPI. Install directly from GitHub:
+
 ```bash
-pip install roxylib
+pip install git+https://github.com/kren-ai-lab/roxy.git
 # or with uv:
-uv add roxylib
+uv add git+https://github.com/kren-ai-lab/roxy.git
 ```
 
 ## Quickstart
