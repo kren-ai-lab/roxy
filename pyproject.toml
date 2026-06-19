@@ -41,15 +41,15 @@ dependencies = [
     "rich>=15.0,<16.0",
     "scikit-learn>=1.8,<2.0",
     "scipy>=1.17,<2.0",
-    "typer>=0.25,<1.0",
+    "typer>=0.26,<1.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pyrefly>=0.64",
+    "pyrefly>=1.0.0",
     "ruff>=0.15",
     "taskipy>=1.14",
-    "ty>=0.0.30"
+    "ty>=0.0.50"
 ]
 tests = [
     "pytest>=9.0",
@@ -58,10 +58,10 @@ tests = [
 all = [
     "pyrefly>=1.0.0",
     "pytest>=9.0",
-    "pytest-cov>=7.0",
+    "pytest-cov>=7.1",
     "ruff>=0.15",
     "taskipy>=1.14",
-    "ty>=0.0.30"
+    "ty>=0.0.50"
 ]
 
 [project.scripts]
