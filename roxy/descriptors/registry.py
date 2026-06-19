@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -11,8 +11,10 @@ if TYPE_CHECKING:
 
 DESCRIPTOR_REGISTRY: dict[str, type[BaseDescriptor]] = {}
 
+_T = TypeVar("_T", bound="BaseDescriptor")
 
-def register(name: str, *, family: str = "misc") -> Callable[[type[BaseDescriptor]], type[BaseDescriptor]]:
+
+def register(name: str, *, family: str = "misc") -> Callable[[type[_T]], type[_T]]:
     """Class decorator that registers a descriptor family by name.
 
     Usage::
@@ -22,7 +24,7 @@ def register(name: str, *, family: str = "misc") -> Callable[[type[BaseDescripto
             ...
     """
 
-    def decorator(cls: type[BaseDescriptor]) -> type[BaseDescriptor]:
+    def decorator(cls: type[_T]) -> type[_T]:
         cls.name = name
         cls.family = family
         DESCRIPTOR_REGISTRY[name] = cls
