@@ -108,7 +108,7 @@ column prefixes.
 ## Development
 
 ```bash
-uv sync --all-extras
+uv sync
 uv run pytest -q
 uv run task lint
 uv run roxy --help
