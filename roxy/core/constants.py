@@ -9,7 +9,7 @@ The constants defined here include:
 
 - Column name lists used when working with antibody or chain-level datasets.
 - The canonical set of 20 amino acids (`AA20`).
-- Hydrophobicity scales (Kyte-Doolittle, Eisenberg).
+- Hydrophobicity scales (Kyte-Doolittle, Eisenberg normalized consensus).
 - Boman index contributions.
 - Chou-Fasman helix and sheet propensities.
 - TOP-IDP intrinsic disorder scale.
@@ -99,7 +99,10 @@ KD: dict[str, float] = {
     "R": -4.5,
 }
 
-#: Eisenberg hydrophobicity scale.
+#: Eisenberg normalized consensus hydrophobicity scale (Eisenberg et al., 1984).
+#: Note: the AAindex entry EISD840101 is titled "Consensus normalized
+#: hydrophobicity scale" but its values are *not* the normalized ones; the
+#: table below is the normalized consensus scale.
 EISENBERG: dict[str, float] = {
     "A": 0.62,
     "R": -2.53,
@@ -171,28 +174,28 @@ SIDECHAIN_MASS: dict[str, float] = {
     "Y": 107.0,
 }
 
-#: Van der Waals volume scale (Ų) from Pontius et al.
+#: Average volumes of residues (Å³), Pontius et al. 1996 — AAindex PONJ960101.
 VOLUME: dict[str, float] = {
-    "A": 88.6,
-    "C": 108.5,
-    "D": 111.1,
-    "E": 138.4,
-    "F": 189.9,
-    "G": 60.1,
-    "H": 153.2,
-    "I": 166.7,
-    "K": 168.6,
-    "L": 166.7,
-    "M": 162.9,
-    "N": 114.1,
-    "P": 112.7,
-    "Q": 143.8,
-    "R": 173.4,
-    "S": 89.0,
-    "T": 116.1,
-    "V": 140.0,
-    "W": 227.8,
-    "Y": 193.6,
+    "A": 91.5,
+    "C": 114.4,
+    "D": 135.2,
+    "E": 154.6,
+    "F": 198.8,
+    "G": 67.5,
+    "H": 163.2,
+    "I": 162.6,
+    "K": 162.5,
+    "L": 163.4,
+    "M": 165.9,
+    "N": 138.3,
+    "P": 123.4,
+    "Q": 156.4,
+    "R": 196.1,
+    "S": 102.0,
+    "T": 126.0,
+    "V": 138.4,
+    "W": 209.8,
+    "Y": 237.2,
 }
 
 #: Residue average molecular weights (Da).
@@ -219,52 +222,57 @@ AA_MOLECULAR_WEIGHT: dict[str, float] = {
     "Y": 181.19,
 }
 
-#: Boman index contributions per residue (binding potential).
+#: Residue solubility values used by the Boman (protein interaction) index,
+#: Boman 2003 — same table as ``Peptides::boman`` in R. The index itself is
+#: ``-sum(values) / len(seq)``, so the sign is flipped at the call site.
+#: Proline is absent from the published scale; it is kept here as 0.0 so that
+#: it still counts towards the sequence length, matching the R implementation
+#: (``na.rm = TRUE`` over ``length(seq)``).
 BOMAN: dict[str, float] = {
-    "A": 0.17,
-    "C": 0.24,
-    "D": -1.23,
-    "E": -2.02,
-    "F": 1.13,
-    "G": 0.01,
-    "H": -0.96,
-    "I": 0.31,
-    "K": -0.99,
-    "L": 0.56,
-    "M": 0.23,
-    "N": -0.42,
-    "P": -0.45,
-    "Q": -0.58,
-    "R": -1.01,
-    "S": -0.13,
-    "T": -0.14,
-    "V": 0.07,
-    "W": 1.85,
-    "Y": 0.94,
+    "A": 1.81,
+    "C": 1.28,
+    "D": -8.72,
+    "E": -6.81,
+    "F": 2.98,
+    "G": 0.94,
+    "H": -4.66,
+    "I": 4.92,
+    "K": -5.55,
+    "L": 4.92,
+    "M": 2.35,
+    "N": -6.64,
+    "P": 0.00,
+    "Q": -5.54,
+    "R": -14.92,
+    "S": -3.40,
+    "T": -2.57,
+    "V": 4.04,
+    "W": 2.33,
+    "Y": -0.14,
 }
 
-#: Zimmerman polarity scale.
+#: Polarity (Zimmerman et al., 1968) — AAindex ZIMJ680103.
 POLARITY: dict[str, float] = {
-    "A": 8.1,
-    "C": 5.5,
-    "D": 13.0,
-    "E": 12.3,
-    "F": 5.2,
-    "G": 9.0,
-    "H": 10.4,
-    "I": 5.2,
-    "K": 11.3,
-    "L": 4.9,
-    "M": 5.7,
-    "N": 11.6,
-    "P": 8.0,
-    "Q": 10.5,
-    "R": 10.5,
-    "S": 9.2,
-    "T": 8.6,
-    "V": 5.9,
-    "W": 5.4,
-    "Y": 6.2,
+    "A": 0.00,
+    "C": 1.48,
+    "D": 49.70,
+    "E": 49.90,
+    "F": 0.35,
+    "G": 0.00,
+    "H": 51.60,
+    "I": 0.13,
+    "K": 49.50,
+    "L": 0.13,
+    "M": 1.43,
+    "N": 3.38,
+    "P": 1.58,
+    "Q": 3.53,
+    "R": 52.00,
+    "S": 1.67,
+    "T": 1.66,
+    "V": 0.13,
+    "W": 2.10,
+    "Y": 1.61,
 }
 
 #: Bhaskaran-Ponnuswamy backbone flexibility scale.
@@ -291,100 +299,100 @@ FLEXIBILITY: dict[str, float] = {
     "Y": 0.420,
 }
 
-#: Chou-Fasman helix propensities.
+#: Normalized frequency of alpha-helix (Chou-Fasman, 1978b) — AAindex CHOP780201.
 CF_HELIX: dict[str, float] = {
-    "A": 1.45,
-    "C": 0.77,
+    "A": 1.42,
+    "C": 0.70,
     "D": 1.01,
-    "E": 1.53,
-    "F": 1.12,
-    "G": 0.53,
-    "H": 1.24,
-    "I": 1.00,
-    "K": 1.07,
-    "L": 1.34,
-    "M": 1.20,
-    "N": 0.73,
-    "P": 0.59,
-    "Q": 1.17,
-    "R": 0.79,
-    "S": 0.79,
-    "T": 0.82,
-    "V": 1.14,
-    "W": 1.14,
-    "Y": 0.61,
+    "E": 1.51,
+    "F": 1.13,
+    "G": 0.57,
+    "H": 1.00,
+    "I": 1.08,
+    "K": 1.16,
+    "L": 1.21,
+    "M": 1.45,
+    "N": 0.67,
+    "P": 0.57,
+    "Q": 1.11,
+    "R": 0.98,
+    "S": 0.77,
+    "T": 0.83,
+    "V": 1.06,
+    "W": 1.08,
+    "Y": 0.69,
 }
 
-#: Chou-Fasman sheet propensities.
+#: Normalized frequency of beta-sheet (Chou-Fasman, 1978b) — AAindex CHOP780202.
 CF_SHEET: dict[str, float] = {
-    "A": 0.97,
-    "C": 1.30,
+    "A": 0.83,
+    "C": 1.19,
     "D": 0.54,
     "E": 0.37,
-    "F": 1.28,
-    "G": 0.81,
-    "H": 0.71,
+    "F": 1.38,
+    "G": 0.75,
+    "H": 0.87,
     "I": 1.60,
     "K": 0.74,
-    "L": 1.22,
-    "M": 1.67,
-    "N": 0.65,
-    "P": 0.62,
-    "Q": 1.23,
-    "R": 0.90,
-    "S": 0.72,
-    "T": 1.20,
-    "V": 1.65,
-    "W": 1.19,
-    "Y": 1.29,
+    "L": 1.30,
+    "M": 1.05,
+    "N": 0.89,
+    "P": 0.55,
+    "Q": 1.10,
+    "R": 0.93,
+    "S": 0.75,
+    "T": 1.19,
+    "V": 1.70,
+    "W": 1.37,
+    "Y": 1.47,
 }
 
-#: Chou-Fasman turn propensities.
+#: Normalized frequency of beta-turn (Chou-Fasman, 1978b) — AAindex CHOP780203.
 CF_TURN: dict[str, float] = {
-    "A": 0.66,
-    "C": 1.19,
-    "D": 1.46,
-    "E": 0.74,
-    "F": 0.60,
+    "A": 0.74,
+    "C": 0.96,
+    "D": 1.52,
+    "E": 0.95,
+    "F": 0.66,
     "G": 1.56,
     "H": 0.95,
     "I": 0.47,
-    "K": 1.01,
-    "L": 0.59,
+    "K": 1.19,
+    "L": 0.50,
     "M": 0.60,
-    "N": 1.56,
-    "P": 1.52,
-    "Q": 0.98,
-    "R": 0.95,
+    "N": 1.46,
+    "P": 1.56,
+    "Q": 0.96,
+    "R": 1.01,
     "S": 1.43,
-    "T": 0.96,
-    "V": 0.50,
-    "W": 0.96,
+    "T": 0.98,
+    "V": 0.59,
+    "W": 0.60,
     "Y": 1.14,
 }
 
-#: TOP-IDP intrinsic disorder scale.
+#: TOP-IDP intrinsic disorder scale (Campen et al., 2008 — Table 2).
 TOP_IDP: dict[str, float] = {
     "A": 0.06,
-    "C": -0.22,
-    "D": 0.19,
-    "E": 0.25,
-    "F": -0.15,
-    "G": 0.16,
-    "H": -0.05,
-    "I": -0.20,
-    "K": 0.27,
-    "L": -0.21,
-    "M": -0.09,
-    "N": 0.00,
-    "P": 0.12,
-    "Q": 0.06,
-    "R": 0.21,
-    "S": 0.10,
-    "T": 0.05,
-    "V": -0.22,
-    "W": -0.23,
-    "Y": -0.03,
+    "C": 0.02,
+    "D": 0.192,
+    "E": 0.736,
+    "F": -0.697,
+    "G": 0.166,
+    "H": 0.303,
+    "I": -0.486,
+    "K": 0.586,
+    "L": -0.326,
+    "M": -0.397,
+    "N": 0.007,
+    "P": 0.987,
+    "Q": 0.318,
+    "R": 0.180,
+    "S": 0.341,
+    "T": 0.059,
+    "V": -0.121,
+    "W": -0.884,
+    "Y": -0.510,
 }
 
 
@@ -392,11 +400,13 @@ TOP_IDP: dict[str, float] = {
 # pKa values and residue classes
 # ---------------------------------------------------------------------------
 
-#: N-terminus pKa (typical peptide).
-PKA_N_TERM: float = 9.69
+#: N-terminus pKa: mean of the alpha-amino pKa of the 20 standard amino acids
+#: (Lehninger, table 3-1).
+PKA_N_TERM: float = 9.47
 
-#: C-terminus pKa (typical peptide).
-PKA_C_TERM: float = 2.34
+#: C-terminus pKa: mean of the alpha-carboxyl pKa of the 20 standard amino acids
+#: (Lehninger, table 3-1).
+PKA_C_TERM: float = 2.1555
 
 #: Side-chain pKa values for ionisable residues.
 PKA_SIDE: dict[str, float] = {
@@ -409,7 +419,7 @@ PKA_SIDE: dict[str, float] = {
     "Y": 10.07,
 }
 
-#: Canonical amino-acid group assignments (17 groups) used by composition descriptors.
+#: Canonical amino-acid group assignments (15 groups) used by composition descriptors.
 AA_GROUPS: dict[str, set[str]] = {
     "positive": set("KRH"),
     "negative": set("DE"),
@@ -417,35 +427,15 @@ AA_GROUPS: dict[str, set[str]] = {
     "polar": set("STNQCYWHKRDE"),
     "nonpolar": set("AVLIMFGP"),
     "aromatic": set("FWYH"),
-    "aliphatic": set("AVLIM"),
     "tiny": set("AGCS"),
     "small": set("AGCSTVPDN"),
-    "branched": set("VILT"),
     "sulfur": set("CM"),
     "hydroxyl": set("STY"),
     "amide": set("NQ"),
-    "hydrophobic": set("AVLIMFWCY"),
-    "hydrophilic": set("RNDQEHKST"),
-    "disorder_promoting": set("ARGQSEPK"),
-    "order_promoting": set("CWYFILNV"),
-}
-
-
-#: Reduced-alphabet mapping schemes for k-mer descriptors.
-#: H=hydrophobic, P=polar, C=positive-charged, N=negative-charged, S=special.
-REDUCED_ALPHABETS: dict[str, dict[str, str]] = {
-    "rd5": {
-        **dict.fromkeys("AVLIMFWY", "H"),
-        **dict.fromkeys("STNQ", "P"),
-        **dict.fromkeys("KRH", "C"),
-        **dict.fromkeys("DE", "N"),
-        **dict.fromkeys("CGP", "S"),
-    },
-    "rd3": {
-        **dict.fromkeys("AVLIMFWY", "H"),
-        **dict.fromkeys("STNQKRHDE", "P"),
-        **dict.fromkeys("CGP", "S"),
-    },
+    "hydrophobic": set("ILVMFYWHKCAT"),
+    "hydrophilic": set("RNDQES"),
+    "disorder_promoting": set("SAPREKG"),
+    "order_promoting": set("CWYFILV"),
 }
 
 

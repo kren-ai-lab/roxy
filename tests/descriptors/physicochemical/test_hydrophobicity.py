@@ -8,8 +8,8 @@ from roxy.descriptors.physicochemical.hydrophobicity import HydrophobicityDescri
 from tests.descriptors._helpers import EMPTY, SEQ_ALL20
 
 SEQ = SEQ_ALL20
-HYDROPHOBIC_SEQ = "AVLIMFWCY"
-HYDROPHILIC_SEQ = "RNDQEHKST"
+HYDROPHOBIC_SEQ = "ILVMFYWHKCAT"
+HYDROPHILIC_SEQ = "RNDQES"
 
 
 @pytest.fixture

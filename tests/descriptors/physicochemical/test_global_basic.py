@@ -65,3 +65,9 @@ def test_linguistic_complexity_bounds(desc):
 def test_shannon_entropy_positive(desc):
     out = desc.compute_one(SEQ)
     assert out["shannon_entropy"] > 0
+
+
+def test_boman_index_matches_peptides_r(desc):
+    # Reference value from Peptides::boman in R (YADAMP id 845).
+    out = desc.compute_one("FLPVLAGLTPSIVPKLVCLLTKKC")
+    assert math.isclose(out["boman_index"], -1.235833, abs_tol=1e-6)

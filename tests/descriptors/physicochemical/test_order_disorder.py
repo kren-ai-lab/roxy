@@ -8,8 +8,8 @@ from roxy.descriptors.physicochemical.order_disorder import OrderDisorderDescrip
 from tests.descriptors._helpers import EMPTY, SEQ_ALL20
 
 SEQ = SEQ_ALL20
-DISORDER_SEQ = "ARGQSEPKARGQSEPK"
-ORDER_SEQ = "CWYFILNVCWYFILNV"
+DISORDER_SEQ = "SAPREKGSAPREKG"
+ORDER_SEQ = "CWYFILVCWYFILV"
 
 
 @pytest.fixture

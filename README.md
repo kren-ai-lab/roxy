@@ -97,7 +97,7 @@ column prefixes.
 | aaindex         | `aaindex`                                                                             |
 | autocorrelation | `autocorrelation`                                                                     |
 | complexity      | `entropy_complexity`, `local_repetition`, `run_blockiness`                            |
-| composition     | `aac`, `compositional_bias`, `dpc`, `grouped`, `kmer_full_alphabet`, `reduced_kmer`   |
+| composition     | `aac`, `compositional_bias`, `dpc`, `grouped`, `kmer_full_alphabet`                   |
 | ctd             | `ctd_classic`, `distribution`                                                         |
 | hybrid          | `family_summary`                                                                      |
 | motif           | `functional_residue_content`, `pattern`, `spacing`, `user_regex`                      |

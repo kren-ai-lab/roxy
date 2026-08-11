@@ -68,7 +68,7 @@ class TerminalDescriptor(BaseDescriptor):
         per window x side: ``{side}term{N}_length``,
         ``{side}term{N}_hydropathy/polarity_mean``,
         ``{side}term{N}_entropy``,
-        ``{side}term{N}_{group}_frac`` for 17 AA_GROUPS,
+        ``{side}term{N}_{group}_frac`` for 15 AA_GROUPS,
         ``{side}term{N}_positive_negative_balance/ratio``,
         ``{side}term{N}_hydrophobic_hydrophilic_balance``,
         ``{side}term{N}_aac_{AA}`` for 20 AAs.
