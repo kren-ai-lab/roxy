@@ -107,7 +107,7 @@ def _concat_frames(frames: list[pl.DataFrame], desc_names: list[str]) -> pl.Data
     return functools.reduce(pl.DataFrame.hstack, parts)
 
 
-def compute(
+def compute(  # noqa: PLR0917
     input_path: Path = typer.Argument(..., metavar="INPUT", help="FASTA, CSV, or Parquet file."),
     config: Path | None = typer.Option(
         None, "--config", "-c", help="YAML config file with descriptor params."
