@@ -4,6 +4,7 @@
 [![PyVersions](https://img.shields.io/pypi/pyversions/roxylib?style=flat-square)](https://github.com/kren-ai-lab/roxylib)
 [![Tests](https://img.shields.io/github/actions/workflow/status/kren-ai-lab/roxy/tests.yml?style=flat-square)](https://github.com/kren-ai-lab/roxy/actions/workflows/tests.yml)
 ![License](https://img.shields.io/github/license/kren-ai-lab/roxy?style=flat-square)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.21917534-blue?style=flat-square)](https://doi.org/10.5281/zenodo.21917534)
 
 Classical protein sequence descriptors for machine learning.
 

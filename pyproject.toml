@@ -64,6 +64,9 @@ Issues = "https://github.com/ProteinEngineering-PESB2/roxy_library/issues"
 path = "roxy/__init__.py"
 pattern = '__version__ = "(?P<version>[^"]+)"'
 
+[tool.hatch.build.targets.wheel]
+packages = ["roxy"]
+
 
 [tool.ruff]
 line-length = 110
