@@ -56,9 +56,9 @@ dev = [
 roxy = "roxy.cli.main:app"
 
 [project.urls]
-Homepage = "https://github.com/ProteinEngineering-PESB2/roxy_library"
-Repository = "https://github.com/ProteinEngineering-PESB2/roxy_library"
-Issues = "https://github.com/ProteinEngineering-PESB2/roxy_library/issues"
+Homepage = "https://github.com/kren-ai-lab/roxy"
+Repository = "https://github.com/kren-ai-lab/roxy"
+Issues = "https://github.com/kren-ai-lab/roxy/issues"
 
 [tool.hatch.version]
 path = "roxy/__init__.py"
