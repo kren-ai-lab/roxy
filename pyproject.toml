@@ -8,6 +8,7 @@ dynamic = ["version"]
 description = "Protein sequence descriptors for machine learning."
 readme = "README.md"
 license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.11,<3.15"
 authors = [
     { name = "Kren AI Lab", email = "krenai@umag.cl" },
@@ -22,11 +23,8 @@ keywords = [
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-    "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -36,32 +34,22 @@ classifiers = [
 ]
 dependencies = [
     "numpy>=2.4,<3.0",
-    "polars>=1.40.1",
+    "polars>=1.40.0",
     "pyyaml>=6.0.3",
     "rich>=15.0,<16.0",
     "scikit-learn>=1.8,<2.0",
     "scipy>=1.17,<2.0",
-    "typer>=0.26,<1.0",
+    "typer>=0.27,<1.0",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
+    "pytest>=9.0",
+    "pytest-cov>=7.1",
     "pyrefly>=1.0.0",
     "ruff>=0.15",
     "taskipy>=1.14",
-    "ty>=0.0.50"
-]
-tests = [
-    "pytest>=9.0",
-    "pytest-cov>=7.1",
-]
-all = [
-    "pyrefly>=1.0.0",
-    "pytest>=9.0",
-    "pytest-cov>=7.1",
-    "ruff>=0.15",
-    "taskipy>=1.14",
-    "ty>=0.0.50"
+    "ty>=0.0.50",
 ]
 
 [project.scripts]
@@ -90,7 +78,8 @@ ignore = [
     "N802",
     "N803",
     "N806",
-    "PLR0913"
+    "PLR0913",
+    "CPY001"
 ]
 
 [tool.ruff.lint.per-file-ignores]

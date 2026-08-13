@@ -20,7 +20,6 @@ _GROUP_PAIRS: list[tuple[str, str]] = [
     ("positive", "negative"),
     ("hydrophobic", "hydrophilic"),
     ("polar", "nonpolar"),
-    ("aromatic", "aliphatic"),
     ("disorder_promoting", "order_promoting"),
 ]
 
@@ -65,7 +64,7 @@ class CompositionalBiasDescriptor(BaseDescriptor):
     r"""Inequality and asymmetry measures of amino-acid usage.
 
     Computes global statistics on the 20-AA frequency vector plus
-    group-level skew/ratio pairs for 5 physicochemical contrasts.
+    group-level skew/ratio pairs for 4 physicochemical contrasts.
 
     Key metrics:
 
@@ -89,7 +88,7 @@ class CompositionalBiasDescriptor(BaseDescriptor):
         ``length``, ``valid_residue_count``, ``usage_mean/std/var/cv``,
         ``max/min_residue_fraction``, ``top2/3/5_burden``,
         ``dominance_gap``, ``gini_like_inequality``, ``kl_div_uniform``,
-        ``l1_dev_uniform``, plus 5 ``*_skew`` and 5 ``*_ratio`` columns.
+        ``l1_dev_uniform``, plus 4 ``*_skew`` and 4 ``*_ratio`` columns.
 
     """
 

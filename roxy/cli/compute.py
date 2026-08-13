@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import functools
 import inspect
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -103,10 +104,10 @@ def _concat_frames(frames: list[pl.DataFrame], desc_names: list[str]) -> pl.Data
         else:
             drop = [c for col in _drop_from_rest for c in (f"{name}_{col}", col) if c in df.columns]
             parts.append(df.drop(drop))
-    return pl.concat(parts, how="horizontal")
+    return functools.reduce(pl.DataFrame.hstack, parts)
 
 
-def compute(
+def compute(  # noqa: PLR0917
     input_path: Path = typer.Argument(..., metavar="INPUT", help="FASTA, CSV, or Parquet file."),
     config: Path | None = typer.Option(
         None, "--config", "-c", help="YAML config file with descriptor params."

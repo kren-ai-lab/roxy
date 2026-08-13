@@ -60,7 +60,7 @@ def _repeated_dipeptide_fraction(seq: str) -> float:
 
 @register("global_basic", family="physicochemical")
 class GlobalBasicDescriptor(BaseDescriptor):
-    r"""46 global sequence properties: composition, scales, charge, complexity.
+    r"""44 global sequence properties: composition, scales, charge, complexity.
 
     Includes:
 
@@ -73,8 +73,8 @@ class GlobalBasicDescriptor(BaseDescriptor):
       .. math:: AI = 100 \times (x_A + 2.9 x_V + 3.9 (x_I + x_L))
     * **Scale statistics**: mean/std of Kyte-Doolittle, Zimmerman polarity,
       and Bhaskaran-Ponnuswamy flexibility.
-    * **Chou-Fasman propensity means** (helix, sheet, turn) and
-      **Boman index** mean.
+    * **Chou-Fasman propensity means** (helix, sheet, turn) and the
+      **Boman index**.
     * **Charge**: net charge at pH 7 (Henderson-Hasselbalch), FCR, NCPR.
     * **Complexity**: Shannon entropy, linguistic complexity (k=1,2,3),
       longest homopolymer run.
@@ -82,10 +82,10 @@ class GlobalBasicDescriptor(BaseDescriptor):
     Returns:
         ``compute()`` returns a DataFrame with columns prefixed ``global_basic_``.
         ``length``, ``valid_residue_count``, ``unique_residue_count``,
-        ``molecular_weight``, 17 group fractions, ``aliphatic_index``,
+        ``molecular_weight``, 15 group fractions, ``aliphatic_index``,
         ``hydropathy_mean/std``, ``polarity_mean/std``,
         ``flexibility_mean/std``,
-        ``helix/sheet/turn_propensity_mean``, ``boman_index_mean``,
+        ``helix/sheet/turn_propensity_mean``, ``boman_index``,
         ``net_charge_ph7``, ``fcr``, ``ncpr``,
         ``acidic_basic_ratio``, ``basic_acidic_ratio``,
         ``donors_per_residue``, ``acceptors_per_residue``,
@@ -116,7 +116,7 @@ class GlobalBasicDescriptor(BaseDescriptor):
                 "helix_propensity_mean",
                 "sheet_propensity_mean",
                 "turn_propensity_mean",
-                "boman_index_mean",
+                "boman_index",
                 "net_charge_ph7",
                 "fcr",
                 "ncpr",
@@ -160,10 +160,13 @@ class GlobalBasicDescriptor(BaseDescriptor):
             ("helix_propensity", CF_HELIX),
             ("sheet_propensity", CF_SHEET),
             ("turn_propensity", CF_TURN),
-            ("boman_index", BOMAN),
         ):
             vals = scale_values(seq, scale)
             feats[f"{name}_mean"] = float(np.mean(vals)) if vals else _NAN
+
+        # Boman index: negated mean of the residue solubility values.
+        boman_vals = scale_values(seq, BOMAN)
+        feats["boman_index"] = -float(np.mean(boman_vals)) if boman_vals else _NAN
 
         # Charge
         feats["net_charge_ph7"] = net_charge_at_ph(seq, 7.0)
@@ -176,9 +179,9 @@ class GlobalBasicDescriptor(BaseDescriptor):
         feats["acidic_basic_ratio"] = n_acidic / n_basic if n_basic else _NAN
         feats["basic_acidic_ratio"] = n_basic / n_acidic if n_acidic else _NAN
 
-        # H-bond donors/acceptors per residue
-        feats["donors_per_residue"] = sum(DONORS.get(aa, 0) for aa in seq) / n
-        feats["acceptors_per_residue"] = sum(ACCEPTORS.get(aa, 0) for aa in seq) / n
+        # Fraction of residues able to donate / accept a side-chain H-bond
+        feats["donors_per_residue"] = fraction_from_group(seq, DONORS)
+        feats["acceptors_per_residue"] = fraction_from_group(seq, ACCEPTORS)
 
         # Complexity
         feats["shannon_entropy"] = shannon_entropy(seq)

@@ -36,8 +36,8 @@ class OrderDisorderDescriptor(BaseDescriptor):
     r"""Order/disorder propensity features.
 
     Residue groups follow the disorder/order classification from
-    ``AA_GROUPS`` (disorder-promoting: A, R, G, Q, S, E, P, K;
-    order-promoting: C, W, Y, F, I, L, N, V).
+    ``AA_GROUPS`` (disorder-promoting: S, A, P, R, E, K, G;
+    order-promoting: C, W, Y, F, I, L, V).
 
     * **Balance**: :math:`f_{\text{disorder}} - f_{\text{order}}`
     * **Transition fraction**: fraction of adjacent pairs switching
