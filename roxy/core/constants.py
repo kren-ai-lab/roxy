@@ -15,7 +15,7 @@ The constants defined here include:
 - TOP-IDP intrinsic disorder scale.
 - pKa values for termini and side chains.
 - Residue class sets (aromatic, charged, polar, hydrophobic).
-- Hydrogen-bond donor and acceptor counts.
+- Hydrogen-bond donor and acceptor residue sets.
 
 All amino acid codes follow the one-letter, uppercase convention.
 """
@@ -440,31 +440,11 @@ AA_GROUPS: dict[str, set[str]] = {
 
 
 # ---------------------------------------------------------------------------
-# Hydrogen bond donor and acceptor counts
+# Hydrogen bond donor and acceptor residues
 # ---------------------------------------------------------------------------
 
-#: Approximate count of hydrogen bond donors per residue.
-DONORS: dict[str, int] = {
-    "K": 1,
-    "R": 1,
-    "H": 1,
-    "W": 1,
-    "N": 1,
-    "Q": 1,
-    "S": 1,
-    "T": 1,
-    "Y": 1,
-    "C": 1,
-}
+#: Residues whose side chain can donate a hydrogen bond (AAindex FAUJ880109).
+DONORS: frozenset[str] = frozenset("KRHWNQSTYDE")
 
-#: Approximate count of hydrogen bond acceptors per residue.
-ACCEPTORS: dict[str, int] = {
-    "D": 1,
-    "E": 1,
-    "N": 1,
-    "Q": 1,
-    "H": 1,
-    "S": 1,
-    "T": 1,
-    "Y": 1,
-}
+#: Residues whose side chain can accept a hydrogen bond.
+ACCEPTORS: frozenset[str] = frozenset("DENQHSTY")

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 
+from roxy.core.constants import ACCEPTORS, DONORS
 from roxy.descriptors._utils import safe_ratio
 from roxy.descriptors.base import BaseDescriptor
 from roxy.descriptors.registry import register
@@ -30,52 +31,6 @@ _FUNCTIONAL_GROUPS: dict[str, frozenset[str]] = {
 }
 
 _AA_SINGLETS = tuple("HCSDEKRYWGTPNQM")
-
-_HBOND_DONORS: dict[str, int] = {
-    "A": 0,
-    "C": 0,
-    "D": 0,
-    "E": 0,
-    "F": 0,
-    "G": 0,
-    "H": 1,
-    "I": 0,
-    "K": 1,
-    "L": 0,
-    "M": 0,
-    "N": 1,
-    "P": 0,
-    "Q": 1,
-    "R": 1,
-    "S": 1,
-    "T": 1,
-    "V": 0,
-    "W": 1,
-    "Y": 1,
-}
-
-_HBOND_ACCEPTORS: dict[str, int] = {
-    "A": 0,
-    "C": 1,
-    "D": 2,
-    "E": 2,
-    "F": 0,
-    "G": 0,
-    "H": 1,
-    "I": 0,
-    "K": 0,
-    "L": 0,
-    "M": 1,
-    "N": 1,
-    "P": 0,
-    "Q": 1,
-    "R": 0,
-    "S": 1,
-    "T": 1,
-    "V": 0,
-    "W": 0,
-    "Y": 1,
-}
 
 # composite fractions
 _COMPOSITES: dict[str, frozenset[str]] = {
@@ -159,8 +114,8 @@ class FunctionalResidueContentDescriptor(BaseDescriptor):
         )
         feats["cys_met_ratio"] = safe_ratio(seq.count("C"), seq.count("M"))
 
-        donors = sum(_HBOND_DONORS[aa] for aa in seq) / n
-        acceptors = sum(_HBOND_ACCEPTORS[aa] for aa in seq) / n
+        donors = _count(seq, DONORS) / n
+        acceptors = _count(seq, ACCEPTORS) / n
         feats["hbond_donors_per_residue"] = donors
         feats["hbond_acceptors_per_residue"] = acceptors
         feats["hbond_balance"] = donors - acceptors

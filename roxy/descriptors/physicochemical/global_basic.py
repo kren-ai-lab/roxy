@@ -179,9 +179,9 @@ class GlobalBasicDescriptor(BaseDescriptor):
         feats["acidic_basic_ratio"] = n_acidic / n_basic if n_basic else _NAN
         feats["basic_acidic_ratio"] = n_basic / n_acidic if n_acidic else _NAN
 
-        # H-bond donors/acceptors per residue
-        feats["donors_per_residue"] = sum(DONORS.get(aa, 0) for aa in seq) / n
-        feats["acceptors_per_residue"] = sum(ACCEPTORS.get(aa, 0) for aa in seq) / n
+        # Fraction of residues able to donate / accept a side-chain H-bond
+        feats["donors_per_residue"] = fraction_from_group(seq, DONORS)
+        feats["acceptors_per_residue"] = fraction_from_group(seq, ACCEPTORS)
 
         # Complexity
         feats["shannon_entropy"] = shannon_entropy(seq)
