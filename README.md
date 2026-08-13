@@ -1,7 +1,7 @@
 # Roxy
 
 [![PyPI](https://img.shields.io/pypi/v/roxylib?style=flat-square)](https://pypi.org/project/roxylib/)
-[![PyVersions](https://img.shields.io/pypi/pyversions/roxylib?style=flat-square)](https://github.com/kren-ai-lab/roxylib)
+[![PyVersions](https://img.shields.io/pypi/pyversions/roxylib?style=flat-square)](https://github.com/kren-ai-lab/roxy)
 [![Tests](https://img.shields.io/github/actions/workflow/status/kren-ai-lab/roxy/tests.yml?style=flat-square)](https://github.com/kren-ai-lab/roxy/actions/workflows/tests.yml)
 ![License](https://img.shields.io/github/license/kren-ai-lab/roxy?style=flat-square)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.21917534-blue?style=flat-square)](https://doi.org/10.5281/zenodo.21917534)
@@ -121,3 +121,27 @@ uv run roxy --help
 ## Related Projects
 
 - [Sylphy](https://github.com/kren-ai-lab/sylphy) — sequence encoders and pretrained model embeddings
+
+## Citation
+
+If you use Roxy in your research, please cite:
+
+> Medina-Ortiz, D.; Álvarez Saravia, D.; García-Vinuesa, J.
+> *Roxy: Classical Protein Sequence Descriptors for Machine Learning*.
+> Version 0.2.0, 2026. Zenodo.
+> https://doi.org/10.5281/zenodo.21917534
+
+```bibtex
+@software{roxy2026,
+  author    = {Medina-Ortiz, David and Álvarez Saravia, Diego and García-Vinuesa, Julián},
+  title     = {{Roxy}: Classical Protein Sequence Descriptors for Machine Learning},
+  year      = {2026},
+  version   = {0.2.0},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.21917534},
+  url       = {https://doi.org/10.5281/zenodo.21917534}
+}
+```
+
+To cite this exact release, use the version DOI [10.5281/zenodo.21917801](https://doi.org/10.5281/zenodo.21917801).
+Machine-readable metadata lives in [CITATION.cff](CITATION.cff).

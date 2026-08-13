@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+message: "If you use Roxy in your research, please cite it as below."
+title: "Roxy: Classical Protein Sequence Descriptors for Machine Learning"
+abstract: "Classical protein sequence descriptors for machine learning."
+type: software
+version: 0.2.0
+date-released: "2026-08-13"
+license: MIT
+doi: 10.5281/zenodo.21917534
+authors:
+  - family-names: Medina-Ortiz
+    given-names: David
+    affiliation: "Leibniz Institute of Plant Biochemistry"
+  - family-names: Álvarez Saravia
+    given-names: Diego
+    affiliation: "Universidad de Magallanes"
+  - family-names: García-Vinuesa
+    given-names: Julián
+    affiliation: "Universidad de Magallanes"
+repository-code: "https://github.com/kren-ai-lab/roxy"
+url: "https://github.com/kren-ai-lab/roxy"
+keywords:
+  - protein
+  - bioinformatics
+  - descriptors
+  - feature-engineering
+  - machine-learning
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.21917534
+    description: "Concept DOI (all versions)"
+  - type: doi
+    value: 10.5281/zenodo.21917801
+    description: "Version DOI (v0.2.0)"
