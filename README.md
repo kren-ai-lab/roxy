@@ -1,5 +1,10 @@
 # Roxy
 
+[![PyPI](https://img.shields.io/pypi/v/roxylib?style=flat-square)](https://pypi.org/project/roxylib/)
+[![PyVersions](https://img.shields.io/pypi/pyversions/roxylib?style=flat-square)](https://github.com/kren-ai-lab/roxylib)
+[![Tests](https://img.shields.io/github/actions/workflow/status/kren-ai-lab/roxy/tests.yml?style=flat-square)](https://github.com/kren-ai-lab/roxy/actions/workflows/tests.yml)
+![License](https://img.shields.io/github/license/kren-ai-lab/roxy?style=flat-square)
+
 Classical protein sequence descriptors for machine learning.
 
 Roxy computes classical numerical descriptors from amino-acid sequences and
@@ -7,12 +12,10 @@ returns tabular features as `polars.DataFrame` objects.
 
 ## Install
 
-Not yet published on PyPI. Install directly from GitHub:
-
 ```bash
-pip install git+https://github.com/kren-ai-lab/roxy.git
+pip install roxylib
 # or with uv:
-uv add git+https://github.com/kren-ai-lab/roxy.git
+uv add roxylib
 ```
 
 ## Quickstart
