@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "roxy"
+name = "roxylib"
 dynamic = ["version"]
 description = "Protein sequence descriptors for machine learning."
 readme = "README.md"
