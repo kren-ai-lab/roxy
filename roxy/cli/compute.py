@@ -11,7 +11,10 @@ import polars as pl
 import typer
 import yaml
 
+from roxy import __version__
+from roxy.cli._provenance import utc_now, write_provenance
 from roxy.cli._utils import _resolve_names
+from roxy.cli.init_config import _default_params
 from roxy.core.exceptions import RoxyIOError
 from roxy.core.io import read_sequences, write_table
 from roxy.descriptors import DESCRIPTOR_REGISTRY
@@ -123,12 +126,14 @@ def compute(  # noqa: PLR0917
     no_progress: bool = typer.Option(False, "--no-progress", help="Disable progress bar."),
 ) -> None:
     """Compute descriptors for sequences in INPUT and write to OUTPUT."""
+    started = utc_now()
     if config is not None and (all_ or descriptors or family):
         typer.echo("--config is mutually exclusive with --all / -d / -f.", err=True)
         raise typer.Exit(1)
 
     if config is not None:
         cfg = _load_config(config)
+        effective = {n: {**_default_params(DESCRIPTOR_REGISTRY[n]), **p} for n, p in cfg.items()}
         instances = _build_instances(cfg, [])
     else:
         names = _resolve_names(all_, descriptors, family)
@@ -139,6 +144,7 @@ def compute(  # noqa: PLR0917
         if unknown:
             typer.echo(f"Unknown descriptors: {', '.join(unknown)}", err=True)
             raise typer.Exit(1)
+        effective = {n: _default_params(DESCRIPTOR_REGISTRY[n]) for n in names}
         instances = _build_instances(None, names)
 
     try:
@@ -164,4 +170,15 @@ def compute(  # noqa: PLR0917
         typer.echo(str(exc), err=True)
         raise typer.Exit(1) from exc
 
+    write_provenance(
+        output,
+        tool="roxy",
+        version=__version__,
+        command="compute",
+        created_at=started,
+        parameters={"descriptors": effective, "seq_col": seq_col, "id_col": id_col},
+        inputs=[input_path],
+        packages=["roxylib", "numpy", "polars", "scipy", "scikit-learn"],
+        output_info={"n_rows": result.shape[0], "n_cols": result.shape[1] - 1},
+    )
     typer.echo(f"Wrote {result.shape[0]} sequences x {result.shape[1]} features → {output}")
