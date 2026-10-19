@@ -41,7 +41,7 @@ def test_parameters_include_defaults(tmp_path):
 
 def test_fingerprint_same_for_config_and_flags(tmp_path):
     cfg = tmp_path / "cfg.yaml"
-    cfg.write_text("aac:\n")  # defaults filled in by compute
+    cfg.write_text("descriptors:\n  aac:\n")  # defaults filled in by compute
     a = _run(tmp_path, "a.csv", "--config", str(cfg))
     b = _run(tmp_path, "b.csv", "-d", "aac")
     assert a["config_fingerprint"] == b["config_fingerprint"]

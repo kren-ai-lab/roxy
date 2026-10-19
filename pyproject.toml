@@ -54,7 +54,7 @@ dev = [
 ]
 
 [project.scripts]
-roxy = "roxy.cli.main:app"
+roxy = "roxy.cli.main:run"
 
 [project.urls]
 Homepage = "https://github.com/kren-ai-lab/roxy"

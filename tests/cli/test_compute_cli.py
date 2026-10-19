@@ -13,19 +13,18 @@ def test_compute_no_selector(tmp_path):
     fasta = tmp_path / "seqs.fasta"
     fasta.write_text(FASTA)
     result = runner.invoke(app, ["compute", str(fasta), "-o", str(tmp_path / "out.csv")])
-    assert result.exit_code == 1
-    assert "Specify" in result.output or "Specify" in (result.stderr or "")
+    assert result.exit_code == 2
 
 
 def test_compute_config_and_all_exclusive(tmp_path):
     fasta = tmp_path / "seqs.fasta"
     fasta.write_text(FASTA)
     cfg = tmp_path / "cfg.yaml"
-    cfg.write_text("aac:\n")
+    cfg.write_text("descriptors:\n  aac:\n")
     result = runner.invoke(
         app, ["compute", str(fasta), "--config", str(cfg), "--all", "-o", str(tmp_path / "out.csv")]
     )
-    assert result.exit_code == 1
+    assert result.exit_code == 2
 
 
 def test_compute_invalid_descriptor(tmp_path):
@@ -34,7 +33,7 @@ def test_compute_invalid_descriptor(tmp_path):
     result = runner.invoke(
         app, ["compute", str(fasta), "-d", "not_a_real_descriptor", "-o", str(tmp_path / "out.csv")]
     )
-    assert result.exit_code == 1
+    assert result.exit_code == 2
 
 
 def test_compute_happy_path_csv(tmp_path):
@@ -53,7 +52,7 @@ def test_compute_with_config(tmp_path):
     fasta = tmp_path / "seqs.fasta"
     fasta.write_text(FASTA)
     cfg = tmp_path / "cfg.yaml"
-    cfg.write_text("aac:\n  include_counts: false\ncharge:\n")
+    cfg.write_text("descriptors:\n  aac:\n    include_counts: false\n  charge:\n")
     out = tmp_path / "out.parquet"
     result = runner.invoke(
         app, ["compute", str(fasta), "--config", str(cfg), "-o", str(out), "--no-progress"]

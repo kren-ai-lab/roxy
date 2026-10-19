@@ -32,13 +32,13 @@ def init_config(
     names = _resolve_names(all_, descriptors, family)
 
     if not names:
-        typer.echo("Specify --all, -d <name>, or -f <family>.", err=True)
-        raise typer.Exit(1)
+        msg = "Specify --all, -d <name>, or -f <family>."
+        raise typer.BadParameter(msg)
 
     unknown = [n for n in names if n not in DESCRIPTOR_REGISTRY]
     if unknown:
-        typer.echo(f"Unknown descriptors: {', '.join(unknown)}", err=True)
-        raise typer.Exit(1)
+        msg = f"Unknown descriptors: {', '.join(unknown)}"
+        raise typer.BadParameter(msg)
 
     header = (
         "# Roxy descriptor configuration\n"
@@ -46,7 +46,10 @@ def init_config(
         "#   roxy compute sequences.fasta --config <this-file> -o results.parquet\n"
         "# Use 'roxy describe <name>' for parameter documentation.\n"
     )
-    config_map = {name: _default_params(DESCRIPTOR_REGISTRY[name]) for name in names}
+    config_map = {
+        "schema_version": 1,
+        "descriptors": {name: _default_params(DESCRIPTOR_REGISTRY[name]) for name in names},
+    }
     body = yaml.safe_dump(
         config_map,
         sort_keys=False,
