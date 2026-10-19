@@ -77,6 +77,11 @@ roxy compute sequences.fasta --config roxy.yaml -o configured_features.csv
 `--descriptor/-d`, or `--family/-f`. CSV and Parquet inputs use `sequence` as
 the default sequence column; pass `--seq-col` and `--id-col` when needed.
 
+Every successful `roxy compute` also writes a provenance sidecar,
+`<output>.provenance.json`, next to the output file. It records the effective
+descriptor parameters (defaults included), a config fingerprint, input and
+output hashes, and package versions.
+
 ## Examples
 
 The repository ships a few plain Python scripts under [`examples/`](examples):

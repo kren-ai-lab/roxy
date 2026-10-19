@@ -50,6 +50,7 @@ dev = [
     "ruff>=0.15",
     "taskipy>=1.14",
     "ty>=0.0.50",
+    "jsonschema>=4.26.0",
 ]
 
 [project.scripts]
