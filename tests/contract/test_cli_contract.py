@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
+import json
 import sys
+from pathlib import Path
 
+import jsonschema
 import polars as pl
 import pytest
 
 from roxy.cli.main import app, run
 from tests.cli._helpers import runner
+
+SCHEMA = json.loads((Path(__file__).parent / "validate-errors.schema.json").read_text())
 
 
 def _compute(inp, out, *extra):
@@ -33,10 +38,29 @@ def test_table_without_id_column_exits_2(tmp_path):
     assert _compute(inp, out, "--id-col", "name").exit_code == 0
 
 
-def test_duplicate_ids_exit_2(tmp_path):
+def test_duplicate_ids_exit_3(monkeypatch, tmp_path):
     inp = tmp_path / "s.fasta"
     inp.write_text(">a x\nACD\n>a y\nWYY\n")
-    assert _compute(inp, tmp_path / "o.csv").exit_code == 2
+    assert _run(monkeypatch, inp, tmp_path) == 3
+
+
+def test_malformed_inputs_exit_3(monkeypatch, tmp_path):
+    bad_csv = tmp_path / "bad.csv"
+    bad_csv.write_text('id,sequence\n"a,ACD\n')
+    bad_fasta = tmp_path / "bad.fasta"
+    bad_fasta.write_bytes(b">a\n\xff\xfe\n")
+    bad_parquet = tmp_path / "bad.parquet"
+    bad_parquet.write_bytes(b"not parquet")
+    for inp in (bad_csv, bad_fasta, bad_parquet):
+        assert _run(monkeypatch, inp, tmp_path) == 3
+
+
+def test_validate_config_json_matches_schema(tmp_path):
+    cfg = tmp_path / "cfg.yaml"
+    cfg.write_text("descriptors:\n  nope: {}\n")
+    result = runner.invoke(app, ["validate-config", str(cfg), "--json"])
+    assert result.exit_code == 2
+    jsonschema.validate(json.loads(result.stdout), SCHEMA)
 
 
 def _exit_code(monkeypatch, *argv):
@@ -44,6 +68,10 @@ def _exit_code(monkeypatch, *argv):
     with pytest.raises(SystemExit) as exc:
         run()
     return exc.value.code
+
+
+def _run(monkeypatch, inp, tmp_path):
+    return _exit_code(monkeypatch, "compute", str(inp), "-d", "aac", "-o", str(tmp_path / "o.csv"))
 
 
 def test_runtime_error_exits_3(monkeypatch, tmp_path):

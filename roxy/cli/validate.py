@@ -107,12 +107,13 @@ def check_config(raw: dict[str, Any]) -> list[ConfigIssue]:
 
 def load_config(path: Path) -> dict[str, dict[str, object]]:
     """Return ``{descriptor: params}`` from a valid config, else raise ``typer.BadParameter`` (exit 2)."""
-    issues = validate_config(path)
+    raw, issues = read_config(path)
+    issues = issues or check_config(raw)
     if issues:
         lines = "\n".join(f"  {i.path or '<root>'}: {i.message}" for i in issues)
         msg = f"{path}:\n{lines}"
         raise typer.BadParameter(msg, param_hint="'--config'")
-    return {n: dict(p or {}) for n, p in read_config(path)[0]["descriptors"].items()}
+    return {n: dict(p or {}) for n, p in raw["descriptors"].items()}
 
 
 def validate_config(config: Mapping[str, Any] | str | os.PathLike[str]) -> list[ConfigIssue]:

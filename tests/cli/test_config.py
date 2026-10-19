@@ -3,16 +3,11 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
-
-import jsonschema
 
 from roxy.cli.main import app
 from roxy.cli.validate import check_config, load_config
 
 from ._helpers import FASTA, runner
-
-SCHEMA = json.loads((Path(__file__).parents[1] / "contract" / "validate-errors.schema.json").read_text())
 
 
 def _validate(tmp_path, text):
@@ -20,7 +15,6 @@ def _validate(tmp_path, text):
     cfg.write_text(text)
     result = runner.invoke(app, ["validate-config", str(cfg), "--json"])
     issues = json.loads(result.stdout)
-    jsonschema.validate(issues, SCHEMA)
     return result.exit_code, {i["path"] for i in issues}
 
 

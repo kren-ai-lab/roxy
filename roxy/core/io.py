@@ -6,7 +6,7 @@ from pathlib import Path
 
 import polars as pl
 
-from .exceptions import RoxyIdError, RoxyIOError
+from .exceptions import RoxyIdColumnError, RoxyIdError, RoxyIOError
 
 _FASTA_EXTENSIONS = {".fasta", ".fa", ".faa"}
 _CSV_EXTENSIONS = {".csv"}
@@ -45,7 +45,7 @@ def read_fasta(path: Path | str) -> list[tuple[str, str]]:
                 seq_parts.append(line.upper())
         if header is not None:
             records.append((header, "".join(seq_parts)))
-    except OSError as exc:
+    except (OSError, UnicodeDecodeError) as exc:
         msg = f"Could not read FASTA file {path}: {exc}"
         raise RoxyIOError(msg) from exc
 
@@ -60,7 +60,11 @@ def _read_table(path: Path | str, *, seq_col: str, fmt: str) -> pl.DataFrame:
         raise RoxyIOError(msg)
 
     reader = pl.read_csv if fmt == "CSV" else pl.read_parquet
-    df = reader(path)
+    try:
+        df = reader(path)
+    except (pl.exceptions.PolarsError, OSError) as exc:
+        msg = f"Could not read {fmt} file {path}: {exc}"
+        raise RoxyIOError(msg) from exc
     if seq_col not in df.columns:
         msg = f"Column {seq_col!r} not found. Available: {df.columns}"
         raise RoxyIOError(msg)
@@ -94,7 +98,8 @@ def read_sequences(
     Raises:
         RoxyIOError: If the extension is unsupported, the file is missing,
             or ``seq_col`` is absent.
-        RoxyIdError: If the id column is missing, or any id is empty or duplicated.
+        RoxyIdColumnError: If the id column is missing.
+        RoxyIdError: If any id is empty or duplicated.
 
     """
     path = Path(path)
@@ -119,7 +124,7 @@ def read_sequences(
     _id_col = id_col or "id"
     if _id_col not in df.columns:
         msg = f"Id column {_id_col!r} not found; set --id-col. Available: {df.columns}"
-        raise RoxyIdError(msg)
+        raise RoxyIdColumnError(msg)
     ids = df[_id_col].cast(pl.String).to_list()
     seqs = df[_col].cast(pl.String).str.strip_chars().str.to_uppercase().to_list()
     return _check_ids(list(zip(ids, seqs, strict=True)))
