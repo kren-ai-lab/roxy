@@ -135,4 +135,4 @@ def compute(  # noqa: PLR0917
         packages=["roxylib", "numpy", "polars", "scipy", "scikit-learn"],
         output_info={"n_rows": result.shape[0], "n_cols": result.shape[1] - 1},
     )
-    typer.echo(f"Wrote {result.shape[0]} sequences x {result.shape[1]} features → {output}")
+    typer.echo(f"Wrote {result.shape[0]} sequences x {result.shape[1] - 1} features → {output}")

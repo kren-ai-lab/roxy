@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import inspect
+import os
 import re
 import types
 import typing
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -42,6 +44,10 @@ def _type_ok(value: object, tp: object) -> bool:  # noqa: PLR0911
     return True
 
 
+def _type_name(tp: object) -> str:
+    return tp.__name__ if isinstance(tp, type) else re.sub(r"\btyping\.", "", str(tp))
+
+
 def _check_descriptor(name: str, params: object) -> list[ConfigIssue]:
     path = f"descriptors.{name}"
     cls = DESCRIPTOR_REGISTRY.get(name)
@@ -59,7 +65,7 @@ def _check_descriptor(name: str, params: object) -> list[ConfigIssue]:
     except Exception:  # noqa: BLE001  # unresolvable annotations only skip the type check
         hints = {}
     issues += [
-        ConfigIssue(f"{path}.{k}", f"expected {hints[k]}, got {type(v).__name__}")
+        ConfigIssue(f"{path}.{k}", f"expected {_type_name(hints[k])}, got {type(v).__name__}")
         for k, v in params.items()
         if k in hints and not _type_ok(v, hints[k])
     ]
@@ -101,13 +107,24 @@ def check_config(raw: dict[str, Any]) -> list[ConfigIssue]:
 
 def load_config(path: Path) -> dict[str, dict[str, object]]:
     """Return ``{descriptor: params}`` from a valid config, else raise ``typer.BadParameter`` (exit 2)."""
-    raw, issues = read_config(path)
-    issues = issues or check_config(raw)
+    issues = validate_config(path)
     if issues:
         lines = "\n".join(f"  {i.path or '<root>'}: {i.message}" for i in issues)
         msg = f"{path}:\n{lines}"
         raise typer.BadParameter(msg, param_hint="'--config'")
-    return {n: dict(p or {}) for n, p in raw["descriptors"].items()}
+    return {n: dict(p or {}) for n, p in read_config(path)[0]["descriptors"].items()}
+
+
+def validate_config(config: Mapping[str, Any] | str | os.PathLike[str]) -> list[ConfigIssue]:
+    """Check a ``roxy compute --config`` config (a mapping or a YAML/JSON file path).
+
+    Returns every problem found, empty when valid. Never raises for config problems.
+    """
+    if isinstance(config, Mapping):
+        raw, issues = dict(config), []
+    else:
+        raw, issues = read_config(Path(config))
+    return issues or check_config(raw)
 
 
 def validate(
@@ -116,5 +133,4 @@ def validate(
     as_json: bool = typer.Option(False, "--json", help="Print problems as a JSON array on stdout."),
 ) -> None:
     """Validate CONFIG as accepted by `roxy compute --config CONFIG`."""
-    raw, issues = read_config(config)
-    raise typer.Exit(report_issues(issues or check_config(raw), as_json=as_json))
+    raise typer.Exit(report_issues(validate_config(config), as_json=as_json))
