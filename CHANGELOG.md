@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - `roxy compute` writes a `<output>.provenance.json` sidecar (`provenance/1`) following the shared ecosystem CLI contract. The recorded parameters are the effective configuration, so they are identical whether descriptors come from `--config`, `--all`, `-d` or `-f`.
-- `roxy validate CONFIG [--json]` checks a `--config` file without reading any input data. It reports every problem with a dotted path (unknown keys, descriptors and parameters, wrongly typed values, and values a descriptor rejects when instantiated). Exit code 0 if valid, 2 if not; `--json` prints a JSON array of `{path, message}`. `roxy compute --config` runs the same checks.
+- `roxy validate-config CONFIG [--json]` checks a `--config` file without reading any input data. It reports every problem with a dotted path (unknown keys, descriptors and parameters, wrongly typed values, and values a descriptor rejects when instantiated). Exit code 0 if valid, 2 if not; `--json` prints a JSON array of `{path, message}`. `roxy compute --config` runs the same checks.
 
 ### Breaking changes
 

@@ -1,4 +1,4 @@
-"""Config shape and `roxy validate`."""
+"""Config shape and `roxy validate-config`."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ SCHEMA = json.loads((Path(__file__).parents[1] / "contract" / "validate-errors.s
 def _validate(tmp_path, text):
     cfg = tmp_path / "cfg.yaml"
     cfg.write_text(text)
-    result = runner.invoke(app, ["validate", str(cfg), "--json"])
+    result = runner.invoke(app, ["validate-config", str(cfg), "--json"])
     issues = json.loads(result.stdout)
     jsonschema.validate(issues, SCHEMA)
     return result.exit_code, {i["path"] for i in issues}

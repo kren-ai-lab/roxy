@@ -67,7 +67,7 @@ app.command(
 )(init_config)
 
 app.command(
-    name="validate",
+    name="validate-config",
     help="Check a --config file without reading any input data.",
 )(validate)
 

@@ -73,8 +73,8 @@ roxy init-config --all -o all_descriptors.yaml
 roxy compute sequences.fasta --config roxy.yaml -o configured_features.csv
 
 # Check a config file without reading any data
-roxy validate roxy.yaml
-roxy validate roxy.yaml --json
+roxy validate-config roxy.yaml
+roxy validate-config roxy.yaml --json
 ```
 
 `roxy compute` requires exactly one descriptor selector: `--config`, `--all`,
@@ -93,7 +93,7 @@ descriptors:
   charge: {}
 ```
 
-`roxy validate CONFIG` collects every problem (unknown keys, descriptors or parameters, wrongly typed or rejected values) and prints one `path: message` line per problem to stderr, or a JSON array of `{path, message}` on stdout with `--json`. It exits 0 if the config is valid and 2 otherwise. `roxy compute --config` applies the same checks.
+`roxy validate-config CONFIG` collects every problem (unknown keys, descriptors or parameters, wrongly typed or rejected values) and prints one `path: message` line per problem to stderr, or a JSON array of `{path, message}` on stdout with `--json`. It exits 0 if the config is valid and 2 otherwise. `roxy compute --config` applies the same checks.
 
 Exit codes: 0 success, 2 usage or config error, 3 data or runtime error (for example unreadable input), 4 internal error (traceback on stderr).
 

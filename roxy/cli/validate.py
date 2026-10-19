@@ -1,4 +1,4 @@
-"""``roxy validate`` — check a ``--config`` file without reading any input data."""
+"""``roxy validate-config`` — check a ``--config`` file without reading any input data."""
 
 from __future__ import annotations
 
