@@ -56,8 +56,8 @@ def describe_descriptor(name: str = typer.Argument(..., help="Descriptor name.")
     cls = DESCRIPTOR_REGISTRY.get(name)
     if cls is None:
         available = ", ".join(sorted(DESCRIPTOR_REGISTRY))
-        typer.echo(f"Unknown descriptor: {name!r}\nAvailable: {available}", err=True)
-        raise typer.Exit(1)
+        msg = f"Unknown descriptor: {name!r}\nAvailable: {available}"
+        raise typer.BadParameter(msg)
 
     console = Console()
 

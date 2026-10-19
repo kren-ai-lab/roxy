@@ -71,11 +71,31 @@ roxy init-config -d aac -d charge -o roxy.yaml
 roxy init-config -f composition -o composition.yaml
 roxy init-config --all -o all_descriptors.yaml
 roxy compute sequences.fasta --config roxy.yaml -o configured_features.csv
+
+# Check a config file without reading any data
+roxy validate roxy.yaml
+roxy validate roxy.yaml --json
 ```
 
 `roxy compute` requires exactly one descriptor selector: `--config`, `--all`,
 `--descriptor/-d`, or `--family/-f`. CSV and Parquet inputs use `sequence` as
-the default sequence column; pass `--seq-col` and `--id-col` when needed.
+the default sequence column; pass `--seq-col` when needed.
+
+Record ids: in FASTA the id is the first whitespace-delimited token of the header. CSV and Parquet inputs need an id column, `id` by default or the one named by `--id-col`; there are no positional fallback ids. A missing id column, or empty or duplicated ids, is an error.
+
+The `--config` file nests descriptor parameters under `descriptors:` (`schema_version` is optional). The old flat shape, with descriptor names at the root, is rejected.
+
+```yaml
+schema_version: 1
+descriptors:
+  aac:
+    include_counts: false
+  charge: {}
+```
+
+`roxy validate CONFIG` collects every problem (unknown keys, descriptors or parameters, wrongly typed or rejected values) and prints one `path: message` line per problem to stderr, or a JSON array of `{path, message}` on stdout with `--json`. It exits 0 if the config is valid and 2 otherwise. `roxy compute --config` applies the same checks.
+
+Exit codes: 0 success, 2 usage or config error, 3 data or runtime error (for example unreadable input), 4 internal error (traceback on stderr).
 
 Every successful `roxy compute` also writes a provenance sidecar,
 `<output>.provenance.json`, next to the output file. It records the effective

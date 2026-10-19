@@ -8,7 +8,7 @@ from pathlib import Path
 import polars as pl
 import pytest
 
-from roxy.core.exceptions import RoxyIOError
+from roxy.core.exceptions import RoxyIdError, RoxyIOError
 from roxy.core.io import (
     read_fasta,
     read_sequences,
@@ -81,3 +81,10 @@ def test_write_table_bad_ext(tmp_path):
     df = pl.DataFrame({"a": [1]})
     with pytest.raises(RoxyIOError):
         write_table(df, tmp_path / "out.xyz")
+
+
+def test_read_sequences_missing_id_column_raises():
+    path = _write_tmp(".csv", "name,sequence\na,ACD\n")
+    with pytest.raises(RoxyIdError):
+        read_sequences(path)
+    path.unlink()

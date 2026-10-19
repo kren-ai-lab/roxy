@@ -1,43 +1,71 @@
-"""Tests for descriptor config loading."""
+"""Config shape and `roxy validate`."""
 
 from __future__ import annotations
 
-import pytest
-import typer
+import json
+from pathlib import Path
 
-from roxy.cli.compute import _load_config
+import jsonschema
+
+from roxy.cli.main import app
+from roxy.cli.validate import check_config, load_config
+
+from ._helpers import FASTA, runner
+
+SCHEMA = json.loads((Path(__file__).parents[1] / "contract" / "validate-errors.schema.json").read_text())
 
 
-def test_load_config_valid(tmp_path):
+def _validate(tmp_path, text):
     cfg = tmp_path / "cfg.yaml"
-    cfg.write_text("aac:\n  include_counts: true\n")
-    result = _load_config(cfg)
-    assert result == {"aac": {"include_counts": True}}
+    cfg.write_text(text)
+    result = runner.invoke(app, ["validate", str(cfg), "--json"])
+    issues = json.loads(result.stdout)
+    jsonschema.validate(issues, SCHEMA)
+    return result.exit_code, {i["path"] for i in issues}
 
 
-def test_load_config_empty_params(tmp_path):
+def test_valid_config(tmp_path):
+    cfg = tmp_path / "cfg.yaml"
+    cfg.write_text("schema_version: 1\ndescriptors:\n  aac:\n    include_counts: true\n  charge:\n")
+    assert load_config(cfg) == {"aac": {"include_counts": True}, "charge": {}}
+    assert _validate(tmp_path, cfg.read_text()) == (0, set())
+
+
+def test_validate_collects_every_problem(tmp_path):
+    text = (
+        "schema_version: 2\nextra: 1\ndescriptors:\n"
+        "  nope: {}\n"
+        "  aac: {bogus: 1, include_counts: maybe}\n"
+        "  aaindex: {codes: [NOT_A_CODE]}\n"
+    )
+    code, paths = _validate(tmp_path, text)
+    assert code == 2
+    assert paths == {
+        "schema_version",
+        "extra",
+        "descriptors.nope",
+        "descriptors.aac.bogus",
+        "descriptors.aac.include_counts",
+        "descriptors.aaindex.codes",
+    }
+
+
+def test_old_flat_shape_rejected():
+    issues = check_config({"aac": {}})
+    assert {i.path for i in issues} == {"aac", "descriptors"}
+    assert any("descriptors:" in i.message for i in issues if i.path == "aac")
+
+
+def test_compute_rejects_invalid_config(tmp_path):
+    fasta = tmp_path / "seqs.fasta"
+    fasta.write_text(FASTA)
     cfg = tmp_path / "cfg.yaml"
     cfg.write_text("aac:\n")
-    result = _load_config(cfg)
-    assert result == {"aac": {}}
+    out = tmp_path / "out.csv"
+    result = runner.invoke(app, ["compute", str(fasta), "--config", str(cfg), "-o", str(out)])
+    assert result.exit_code == 2
+    assert not out.exists()
 
 
-def test_load_config_unknown_descriptor(tmp_path):
-    cfg = tmp_path / "cfg.yaml"
-    cfg.write_text("nonexistent_descriptor:\n")
-    with pytest.raises(typer.BadParameter, match="Unknown descriptor"):
-        _load_config(cfg)
-
-
-def test_load_config_unknown_param(tmp_path):
-    cfg = tmp_path / "cfg.yaml"
-    cfg.write_text("aac:\n  totally_fake_param: 42\n")
-    with pytest.raises(typer.BadParameter, match="Unknown param"):
-        _load_config(cfg)
-
-
-def test_load_config_invalid_yaml(tmp_path):
-    cfg = tmp_path / "cfg.yaml"
-    cfg.write_text("key: [unclosed\n")
-    with pytest.raises(typer.BadParameter, match="Invalid YAML"):
-        _load_config(cfg)
+def test_invalid_yaml_is_an_issue(tmp_path):
+    assert _validate(tmp_path, "key: [unclosed\n") == (2, {""})
