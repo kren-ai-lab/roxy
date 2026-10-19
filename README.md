@@ -95,6 +95,18 @@ descriptors:
 
 `roxy validate-config CONFIG` collects every problem (unknown keys, descriptors or parameters, wrongly typed or rejected values) and prints one `path: message` line per problem to stderr, or a JSON array of `{path, message}` on stdout with `--json`. It exits 0 if the config is valid and 2 otherwise. `roxy compute --config` applies the same checks.
 
+Validate a config from Python:
+
+```python
+from roxy import ConfigIssue, validate_config
+
+issues = validate_config("roxy.yaml")  # or a mapping with the same structure
+for issue in issues:
+    print(issue.path, issue.message)
+```
+
+`validate_config` returns a list of `ConfigIssue(path, message)`, empty when valid. A missing or unparsable file is one issue with path `""`.
+
 Exit codes: 0 success, 2 usage or config error, 3 data or runtime error (for example unreadable input), 4 internal error (traceback on stderr).
 
 Every successful `roxy compute` also writes a provenance sidecar,
