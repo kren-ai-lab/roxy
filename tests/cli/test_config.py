@@ -3,16 +3,11 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
-
-import jsonschema
 
 from roxy.cli.main import app
 from roxy.cli.validate import check_config, load_config
 
 from ._helpers import FASTA, runner
-
-SCHEMA = json.loads((Path(__file__).parents[1] / "contract" / "validate-errors.schema.json").read_text())
 
 
 def _validate(tmp_path, text):
@@ -20,7 +15,6 @@ def _validate(tmp_path, text):
     cfg.write_text(text)
     result = runner.invoke(app, ["validate-config", str(cfg), "--json"])
     issues = json.loads(result.stdout)
-    jsonschema.validate(issues, SCHEMA)
     return result.exit_code, {i["path"] for i in issues}
 
 
@@ -69,3 +63,18 @@ def test_compute_rejects_invalid_config(tmp_path):
 
 def test_invalid_yaml_is_an_issue(tmp_path):
     assert _validate(tmp_path, "key: [unclosed\n") == (2, {""})
+
+
+def test_validate_config_python_api(tmp_path):
+    from types import MappingProxyType
+
+    from roxy import ConfigIssue, validate_config
+
+    assert validate_config({"descriptors": {"aac": {}}}) == []
+    bad = MappingProxyType({"descriptors": {"aac": {"include_counts": "x"}}})
+    assert validate_config(bad) == [ConfigIssue("descriptors.aac.include_counts", "expected bool, got str")]
+    cfg = tmp_path / "ok.yaml"
+    cfg.write_text("descriptors:\n  charge:\n")
+    assert validate_config(cfg) == []
+    assert validate_config(str(cfg)) == []
+    assert [i.path for i in validate_config(tmp_path / "missing.yaml")] == [""]

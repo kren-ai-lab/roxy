@@ -14,7 +14,7 @@ from roxy.cli._provenance import utc_now, write_provenance
 from roxy.cli._utils import _resolve_names
 from roxy.cli.init_config import _default_params
 from roxy.cli.validate import load_config
-from roxy.core.exceptions import RoxyIdError
+from roxy.core.exceptions import RoxyIdColumnError
 from roxy.core.io import read_sequences, write_table
 from roxy.descriptors import DESCRIPTOR_REGISTRY
 
@@ -114,7 +114,7 @@ def compute(  # noqa: PLR0917
 
     try:
         records = read_sequences(input_path, seq_col=seq_col, id_col=id_col)
-    except RoxyIdError as exc:
+    except RoxyIdColumnError as exc:
         raise typer.BadParameter(str(exc)) from exc
 
     ids = [r[0] for r in records]
@@ -135,4 +135,4 @@ def compute(  # noqa: PLR0917
         packages=["roxylib", "numpy", "polars", "scipy", "scikit-learn"],
         output_info={"n_rows": result.shape[0], "n_cols": result.shape[1] - 1},
     )
-    typer.echo(f"Wrote {result.shape[0]} sequences x {result.shape[1]} features → {output}")
+    typer.echo(f"Wrote {result.shape[0]} sequences x {result.shape[1] - 1} features → {output}")
