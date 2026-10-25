@@ -6,7 +6,7 @@ from pathlib import Path
 
 import polars as pl
 
-from .exceptions import RoxyIOError
+from .exceptions import RoxyIdColumnError, RoxyIdError, RoxyIOError
 
 _FASTA_EXTENSIONS = {".fasta", ".fa", ".faa"}
 _CSV_EXTENSIONS = {".csv"}
@@ -14,7 +14,9 @@ _PARQUET_EXTENSIONS = {".parquet", ".pq"}
 
 
 def read_fasta(path: Path | str) -> list[tuple[str, str]]:
-    """Parse a FASTA file into (header, sequence) pairs.
+    """Parse a FASTA file into (id, sequence) pairs.
+
+    The id is the first whitespace-delimited token of the header.
 
     Raises:
         RoxyIOError: If the file does not exist or cannot be parsed.
@@ -26,7 +28,7 @@ def read_fasta(path: Path | str) -> list[tuple[str, str]]:
         raise RoxyIOError(msg)
 
     records: list[tuple[str, str]] = []
-    header = ""
+    header: str | None = None
     seq_parts: list[str] = []
 
     try:
@@ -35,15 +37,15 @@ def read_fasta(path: Path | str) -> list[tuple[str, str]]:
             if not line:
                 continue
             if line.startswith(">"):
-                if header:
+                if header is not None:
                     records.append((header, "".join(seq_parts)))
-                header = line[1:].strip()
+                header = next(iter(line[1:].split()), "")
                 seq_parts = []
             else:
                 seq_parts.append(line.upper())
-        if header:
+        if header is not None:
             records.append((header, "".join(seq_parts)))
-    except OSError as exc:
+    except (OSError, UnicodeDecodeError) as exc:
         msg = f"Could not read FASTA file {path}: {exc}"
         raise RoxyIOError(msg) from exc
 
@@ -58,11 +60,27 @@ def _read_table(path: Path | str, *, seq_col: str, fmt: str) -> pl.DataFrame:
         raise RoxyIOError(msg)
 
     reader = pl.read_csv if fmt == "CSV" else pl.read_parquet
-    df = reader(path)
+    try:
+        df = reader(path)
+    except (pl.exceptions.PolarsError, OSError) as exc:
+        msg = f"Could not read {fmt} file {path}: {exc}"
+        raise RoxyIOError(msg) from exc
     if seq_col not in df.columns:
         msg = f"Column {seq_col!r} not found. Available: {df.columns}"
         raise RoxyIOError(msg)
     return df
+
+
+def _check_ids(records: list[tuple[str, str]]) -> list[tuple[str, str]]:
+    ids = [r[0] for r in records]
+    if not all(ids):
+        msg = "Empty record id found."
+        raise RoxyIdError(msg)
+    if len(set(ids)) != len(ids):
+        dup = sorted({i for i in ids if ids.count(i) > 1})
+        msg = f"Duplicate record ids: {dup[:5]}"
+        raise RoxyIdError(msg)
+    return records
 
 
 def read_sequences(
@@ -75,19 +93,20 @@ def read_sequences(
     Accepts FASTA, CSV and Parquet. For CSV/Parquet, ``seq_col`` must be
     provided unless the file has a column named ``"sequence"``.
 
-    For the id, the function checks (in order): ``id_col`` if given, then
-    a column named ``"id"``, then falls back to row indices.
+    For CSV/Parquet the id comes from ``id_col`` (default ``"id"``).
 
     Raises:
         RoxyIOError: If the extension is unsupported, the file is missing,
             or ``seq_col`` is absent.
+        RoxyIdColumnError: If the id column is missing.
+        RoxyIdError: If any id is empty or duplicated.
 
     """
     path = Path(path)
     ext = path.suffix.lower()
 
     if ext in _FASTA_EXTENSIONS:
-        return read_fasta(path)
+        return _check_ids(read_fasta(path))
 
     _col = seq_col or "sequence"
 
@@ -102,10 +121,13 @@ def read_sequences(
         )
         raise RoxyIOError(msg)
 
-    _id_col = id_col or ("id" if "id" in df.columns else None)
-    ids = df[_id_col].cast(pl.String).to_list() if _id_col else [str(i) for i in range(len(df))]
+    _id_col = id_col or "id"
+    if _id_col not in df.columns:
+        msg = f"Id column {_id_col!r} not found; set --id-col. Available: {df.columns}"
+        raise RoxyIdColumnError(msg)
+    ids = df[_id_col].cast(pl.String).to_list()
     seqs = df[_col].cast(pl.String).str.strip_chars().str.to_uppercase().to_list()
-    return list(zip(ids, seqs, strict=True))
+    return _check_ids(list(zip(ids, seqs, strict=True)))
 
 
 def write_table(df: pl.DataFrame, path: Path | str) -> None:

@@ -3,16 +3,18 @@
 from __future__ import annotations
 
 import functools
-import inspect
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import polars as pl
 import typer
-import yaml
 
+from roxy import __version__
+from roxy.cli._provenance import utc_now, write_provenance
 from roxy.cli._utils import _resolve_names
-from roxy.core.exceptions import RoxyIOError
+from roxy.cli.init_config import _default_params
+from roxy.cli.validate import load_config
+from roxy.core.exceptions import RoxyIdColumnError
 from roxy.core.io import read_sequences, write_table
 from roxy.descriptors import DESCRIPTOR_REGISTRY
 
@@ -20,40 +22,6 @@ if TYPE_CHECKING:
     from roxy.descriptors.base import BaseDescriptor
 
 _BASE_COLS = {"length", "valid_residue_count"}
-
-
-def _load_config(path: Path) -> dict[str, dict[str, object]]:
-    try:
-        raw = yaml.safe_load(path.read_text())
-    except yaml.YAMLError as exc:
-        msg = f"Invalid YAML in {path}: {exc}"
-        raise typer.BadParameter(msg) from exc
-
-    if not isinstance(raw, dict):
-        msg = "Config must be a YAML mapping of descriptor names to params."
-        raise typer.BadParameter(msg)
-
-    validated: dict[str, dict[str, object]] = {}
-    for name, raw_params in raw.items():
-        if name not in DESCRIPTOR_REGISTRY:
-            available = ", ".join(sorted(DESCRIPTOR_REGISTRY))
-            msg = f"Unknown descriptor {name!r}.\nAvailable: {available}"
-            raise typer.BadParameter(msg)
-        norm_params: dict[str, object] = raw_params or {}
-        if not isinstance(norm_params, dict):
-            msg = f"Params for {name!r} must be a mapping, got {type(norm_params).__name__}."
-            raise typer.BadParameter(msg)
-        sig = inspect.signature(DESCRIPTOR_REGISTRY[name].__init__)
-        valid = {k for k in sig.parameters if k != "self"}
-        unknown = set(norm_params) - valid
-        if unknown:
-            msg = (
-                f"Unknown param(s) for {name!r}: {', '.join(sorted(unknown))}.\n"
-                f"Valid: {', '.join(sorted(valid))}"
-            )
-            raise typer.BadParameter(msg)
-        validated[name] = dict(norm_params)
-    return validated
 
 
 def _build_instances(
@@ -123,45 +91,48 @@ def compute(  # noqa: PLR0917
     no_progress: bool = typer.Option(False, "--no-progress", help="Disable progress bar."),
 ) -> None:
     """Compute descriptors for sequences in INPUT and write to OUTPUT."""
+    started = utc_now()
     if config is not None and (all_ or descriptors or family):
-        typer.echo("--config is mutually exclusive with --all / -d / -f.", err=True)
-        raise typer.Exit(1)
+        msg = "--config is mutually exclusive with --all / -d / -f."
+        raise typer.BadParameter(msg)
 
     if config is not None:
-        cfg = _load_config(config)
+        cfg = load_config(config)
+        effective = {n: {**_default_params(DESCRIPTOR_REGISTRY[n]), **p} for n, p in cfg.items()}
         instances = _build_instances(cfg, [])
     else:
         names = _resolve_names(all_, descriptors, family)
         if not names:
-            typer.echo("Specify --config, --all, -d <name>, or -f <family>.", err=True)
-            raise typer.Exit(1)
+            msg = "Specify --config, --all, -d <name>, or -f <family>."
+            raise typer.BadParameter(msg)
         unknown = [n for n in names if n not in DESCRIPTOR_REGISTRY]
         if unknown:
-            typer.echo(f"Unknown descriptors: {', '.join(unknown)}", err=True)
-            raise typer.Exit(1)
+            msg = f"Unknown descriptors: {', '.join(unknown)}"
+            raise typer.BadParameter(msg)
+        effective = {n: _default_params(DESCRIPTOR_REGISTRY[n]) for n in names}
         instances = _build_instances(None, names)
 
     try:
         records = read_sequences(input_path, seq_col=seq_col, id_col=id_col)
-    except RoxyIOError as exc:
-        typer.echo(str(exc), err=True)
-        raise typer.Exit(1) from exc
+    except RoxyIdColumnError as exc:
+        raise typer.BadParameter(str(exc)) from exc
 
     ids = [r[0] for r in records]
     seqs = [r[1] for r in records]
 
-    try:
-        frames, desc_names = _run_descriptors(instances, seqs, ids, no_progress=no_progress)
-    except Exception as exc:
-        typer.echo(f"Error computing descriptors: {exc}", err=True)
-        raise typer.Exit(1) from exc
-
+    frames, desc_names = _run_descriptors(instances, seqs, ids, no_progress=no_progress)
     result = _concat_frames(frames, desc_names)
+    write_table(result, output)
 
-    try:
-        write_table(result, output)
-    except RoxyIOError as exc:
-        typer.echo(str(exc), err=True)
-        raise typer.Exit(1) from exc
-
-    typer.echo(f"Wrote {result.shape[0]} sequences x {result.shape[1]} features → {output}")
+    write_provenance(
+        output,
+        tool="roxy",
+        version=__version__,
+        command="compute",
+        created_at=started,
+        parameters={"descriptors": effective, "seq_col": seq_col, "id_col": id_col},
+        inputs=[input_path],
+        packages=["roxylib", "numpy", "polars", "scipy", "scikit-learn"],
+        output_info={"n_rows": result.shape[0], "n_cols": result.shape[1] - 1},
+    )
+    typer.echo(f"Wrote {result.shape[0]} sequences x {result.shape[1] - 1} features → {output}")

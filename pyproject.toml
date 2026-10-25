@@ -11,7 +11,14 @@ license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.11,<3.15"
 authors = [
-    { name = "Kren AI Lab", email = "krenai@umag.cl" },
+    { name = "David Medina-Ortiz" },
+    { name = "Diego Alvarez Saravia" },
+    { name = "Julián García-Vinuesa" }
+]
+maintainers = [
+    { name = "David Medina-Ortiz" },
+    { name = "Diego Alvarez Saravia" },
+    { name = "Julián García-Vinuesa" }
 ]
 keywords = [
     "bioinformatics",
@@ -49,11 +56,11 @@ dev = [
     "pyrefly>=1.0.0",
     "ruff>=0.15",
     "taskipy>=1.14",
-    "ty>=0.0.50",
+    "jsonschema>=4.26.0",
 ]
 
 [project.scripts]
-roxy = "roxy.cli.main:app"
+roxy = "roxy.cli.main:run"
 
 [project.urls]
 Homepage = "https://github.com/kren-ai-lab/roxy"
@@ -117,7 +124,6 @@ sort-imports = "ruff check --fix --select I,F401 roxy/ tests/ examples/"
 format = "task sort-imports && ruff format roxy/ tests/ examples/"
 lint = "ruff check roxy/ tests/ examples/"
 lint-fix = "ruff check --fix roxy/ tests/ examples/"
-ty = "ty check roxy/ tests/ examples/"
 pyrefly = "pyrefly check roxy/ tests/ examples/"
 test = "pytest -q"
 test-v = "pytest -v"

@@ -3,8 +3,6 @@ message: "If you use Roxy in your research, please cite it as below."
 title: "Roxy: Classical Protein Sequence Descriptors for Machine Learning"
 abstract: "Classical protein sequence descriptors for machine learning."
 type: software
-version: 0.2.0
-date-released: "2026-08-13"
 license: MIT
 doi: 10.5281/zenodo.21917534
 authors:
@@ -12,7 +10,7 @@ authors:
     given-names: David
     affiliation: "Universidad de Magallanes"
     orcid: "https://orcid.org/0000-0002-8369-5746"
-  - family-names: Álvarez Saravia
+  - family-names: Alvarez Saravia
     given-names: Diego
     affiliation: "Universidad de Magallanes"
     orcid: "https://orcid.org/0000-0003-0753-274X"
@@ -32,6 +30,3 @@ identifiers:
   - type: doi
     value: 10.5281/zenodo.21917534
     description: "Concept DOI (all versions)"
-  - type: doi
-    value: 10.5281/zenodo.21917801
-    description: "Version DOI (v0.2.0)"

@@ -42,18 +42,19 @@ def test_describe_known():
 
 def test_describe_unknown():
     result = runner.invoke(app, ["describe", "not_a_descriptor"])
-    assert result.exit_code == 1
+    assert result.exit_code == 2
 
 
 def test_init_config_stdout():
     result = runner.invoke(app, ["init-config", "-d", "aac"])
     assert result.exit_code == 0
+    assert "descriptors:" in result.output
     assert "aac:" in result.output
 
 
 def test_init_config_no_selector():
     result = runner.invoke(app, ["init-config"])
-    assert result.exit_code == 1
+    assert result.exit_code == 2
 
 
 def test_compute_help():

@@ -71,11 +71,48 @@ roxy init-config -d aac -d charge -o roxy.yaml
 roxy init-config -f composition -o composition.yaml
 roxy init-config --all -o all_descriptors.yaml
 roxy compute sequences.fasta --config roxy.yaml -o configured_features.csv
+
+# Check a config file without reading any data
+roxy validate-config roxy.yaml
+roxy validate-config roxy.yaml --json
 ```
 
 `roxy compute` requires exactly one descriptor selector: `--config`, `--all`,
 `--descriptor/-d`, or `--family/-f`. CSV and Parquet inputs use `sequence` as
-the default sequence column; pass `--seq-col` and `--id-col` when needed.
+the default sequence column; pass `--seq-col` when needed.
+
+Record ids: in FASTA the id is the first whitespace-delimited token of the header. CSV and Parquet inputs need an id column, `id` by default or the one named by `--id-col`; there are no positional fallback ids. A missing id column, or empty or duplicated ids, is an error.
+
+The `--config` file nests descriptor parameters under `descriptors:` (`schema_version` is optional). The old flat shape, with descriptor names at the root, is rejected.
+
+```yaml
+schema_version: 1
+descriptors:
+  aac:
+    include_counts: false
+  charge: {}
+```
+
+`roxy validate-config CONFIG` collects every problem (unknown keys, descriptors or parameters, wrongly typed or rejected values) and prints one `path: message` line per problem to stderr, or a JSON array of `{path, message}` on stdout with `--json`. It exits 0 if the config is valid and 2 otherwise. `roxy compute --config` applies the same checks.
+
+Validate a config from Python:
+
+```python
+from roxy import ConfigIssue, validate_config
+
+issues = validate_config("roxy.yaml")  # or a mapping with the same structure
+for issue in issues:
+    print(issue.path, issue.message)
+```
+
+`validate_config` returns a list of `ConfigIssue(path, message)`, empty when valid. A missing or unparsable file is one issue with path `""`.
+
+Exit codes: 0 success, 2 usage or config error, 3 data or runtime error (for example unreadable input), 4 internal error (traceback on stderr).
+
+Every successful `roxy compute` also writes a provenance sidecar,
+`<output>.provenance.json`, next to the output file. It records the effective
+descriptor parameters (defaults included), a config fingerprint, input and
+output hashes, and package versions.
 
 ## Examples
 
@@ -128,7 +165,7 @@ If you use Roxy in your research, please cite:
 
 > Medina-Ortiz, D.; Álvarez Saravia, D.; García-Vinuesa, J.
 > *Roxy: Classical Protein Sequence Descriptors for Machine Learning*.
-> Version 0.2.0, 2026. Zenodo.
+> Version 0.3.0, 2026. Zenodo.
 > https://doi.org/10.5281/zenodo.21917534
 
 ```bibtex
@@ -136,7 +173,7 @@ If you use Roxy in your research, please cite:
   author    = {Medina-Ortiz, David and Álvarez Saravia, Diego and García-Vinuesa, Julián},
   title     = {{Roxy}: Classical Protein Sequence Descriptors for Machine Learning},
   year      = {2026},
-  version   = {0.2.0},
+  version   = {0.3.0},
   publisher = {Zenodo},
   doi       = {10.5281/zenodo.21917534},
   url       = {https://doi.org/10.5281/zenodo.21917534}
