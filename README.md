@@ -165,7 +165,7 @@ If you use Roxy in your research, please cite:
 
 > Medina-Ortiz, D.; Álvarez Saravia, D.; García-Vinuesa, J.
 > *Roxy: Classical Protein Sequence Descriptors for Machine Learning*.
-> Version 0.2.0, 2026. Zenodo.
+> Version 0.3.0, 2026. Zenodo.
 > https://doi.org/10.5281/zenodo.21917534
 
 ```bibtex
@@ -173,7 +173,7 @@ If you use Roxy in your research, please cite:
   author    = {Medina-Ortiz, David and Álvarez Saravia, Diego and García-Vinuesa, Julián},
   title     = {{Roxy}: Classical Protein Sequence Descriptors for Machine Learning},
   year      = {2026},
-  version   = {0.2.0},
+  version   = {0.3.0},
   publisher = {Zenodo},
   doi       = {10.5281/zenodo.21917534},
   url       = {https://doi.org/10.5281/zenodo.21917534}
