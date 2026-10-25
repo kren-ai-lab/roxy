@@ -43,7 +43,7 @@ def _positions(seq: str, group: frozenset[str]) -> list[int]:
 def _inter_event(positions: list[int]) -> list[int]:
     if len(positions) < _MIN_PAIR:
         return []
-    return list(np.diff(positions))
+    return np.diff(positions).tolist()
 
 
 def _nearest_neighbor(positions: list[int]) -> list[int]:
