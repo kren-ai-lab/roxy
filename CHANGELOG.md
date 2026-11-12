@@ -3,6 +3,12 @@
 All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- The `--config` file accepts `families:` (a list of family names) and `all: true`, which select descriptors like `-f` and `--all`. Parameters under `descriptors:` still apply to any descriptor they name. With either key the selection is sorted as with the flags, so the output and the provenance match the equivalent `-f`/`--all` run; a config with only `descriptors:` keeps the file order. `validate-config` and `roxy.validate_config` check both keys (unknown family, wrong type) and accept a config without `descriptors:` when one of them selects something.
+
 ## [0.3.0]
 
 ### Added
