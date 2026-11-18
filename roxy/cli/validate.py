@@ -14,9 +14,10 @@ from typing import Any
 import typer
 
 from roxy.cli._config_file import ConfigIssue, read_config, report_issues
+from roxy.cli._utils import _resolve_names
 from roxy.descriptors import DESCRIPTOR_REGISTRY
 
-_ROOT_KEYS = {"schema_version", "descriptors"}
+_ROOT_KEYS = {"schema_version", "descriptors", "families", "all"}
 _SCHEMA_VERSION = 1
 _SEQUENCE_ORIGINS = (tuple, list, set, frozenset)
 
@@ -80,8 +81,28 @@ def _check_descriptor(name: str, params: object) -> list[ConfigIssue]:
     return []
 
 
+def _check_selection(raw: dict[str, Any]) -> list[ConfigIssue]:
+    """Check ``families`` and ``all``, the selectors that add descriptors with default parameters."""
+    issues: list[ConfigIssue] = []
+    if "all" in raw and not isinstance(raw["all"], bool):
+        issues.append(ConfigIssue("all", f"expected bool, got {type(raw['all']).__name__}"))
+    families = raw.get("families")
+    if families is None:
+        return issues
+    if not isinstance(families, list) or not all(isinstance(f, str) for f in families):
+        issues.append(ConfigIssue("families", "expected a list of family names"))
+        return issues
+    known = {cls.family for cls in DESCRIPTOR_REGISTRY.values()}
+    issues += [
+        ConfigIssue(f"families.{i}", f"unknown family {f!r}; expected one of: {', '.join(sorted(known))}")
+        for i, f in enumerate(families)
+        if f not in known
+    ]
+    return issues
+
+
 def check_config(raw: dict[str, Any]) -> list[ConfigIssue]:
-    """Collect every problem in a parsed config of shape ``{schema_version, descriptors}``."""
+    """Collect every problem in a parsed config of shape ``{schema_version, descriptors, families, all}``."""
     issues: list[ConfigIssue] = []
     for key in raw:
         if key in _ROOT_KEYS:
@@ -94,15 +115,41 @@ def check_config(raw: dict[str, Any]) -> list[ConfigIssue]:
         issues.append(
             ConfigIssue("schema_version", f"unsupported schema_version, expected {_SCHEMA_VERSION}")
         )
-    descriptors = raw.get("descriptors")
-    if not isinstance(descriptors, dict) or not descriptors:
+    issues += _check_selection(raw)
+    descriptors = raw.get("descriptors", {})
+    if descriptors is None:
+        descriptors = {}
+    if not isinstance(descriptors, dict):
+        issues.append(ConfigIssue("descriptors", "expected a mapping of descriptor name to parameters"))
+        return issues
+    if not descriptors and not raw.get("families") and raw.get("all") is not True:
         issues.append(
-            ConfigIssue("descriptors", "expected a non-empty mapping of descriptor name to parameters")
+            ConfigIssue(
+                "descriptors",
+                "expected a non-empty mapping of descriptor name to parameters, "
+                "or descriptors selected with 'families' or 'all: true'",
+            )
         )
         return issues
     for name, params in descriptors.items():
         issues += _check_descriptor(str(name), params)
     return issues
+
+
+def resolve_config(raw: dict[str, Any]) -> dict[str, dict[str, object]]:
+    """Return ``{descriptor: params}`` from a valid config.
+
+    With only ``descriptors``, the file order is kept. ``families`` and ``all: true`` select like
+    ``-f`` and ``--all``: the union with the named ``descriptors`` is sorted, so a config and the
+    equivalent flags give the same columns in the same order. Parameters under ``descriptors``
+    override the defaults of any descriptor they name, however it was selected.
+    """
+    params = raw.get("descriptors") or {}
+    families = list(raw.get("families") or [])
+    if not families and raw.get("all") is not True:
+        return {n: dict(p or {}) for n, p in params.items()}
+    names = _resolve_names(raw.get("all") is True, list(params), families)
+    return {n: dict(params.get(n) or {}) for n in names}
 
 
 def load_config(path: Path) -> dict[str, dict[str, object]]:
@@ -113,7 +160,7 @@ def load_config(path: Path) -> dict[str, dict[str, object]]:
         lines = "\n".join(f"  {i.path or '<root>'}: {i.message}" for i in issues)
         msg = f"{path}:\n{lines}"
         raise typer.BadParameter(msg, param_hint="'--config'")
-    return {n: dict(p or {}) for n, p in raw["descriptors"].items()}
+    return resolve_config(raw)
 
 
 def validate_config(config: Mapping[str, Any] | str | os.PathLike[str]) -> list[ConfigIssue]:
