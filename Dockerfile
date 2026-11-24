@@ -1,6 +1,4 @@
-# Runtime image of a released Roxy version, installed from PyPI (no source copied), so any past
-# release can be rebuilt. Built and pushed by .github/workflows/publish-container.yml.
-#   docker build --build-arg ROXY_VERSION=0.3.0 -t roxy:0.3.0 .
+# Runtime image of a released Roxy version, installed from PyPI.
 FROM python:3.14-slim
 
 ARG ROXY_VERSION
