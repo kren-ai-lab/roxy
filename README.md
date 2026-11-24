@@ -93,6 +93,15 @@ descriptors:
   charge: {}
 ```
 
+A config can also select descriptors the way `-f` and `--all` do, with `families:` (a list) and `all: true`. Descriptors named under `descriptors:` are added to that selection and keep their parameters; the rest use their defaults. As with the flags, the selected descriptors are sorted, so `families: [composition]` and `-f composition` write the same table and the same provenance. A config with only `descriptors:` keeps the file order.
+
+```yaml
+families: [composition, physicochemical]
+descriptors:
+  aac:
+    include_counts: true
+```
+
 `roxy validate-config CONFIG` collects every problem (unknown keys, descriptors or parameters, wrongly typed or rejected values) and prints one `path: message` line per problem to stderr, or a JSON array of `{path, message}` on stdout with `--json`. It exits 0 if the config is valid and 2 otherwise. `roxy compute --config` applies the same checks.
 
 Validate a config from Python:

@@ -78,3 +78,51 @@ def test_validate_config_python_api(tmp_path):
     assert validate_config(cfg) == []
     assert validate_config(str(cfg)) == []
     assert [i.path for i in validate_config(tmp_path / "missing.yaml")] == [""]
+
+
+def test_families_and_all_in_config(tmp_path):
+    from roxy.descriptors import DESCRIPTOR_REGISTRY
+
+    composition = sorted(n for n, c in DESCRIPTOR_REGISTRY.items() if c.family == "composition")
+    cfg = tmp_path / "cfg.yaml"
+    cfg.write_text("families: [composition]\n")
+    assert list(load_config(cfg)) == composition
+    # with a family the union is sorted like `-d charge -f composition`; parameters still apply
+    cfg.write_text("descriptors:\n  charge: {}\n  aac: {include_counts: true}\nfamilies: [composition]\n")
+    resolved = load_config(cfg)
+    assert list(resolved) == sorted(["charge", *composition])
+    assert resolved["aac"] == {"include_counts": True}
+    assert all(resolved[n] == {} for n in resolved if n != "aac")
+    # descriptors alone keep the file order, as before
+    cfg.write_text("descriptors:\n  charge: {}\n  aac: {}\n")
+    assert list(load_config(cfg)) == ["charge", "aac"]
+    cfg.write_text("all: true\n")
+    assert list(load_config(cfg)) == sorted(DESCRIPTOR_REGISTRY)
+
+
+def test_invalid_selection_keys(tmp_path):
+    code, paths = _validate(tmp_path, "families: [composition, nope]\nall: yes please\n")
+    assert code == 2
+    assert paths == {"families.1", "all"}
+    assert _validate(tmp_path, "families: composition\n") == (2, {"families"})
+    assert _validate(tmp_path, "all: false\n") == (2, {"descriptors"})
+    assert _validate(tmp_path, "families: []\n") == (2, {"descriptors"})
+
+
+def test_config_families_match_family_flag(tmp_path):
+    fasta = tmp_path / "seqs.fasta"
+    fasta.write_text(FASTA)
+    cfg = tmp_path / "cfg.yaml"
+    cfg.write_text("families: [physicochemical]\n")
+    by_flag, by_config = tmp_path / "flag.csv", tmp_path / "config.csv"
+    flag = runner.invoke(
+        app, ["compute", str(fasta), "-f", "physicochemical", "-o", str(by_flag), "--no-progress"]
+    )
+    conf = runner.invoke(
+        app, ["compute", str(fasta), "--config", str(cfg), "-o", str(by_config), "--no-progress"]
+    )
+    assert (flag.exit_code, conf.exit_code) == (0, 0)
+    assert by_flag.read_bytes() == by_config.read_bytes()
+    docs = [json.loads(p.with_name(p.name + ".provenance.json").read_text()) for p in (by_flag, by_config)]
+    assert docs[0]["parameters"] == docs[1]["parameters"]
+    assert docs[0]["config_fingerprint"] == docs[1]["config_fingerprint"]
